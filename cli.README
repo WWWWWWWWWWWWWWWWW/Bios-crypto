@@ -1,0 +1,64 @@
+cli_tool README
+
+Introduction
+------------
+
+This tool performs three functions.  It allows key generation, data signing and data verification.  
+It is meant to be able to generate keys and signatures that can be included in the BIOS itself.
+
+Building
+--------
+
+Type make.
+
+Key Generation
+--------------
+
+cli_tool -makekey keyname
+
+This will generate the key pair in the files named keyname.public and keyname.private.
+
+The file with .public in the name is a PUBLIC key which can be included in the BIOS or given
+out to others.  The file with .private in the name is a PRIVATE key and should be kept 
+hidden and secret.
+
+The tool makes both a RSA-2048 and ECC-521 key and stores both in the files in an ASN.1 defined
+below.
+
+OLPCKey ::= SEQUENCE {
+   RSAKey    OCTET STRING,
+   ECCKey    OCTET STRING,
+}
+
+Where RSAKey is a valid PKCS #1 public or private key (RSAPublicKey or RSAPrivateKey).  The
+ECCKey is in a format specified in the LibTomCrypt library.
+
+Data Signing
+------------
+
+cli_tool -sign filename keyname
+
+Generates a signature called filename.sig using the private key named by keyname.  It uses
+both RSA and ECC, as well as both Whirlpool and SHA-512 to produce four signatures of the
+file.  All four signatures are stored in the same file.
+
+The signature format is an ASN.1 SEQUENCE defined as follows:
+
+OLPCSignature ::= SEQUENCE {
+   RSAWhirlpoolSignature  OCTET STRING,
+   RSASHA512Signature     OCTET STRING,
+   ECCWhirlpoolSignature  OCTET STRING,
+   ECCSHA512Signature     OCTET STRING,
+}
+
+The RSA signatures are PKCS #1 v2.1 PSS signatures, and the ECC signatures are ANSI X9.62 EC-DSA format 
+signatures.
+
+Data Verification
+-----------------
+
+cli_tool -verify filename keyname
+
+Verifies the signature on the file named by filename (note: don't append .sig) with a public or
+private key named by keyname.
+

@@ -1,0 +1,13 @@
+stopped at ecc start...
+
+must have for v1.16
+- merge PKCS #1 v1.5 back in, document changes to rsa_encrypt and rsa_sign
+- document PK build flags
+- document makefile flags [INSTALL_* for instance]
+- clean up manual, add examples, add xcbc, f9, fix grammar
+- prepare manual for printing (both soft and hard cover)
+
+Nice to have [in order of precedence]
+- Add ECC double-mult-add to plugin and make optional accelerator for baseline and MECC_FP [two goals]
+- add X9.63 IES
+- add CPP macros like OpenSSL has for ASN1 (e.g. encode/decode functions, etc) shameless ripoff :-)

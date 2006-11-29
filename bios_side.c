@@ -1,11 +1,33 @@
 #define TFM_DESC
 #include "tomcrypt.h"
 
+#define DO(x) do { run_cmd((x), __LINE__, __FILE__, #x); } while (0);
+void run_cmd(int res, int line, char *file, char *cmd)
+{
+   if (res != CRYPT_OK) {
+      fprintf(stderr, "%s (%d)\n%s:%d:%s\n", error_to_string(res), res, file, line, cmd);
+      if (res != CRYPT_NOP) {
+         exit(EXIT_FAILURE);
+      }
+   }
+}
+
+
 /* --- BIOS SUPPORT ROUTINES --- */
+int bios_strcmp(const char *s1, const char *s2)
+{
+   while (*s1 || *s2) {
+      if (*s1 > *s2) return 1;
+      if (*s1 < *s2) return -1;
+      ++s1; ++s2;
+   }
+   return 0;
+}
+
 int bios_memcmp(const void *s1, const void *s2, size_t len)
 {
    unsigned char *t1, *t2;
-   t1 = s1; t2 = s2;
+   t1 = (unsigned char*)s1; t2 = (unsigned char*)s2;
    while (len--) {
       if (*t1 > *t2) return 1;
       if (*t1 < *t2) return -1;
@@ -17,14 +39,14 @@ int bios_memcmp(const void *s1, const void *s2, size_t len)
 void *bios_memcpy(void *dest, const void *src, size_t len)
 {
    unsigned char *d, *s;
-   d = dest; s = src;
+   d = dest; s = (unsigned char*)src;
    while (len--) {
      *d++ = *s++;
    }
    return dest;
 }
 
-void *bios_memset(void *dest, int c, size_t n)
+void *bios_memset(void *dest, int c, size_t len)
 {
    unsigned char *d;
    d = dest;
@@ -72,7 +94,7 @@ void *bios_calloc(size_t p, size_t q)
 
    /* now we need a node where base == NULL */   
    for (y = 0; y < NODES; y++) {
-      if (x != y && nodes[y].base == NULL) {
+      if (x != y && heap[y].base == NULL) {
          break;
       }
    }
@@ -199,6 +221,7 @@ int verify_data(
    unsigned char rsabuf[2048], eccbuf[1024], md[2][MAXBLOCKSIZE], sigs[4][512];
    unsigned long rsalen, ecclen, mdlen[2], siglen[4];
    ltc_asn1_list key[2], sig[4];
+   int           stat;
 
    /* get hashes of filedata */
    mdlen[0] = sizeof(md[0]);
@@ -256,3 +279,10 @@ int verify_data(
    rsa_free(&rsakey);
    return 0;
 }
+
+#ifdef DEBUG
+int main(void)
+{
+}
+#endif
+

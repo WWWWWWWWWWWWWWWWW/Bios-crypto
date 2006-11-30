@@ -1,4 +1,4 @@
-CFLAGS += -Os -fomit-frame-pointer -m32 -Iheader/ -DDEBUG
+CFLAGS += -Os -m32 -Iheader/ -DDEBUG
 
 default: cli_tool
 

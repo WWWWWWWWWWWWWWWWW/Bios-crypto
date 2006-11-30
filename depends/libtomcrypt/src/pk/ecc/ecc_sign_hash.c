@@ -64,8 +64,7 @@ int ecc_sign_hash(const unsigned char *in,  unsigned long inlen,
    /* get the hash and load it as a bignum into 'e' */
    /* init the bignums */
    if ((err = mp_init_multi(&r, &s, &p, &e, NULL)) != CRYPT_OK) { 
-      ecc_free(&pubkey);
-      goto LBL_ERR;
+      return err;
    }
    if ((err = mp_read_radix(p, (char *)key->dp->order, 16)) != CRYPT_OK)                   { goto error; }
    if ((err = mp_read_unsigned_bin(e, (unsigned char *)in, (int)inlen)) != CRYPT_OK)          { goto error; }
@@ -113,6 +112,6 @@ LBL_ERR:
 
 #endif
 /* $Source: /cvs/libtom/libtomcrypt/src/pk/ecc/ecc_sign_hash.c,v $ */
-/* $Revision: 1.6 $ */
-/* $Date: 2006/11/21 00:10:18 $ */
+/* $Revision: 1.7 $ */
+/* $Date: 2006/11/30 02:06:18 $ */
 

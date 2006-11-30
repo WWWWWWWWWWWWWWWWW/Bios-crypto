@@ -118,6 +118,7 @@ void *bios_calloc(size_t p, size_t q)
          break;
       }
    }
+   /* no room to split a node, can't allocate mem */
    if (y == NODES) { 
 #ifdef DEBUG 
    printk("Tried to allocate %lu bytes\n", r);
@@ -150,7 +151,7 @@ void bios_free(void *p)
    }
    if (x == NODES) {
       // SHOULD NOT GET HERE! 
-      printf("invalid free...\n"); for(;;);
+      printk("invalid free...\n"); for(;;);
    }
 
    /* join x if possible */
@@ -172,7 +173,7 @@ void bios_free(void *p)
       heap[x].free = 1;
    }
 
-   /* defrag memory */
+   /* defrag memory (kids: don't try this at home) */
    do {
      t = 0;
      for (x = 0; x < NODES; x++) {
@@ -210,11 +211,11 @@ void check_heap(void)
 
    for (x = heapleft = 0; x < NODES; x++) {
       if (heap[x].base != NULL || heap[x].len != 0) {
-         printf("Node %d is {%p, %lu, %d}\n", x, heap[x].base, heap[x].len, heap[x].free);
+         printk("Node %d is {%p, %lu, %d}\n", x, heap[x].base, heap[x].len, heap[x].free);
       }
       if (heap[x].free) heapleft += heap[x].len;
    }
-   printf("Heapleft == %lu bytes\n", heapleft);
+   printk("Heapleft == %lu bytes\n", heapleft);
 }
 #endif
 
@@ -398,11 +399,22 @@ const unsigned char sigdata[] = {
 int main(void)
 {
    bios_heap_start(malloc(64*1024), 64*1024);
-   verify_data(filedata, sizeof(filedata), keydata, sizeof(keydata), sigdata, sizeof(sigdata));
-   verify_data(filedata, sizeof(filedata), keydata, sizeof(keydata), sigdata, sizeof(sigdata));
-   verify_data(filedata, sizeof(filedata), keydata, sizeof(keydata), sigdata, sizeof(sigdata));
-   verify_data(filedata, sizeof(filedata), keydata, sizeof(keydata), sigdata, sizeof(sigdata));
-   verify_data(filedata, sizeof(filedata), keydata, sizeof(keydata), sigdata, sizeof(sigdata));
+   
+   /* you would call this with other parameters, but I'm lazy and only made one signature/keypair
+    * called it multiple times to check for leaks 
+    */
+   if (verify_data(filedata, sizeof(filedata), keydata, sizeof(keydata), sigdata, sizeof(sigdata)) != 0) {
+     printk("verify_data == -1, uh oh\n") return 0;
+   }
+   if (verify_data(filedata, sizeof(filedata), keydata, sizeof(keydata), sigdata, sizeof(sigdata)) != 0) {
+     printk("verify_data == -1, uh oh\n") return 0;
+   }
+   if (verify_data(filedata, sizeof(filedata), keydata, sizeof(keydata), sigdata, sizeof(sigdata)) != 0) {
+     printk("verify_data == -1, uh oh\n") return 0;
+   }
+   if (verify_data(filedata, sizeof(filedata), keydata, sizeof(keydata), sigdata, sizeof(sigdata)) != 0) {
+     printk("verify_data == -1, uh oh\n") return 0;
+   }
    check_heap();
    return 0;
 }

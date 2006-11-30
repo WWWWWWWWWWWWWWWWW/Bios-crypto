@@ -82,7 +82,7 @@ int pkcs_1_pss_decode(const unsigned char *msghash, unsigned long msghashlen,
 
    /* ensure the 0xBC byte */
    if (sig[siglen-1] != 0xBC) {
-      err = CRYPT_OK;
+      err = CRYPT_INVALID_PACKET;
       goto LBL_ERR;
    }
 
@@ -173,5 +173,5 @@ LBL_ERR:
 #endif /* PKCS_1 */
 
 /* $Source: /cvs/libtom/libtomcrypt/src/pk/pkcs1/pkcs_1_pss_decode.c,v $ */
-/* $Revision: 1.7 $ */
-/* $Date: 2006/11/01 09:28:17 $ */
+/* $Revision: 1.9 $ */
+/* $Date: 2006/11/30 02:37:21 $ */

@@ -97,7 +97,7 @@ int pkcs_1_pss_decode(const unsigned char *msghash, unsigned long msghashlen,
 
    /* check the MSB */
    if ((sig[0] & ~(0xFF >> ((modulus_len<<3) - (modulus_bitlen-1)))) != 0) {
-      err = CRYPT_OK;
+      err = CRYPT_INVALID_PACKET;
       goto LBL_ERR;
    }
 
@@ -119,14 +119,14 @@ int pkcs_1_pss_decode(const unsigned char *msghash, unsigned long msghashlen,
    /* check for zeroes and 0x01 */
    for (x = 0; x < modulus_len - saltlen - hLen - 2; x++) {
        if (DB[x] != 0x00) {
-          err = CRYPT_OK;
+          err = CRYPT_INVALID_PACKET;
           goto LBL_ERR;
        }
    }
 
    /* check for the 0x01 */
    if (DB[x++] != 0x01) {
-      err = CRYPT_OK;
+      err = CRYPT_INVALID_PACKET;
       goto LBL_ERR;
    }
 

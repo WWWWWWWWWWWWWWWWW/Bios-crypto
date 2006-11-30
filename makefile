@@ -16,6 +16,6 @@ depends/libtfm.a:
 	cd depends/tomsfastmath ; IGNORE_SPEED=1 CFLAGS="${CFLAGS} -DTFM_ALREADY_SET -DTFM_NO_ASM -Dmemcpy=bios_memcpy -Dmemset=bios_memset" make ; cp libtfm.a ..
 
 clean:
-	rm -f *.o *.a depends/*.a
+	rm -f *.o *.a depends/*.a cli_tool bios_side
 	cd depends/libtomcrypt ; make clean
 	cd depends/tomsfastmath ; make clean

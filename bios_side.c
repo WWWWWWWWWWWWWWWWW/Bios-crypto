@@ -82,6 +82,7 @@ static heap_node heap[NODES];
 */
 void bios_heap_start(void *base, size_t s)
 {
+   bios_memset(heap, 0, sizeof(heap));
    heap[0].base = base;
    heap[0].len  = s;
    heap[0].free = 1;

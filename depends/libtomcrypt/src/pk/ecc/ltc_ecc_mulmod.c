@@ -54,6 +54,7 @@ int ltc_ecc_mulmod(void *k, ecc_point *G, ecc_point *R, void *modulus, int map)
       return err;
    }
    if ((err = mp_init(&mu)) != CRYPT_OK) {
+      mp_montgomery_free(mp);
       return err;
    }
    if ((err = mp_montgomery_normalization(mu, modulus)) != CRYPT_OK) {
@@ -90,6 +91,7 @@ int ltc_ecc_mulmod(void *k, ecc_point *G, ecc_point *R, void *modulus, int map)
       if ((err = mp_mulmod(G->z, mu, modulus, tG->z)) != CRYPT_OK)                   { goto done; }
    }
    mp_clear(mu);
+   mu = NULL;
    
    /* calc the M tab, which holds kG for k==8..15 */
    /* M[0] == 8G */
@@ -198,6 +200,9 @@ int ltc_ecc_mulmod(void *k, ecc_point *G, ecc_point *R, void *modulus, int map)
       err = CRYPT_OK;
    }
 done:
+   if (mu != NULL) {
+      mp_clear(mu);
+   }
    mp_montgomery_free(mp);
    ltc_ecc_del_point(tG);
    for (i = 0; i < 8; i++) {
@@ -213,5 +218,5 @@ done:
 #endif
 
 /* $Source: /cvs/libtom/libtomcrypt/src/pk/ecc/ltc_ecc_mulmod.c,v $ */
-/* $Revision: 1.21 $ */
-/* $Date: 2006/03/31 14:15:35 $ */
+/* $Revision: 1.23 $ */
+/* $Date: 2006/12/02 20:41:45 $ */

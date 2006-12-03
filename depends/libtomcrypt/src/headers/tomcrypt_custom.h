@@ -279,6 +279,9 @@
 /* ECC */
 #define MECC
 
+/* use Shamir's trick for point mul (speeds up signature verification) */
+#define LTC_ECC_SHAMIR
+
 #if defined(TFM_DESC) && defined(MECC)
    #define MECC_ACCEL
 #endif   
@@ -369,5 +372,5 @@
 
 
 /* $Source: /cvs/libtom/libtomcrypt/src/headers/tomcrypt_custom.h,v $ */
-/* $Revision: 1.64 $ */
-/* $Date: 2006/11/21 00:10:18 $ */
+/* $Revision: 1.65 $ */
+/* $Date: 2006/12/02 19:23:13 $ */

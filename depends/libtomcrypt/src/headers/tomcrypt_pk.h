@@ -269,6 +269,22 @@ void ltc_ecc_fp_free(void);
 /* R = kG */
 int ltc_ecc_mulmod(void *k, ecc_point *G, ecc_point *R, void *modulus, int map);
 
+#ifdef LTC_ECC_SHAMIR
+/* kA*A + kB*B = C */
+int ltc_ecc_mul2add(ecc_point *A, void *kA,
+                    ecc_point *B, void *kB,
+                    ecc_point *C,
+                         void *modulus);
+
+#ifdef MECC_FP
+int ltc_ecc_fp_mul2add(ecc_point *A, void *kA,
+                       ecc_point *B, void *kB,
+                       ecc_point *C, void *modulus);
+#endif
+
+#endif
+
+
 /* map P to affine from projective */
 int ltc_ecc_map(ecc_point *P, void *modulus, void *mp);
 
@@ -524,5 +540,5 @@ int der_length_utctime(ltc_utctime *utctime, unsigned long *outlen);
 #endif
 
 /* $Source: /cvs/libtom/libtomcrypt/src/headers/tomcrypt_pk.h,v $ */
-/* $Revision: 1.75 $ */
-/* $Date: 2006/11/26 12:52:21 $ */
+/* $Revision: 1.77 $ */
+/* $Date: 2006/12/03 00:39:56 $ */

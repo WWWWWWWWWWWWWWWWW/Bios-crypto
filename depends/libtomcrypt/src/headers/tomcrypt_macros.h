@@ -420,5 +420,5 @@ static inline unsigned long ROR64c(unsigned long word, const int i)
 #endif   
 
 /* $Source: /cvs/libtom/libtomcrypt/src/headers/tomcrypt_macros.h,v $ */
-/* $Revision: 1.14 $ */
-/* $Date: 2006/11/27 14:42:39 $ */
+/* $Revision: 1.15 $ */
+/* $Date: 2006/11/29 23:43:57 $ */

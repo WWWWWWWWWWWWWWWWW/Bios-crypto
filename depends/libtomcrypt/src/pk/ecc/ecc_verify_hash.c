@@ -76,7 +76,7 @@ int ecc_verify_hash(const unsigned char *sig,  unsigned long siglen,
    mQ = ltc_ecc_new_point();
    if (mQ  == NULL || mG == NULL) {
       err = CRYPT_MEM;
-      goto done;
+      goto error;
    }
 
    /* parse header */
@@ -84,7 +84,7 @@ int ecc_verify_hash(const unsigned char *sig,  unsigned long siglen,
                                   LTC_ASN1_INTEGER, 1UL, r,
                                   LTC_ASN1_INTEGER, 1UL, s,
                                   LTC_ASN1_EOL, 0UL, NULL)) != CRYPT_OK) {
-      goto done;
+      goto error;
    }
 
    /* get the order */
@@ -96,7 +96,7 @@ int ecc_verify_hash(const unsigned char *sig,  unsigned long siglen,
    /* check for zero */
    if (mp_iszero(r) || mp_iszero(s) || mp_cmp(r, p) != LTC_MP_LT || mp_cmp(s, p) != LTC_MP_LT) {
       err = CRYPT_INVALID_PACKET;
-      goto done;
+      goto error;
    }
 
    /* read hash */
@@ -111,28 +111,35 @@ int ecc_verify_hash(const unsigned char *sig,  unsigned long siglen,
    /* u2 = rw */
    if ((err = mp_mulmod(r, w, p, u2)) != CRYPT_OK)                                                      { goto error; }
 
-   /* find mG = u1*G */
+   /* find mG and mQ */
    if ((err = mp_read_radix(mG->x, (char *)key->dp->Gx, 16)) != CRYPT_OK)                               { goto error; }
    if ((err = mp_read_radix(mG->y, (char *)key->dp->Gy, 16)) != CRYPT_OK)                               { goto error; }
    mp_set(mG->z, 1);  
-   if ((err = ltc_mp.ecc_ptmul(u1, mG, mG, m, 0)) != CRYPT_OK)                                          { goto done; }
 
-   /* find mQ = u2*Q */
    if ((err = mp_copy(key->pubkey.x, mQ->x)) != CRYPT_OK)                                               { goto error; }
    if ((err = mp_copy(key->pubkey.y, mQ->y)) != CRYPT_OK)                                               { goto error; }
    if ((err = mp_copy(key->pubkey.z, mQ->z)) != CRYPT_OK)                                               { goto error; }
-   if ((err = ltc_mp.ecc_ptmul(u2, mQ, mQ, m, 0)) != CRYPT_OK)                                          { goto done; }
+
+   /* compute u1*mG + u2*mQ = mG */
+   if (ltc_mp.ecc_mul2add == NULL) {
+      if ((err = ltc_mp.ecc_ptmul(u1, mG, mG, m, 0)) != CRYPT_OK)                                       { goto error; }
+      if ((err = ltc_mp.ecc_ptmul(u2, mQ, mQ, m, 0)) != CRYPT_OK)                                       { goto error; }
   
-   /* find the montgomery mp */
-   if ((err = mp_montgomery_setup(m, &mp)) != CRYPT_OK)                                                 { goto error; }
-   /* add them */
-   if ((err = ltc_mp.ecc_ptadd(mQ, mG, mG, m, mp)) != CRYPT_OK)                                         { goto done; }
+      /* find the montgomery mp */
+      if ((err = mp_montgomery_setup(m, &mp)) != CRYPT_OK)                                              { goto error; }
+
+      /* add them */
+      if ((err = ltc_mp.ecc_ptadd(mQ, mG, mG, m, mp)) != CRYPT_OK)                                      { goto error; }
    
-   /* reduce */
-   if ((err = ltc_mp.ecc_map(mG, m, mp)) != CRYPT_OK)                                                   { goto done; }
+      /* reduce */
+      if ((err = ltc_mp.ecc_map(mG, m, mp)) != CRYPT_OK)                                                { goto error; }
+   } else {
+      /* use Shamir's trick to compute u1*mG + u2*mQ using half of the doubles */
+      if ((err = ltc_mp.ecc_mul2add(mG, u1, mQ, u2, mG, m)) != CRYPT_OK)                                { goto error; }
+   }
 
    /* v = X_x1 mod n */
-   if ((err = mp_mod(mG->x, p, v)) != CRYPT_OK)                                                         { goto done; }
+   if ((err = mp_mod(mG->x, p, v)) != CRYPT_OK)                                                         { goto error; }
 
    /* does v == r */
    if (mp_cmp(v, r) == LTC_MP_EQ) {
@@ -141,9 +148,7 @@ int ecc_verify_hash(const unsigned char *sig,  unsigned long siglen,
 
    /* clear up and return */
    err = CRYPT_OK;
-   goto done;
 error:
-done:
    ltc_ecc_del_point(mG);
    ltc_ecc_del_point(mQ);
    mp_clear_multi(r, s, v, w, u1, u2, p, e, m, NULL);
@@ -155,6 +160,6 @@ done:
 
 #endif
 /* $Source: /cvs/libtom/libtomcrypt/src/pk/ecc/ecc_verify_hash.c,v $ */
-/* $Revision: 1.8 $ */
-/* $Date: 2006/11/21 00:10:18 $ */
+/* $Revision: 1.11 $ */
+/* $Date: 2006/12/02 21:07:05 $ */
 

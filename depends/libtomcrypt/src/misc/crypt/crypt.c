@@ -351,11 +351,14 @@ const char *crypt_build_settings =
 #if defined(MECC_FP)
    " MECC_FP "
 #endif
+#if defined(LTC_ECC_SHAMIR)
+   " LTC_ECC_SHAMIR "
+#endif
     "\n"
     "\n\n\n"
     ;
 
 
 /* $Source: /cvs/libtom/libtomcrypt/src/misc/crypt/crypt.c,v $ */
-/* $Revision: 1.26 $ */
-/* $Date: 2006/11/08 23:04:57 $ */
+/* $Revision: 1.27 $ */
+/* $Date: 2006/12/03 03:50:45 $ */

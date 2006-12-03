@@ -3835,6 +3835,9 @@ The curves in this library are taken from the following website:
 http://csrc.nist.gov/cryptval/dss.htm
 \end{verbatim}
 
+As of v1.15 three new curves from the SECG standards are also included they are the secp112r1, secp128r1, and secp160r1 curves.  These curves were added to 
+support smaller devices which do not need as large keys for security.
+
 They are all curves over the integers modulo a prime.  The curves have the basic equation that is:
 \begin{equation}
 y^2 = x^3 - 3x + b\mbox{ }(\mbox{mod }p)
@@ -3842,11 +3845,12 @@ y^2 = x^3 - 3x + b\mbox{ }(\mbox{mod }p)
 
 The variable $b$ is chosen such that the number of points is nearly maximal.  In fact the order of the base points $\beta$ 
 provided are very close to $p$ that is $\vert \vert \phi(\beta) \vert \vert \approx \vert \vert p \vert \vert$.  The curves
-range in order from $\approx 2^{192}$ points to $\approx 2^{521}$.  According to the source document any key size greater
+range in order from $\approx 2^{112}$ points to $\approx 2^{521}$.  According to the source document any key size greater
 than or equal to 256-bits is sufficient for long term security.  
 
 \mysection{Fixed Point Optimizations}
 \index{Fixed Point ECC}
+\index{MECC\_FP}
 As of v1.12 of LibTomCrypt, support for Fixed Point ECC point multiplication has been added.  It is a generic optimization that is
 supported by any conformant math plugin.  It is enabled by defining \textbf{MECC\_FP} during the build, such as 
 
@@ -3858,13 +3862,13 @@ which will build LTC using the TFM math library and enabling this new feature.  
 safe (by default).  It supports the LTC locking macros (such as by enabling LTC\_PTHREAD), but by default is not locked.
 
 \index{FP\_ENTRIES}
-The optimization works by using a Fixed Point point multiplier on any base point you use twice or more in a short period of time.  It has a limited size
+The optimization works by using a Fixed Point multiplier on any base point you use twice or more in a short period of time.  It has a limited size
 cache (of FP\_ENTRIES entries) which it uses to hold recent bases passed to ltc\_ecc\_mulmod().  Any base detected to be used twice is sent through the
-pre--computation phase and then the fixed point algorithm can be used.  For example, if you use a NIST base point twice in a row, the 2nd and 
+pre--computation phase, and then the fixed point algorithm can be used.  For example, if you use a NIST base point twice in a row, the 2$^{nd}$ and 
 all subsequent point multiplications with that point will use the faster algorithm.
 
 \index{FP\_LUT}
-The optimization uses a window on the multiplicand of FP\_LUT bits (default: 8, min: 2, max: 12) and controls the memory/time trade-off. The larger the 
+The optimization uses a window on the multiplicand of FP\_LUT bits (default: 8, min: 2, max: 12), and this controls the memory/time trade-off. The larger the 
 value the faster the algorithm will be but the more memory it will take.  The memory usage is $3 \cdot 2^{FP\_LUT}$ integers which by default
 with TFM amounts to about 400kB of memory.  Tuning TFM (by changing FP\_SIZE) can decrease the usage by a fair amount.  Memory is only used by a cache entry
 if it is active.  Both FP\_ENTRIES and FP\_LUT are definable on the command line if you wish to override them. For instance,
@@ -3874,15 +3878,17 @@ CFLAGS="-DTFM_DESC -DMECC_FP -DFP_ENTRIES=8 -DFP_LUT=6" make
 \end{verbatim}
 
 \begin{flushleft} 
-would define a window of 6 bits and limit the cache to 8 entries.  Generally it's better to first tune TFM by adjusting FP\_SIZE (from tfm.h).  It defaults
+\index{FP\_SIZE} \index{TFM} \index{tfm.h}
+would define a window of 6 bits and limit the cache to 8 entries.  Generally, it is better to first tune TFM by adjusting FP\_SIZE (from tfm.h).  It defaults
 to 4096 bits (512 bytes) which is way more than what is required by ECC.  At most, you need 1152 bits to accommodate ECC--521.  If you're only using (say)
 ECC--256 you will only need 576 bits, which would reduce the memory usage by 700\%.
 \end{flushleft}
 
 \mysection{Key Format}
-LibTomCrypt uses it's own format for ECC public and private keys.  While ANSI X9.63 partially specifies key formats (it covers public keys) it does it in a less
-than ideally simple manner.  In the case of LibTomCrypt it is meant \textbf{solely} for NIST $GF(p)$ curves.  The format of the keys is as follows:
+LibTomCrypt uses a unique format for ECC public and private keys.  While ANSI X9.63 partially specifies key formats, it does it in a less than ideally simple manner.  \
+In the case of LibTomCrypt, it is meant \textbf{solely} for NIST and SECG $GF(p)$ curves.  The format of the keys is as follows:
 
+\index{ECC Key Format}
 \begin{small}
 \begin{verbatim}
 ECCPublicKey ::= SEQUENCE {
@@ -3906,27 +3912,82 @@ ECCPrivateKey ::= SEQUENCE {
 
 The first flags bit denotes whether the key is public (zero) or private (one).  
 
-\mysection{Core Functions}
+\vfil
 
+\mysection{ECC Curve Parameters}
+The library uses the following structure to describe an elliptic curve.  This is used internally, as well as by the new
+extended ECC functions which allow the user to specify their own curves. 
+
+\index{ltc\_ecc\_set\_type}
+\begin{verbatim}
+/** Structure defines a NIST GF(p) curve */
+typedef struct {
+   /** The size of the curve in octets */
+   int size;
+
+   /** name of curve */
+   char *name; 
+
+   /** The prime that defines the field (encoded in hex) */
+   char *prime;
+
+   /** The fields B param (hex) */
+   char *B;
+
+   /** The order of the curve (hex) */
+   char *order;
+  
+   /** The x co-ordinate of the base point on the curve (hex) */
+   char *Gx;
+ 
+   /** The y co-ordinate of the base point on the curve (hex) */
+   char *Gy;
+} ltc_ecc_set_type;
+\end{verbatim}
+
+The curve must be of the form $y^2 = x^3 - 3x + b$, and all of the integer parameters are encoded in hexadecimal format.
+
+\mysection{Core Functions}
 \subsection{ECC Key Generation}
 There is a key structure called \textit{ecc\_key} used by the ECC functions.  There is a function to make a key:
 \index{ecc\_make\_key()}
 \begin{verbatim}
-int ecc_make_key(prng_state *prng, int wprng, 
-                 int keysize, ecc_key *key);
+int ecc_make_key(prng_state *prng, 
+                        int  wprng, 
+                        int  keysize, 
+                    ecc_key *key);
 \end{verbatim}
 
-The \textit{keysize} is the size of the modulus in bytes desired.  Currently directly supported values are 24, 28, 32, 48 and 65 bytes which
-correspond to key sizes of 192, 224, 256, 384 and 521 bits respectively.  If you pass a key size that is between any key size it will round 
-the keysize up to the next available one.   To free the ram allocated by a ecc\_make\_key() or ecc\_import() call use the following function.
+The \textit{keysize} is the size of the modulus in bytes desired.  Currently directly supported values are 12, 16, 20, 24, 28, 32, 48, and 65 bytes which
+correspond to key sizes of 112, 128, 160, 192, 224, 256, 384, and 521 bits respectively.  If you pass a key size that is between any key size it will round 
+the keysize up to the next available one.
 
+The function will free any internally allocated resources if there is an error.
+
+\subsection{Extended Key Generation}
+As of v1.16, the library supports an extended key generation routine which allows the user to specify their own curve.  It is specified as follows:
+
+\index{ecc\_make\_key\_ex()}
+\begin{verbatim}
+int  ecc_make_key_ex(
+                 prng_state *prng, 
+                        int  wprng, 
+                    ecc_key *key, 
+     const ltc_ecc_set_type *dp);
+\end{verbatim}
+
+This function generates a random ECC key over the curve specified by the parameters by \textit{dp}.  The rest of the parameters are equivalent to
+those from the original key generation function.
+
+\subsection{ECC Key Free}
+To free the memory allocated by a ecc\_make\_key(), ecc\_make\_key\_ex(), ecc\_import(), or ecc\_import\_ex() call use the following function:
 \index{ecc\_free()}
 \begin{verbatim}
 void ecc_free(ecc_key *key);
 \end{verbatim}
 
 \subsection{ECC Key Export}
-To export an ECC key.
+To export an ECC key using the LibTomCrypt format call the following function:
 \index{ecc\_export()}
 \begin{verbatim}
 int ecc_export(unsigned char *out, 
@@ -3934,18 +3995,61 @@ int ecc_export(unsigned char *out,
                          int  type, 
                      ecc_key *key);
 \end{verbatim}
-This will export the key with the given \textit{type} (\textbf{PK\_PUBLIC} or \textbf{PK\_PRIVATE}) and store it to \textit{out}.  
+This will export the key with the given \textit{type} (\textbf{PK\_PUBLIC} or \textbf{PK\_PRIVATE}), and store it to \textit{out}.  
 
 \subsection{ECC Key Import}
+The following function imports a LibTomCrypt format ECC key:
 \index{ecc\_import()}
 \begin{verbatim}
 int ecc_import(const unsigned char *in, 
                      unsigned long  inlen, 
                            ecc_key *key);
 \end{verbatim}
-
-This will import the ECC key from \textit{in} and store it in the ecc\_key structure \textit{key}.  If the operation fails it will free
+This will import the ECC key from \textit{in}, and store it in the ecc\_key structure pointed to by \textit{key}.  If the operation fails it will free
 any allocated memory automatically.
+
+\subsection{Extended Key Import}
+
+The following function imports a LibTomCrypt format ECC key using a specified set of curve parameters:
+\index{ecc\_import\_ex()}
+\begin{verbatim}
+int  ecc_import_ex(const unsigned char *in, 
+                         unsigned long  inlen, 
+                               ecc_key *key, 
+                const ltc_ecc_set_type *dp);
+\end{verbatim}
+This will import the key from the array pointed to by \textit{in} of length \textit{inlen} octets.  The key is stored in
+the ECC structure pointed to by \textit{key}.  The curve is specified by the parameters pointed to by \textit{dp}.  The function will free
+all internally allocated memory upon error.
+
+\subsection{ANSI X9.63 Export}
+The following function exports an ECC public key in the ANSI X9.63 format:
+
+\index{ecc\_ansi\_x963\_export()}
+\begin{verbatim}
+int ecc_ansi_x963_export(      ecc_key *key, 
+                         unsigned char *out, 
+                         unsigned long *outlen);
+\end{verbatim}
+The ECC key pointed to by \textit{key} is exported in public fashion to the array pointed to by \textit{out}.  The ANSI X9.63 format used is from
+section 4.3.6 of the standard.  It does not allow for the export of private keys.
+
+\subsection{ANSI X9.63 Import}
+
+The following function imports an ANSI X9.63 section 4.3.6 format public ECC key:
+
+\index{ecc\_ansi\_x963\_import()}
+\begin{verbatim}
+int ecc_ansi_x963_import(const unsigned char *in, 
+                               unsigned long  inlen, 
+                                     ecc_key *key);
+\end{verbatim}
+This will import the key stored in the array pointed to by \textit{in} of length \textit{inlen} octets.  The imported key is stored in the ECC key pointed to by 
+\textit{key}.  The function will 
+
+
+\subsection{Extended ANSI X9.63 Import}
+%int ecc_ansi_x963_import_ex(const unsigned char *in, unsigned long inlen, ecc_key *key, ltc_ecc_set_type *dp);
 
 \subsection{ECC Shared Secret}
 Finally when you share your public key you can make a shared secret with the following.
@@ -6290,5 +6394,5 @@ Since the function is given the entire RSA key (for private keys only) CRT is po
 \end{document}
 
 % $Source: /cvs/libtom/libtomcrypt/crypt.tex,v $   
-% $Revision: 1.112 $   
-% $Date: 2006/11/28 01:35:39 $ 
+% $Revision: 1.114 $   
+% $Date: 2006/12/01 00:29:44 $ 

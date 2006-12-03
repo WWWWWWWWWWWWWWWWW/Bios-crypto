@@ -36,5 +36,5 @@ int find_hash(const char *name)
 }
 
 /* $Source: /cvs/libtom/libtomcrypt/src/misc/crypt/crypt_find_hash.c,v $ */
-/* $Revision: 1.5 $ */
-/* $Date: 2006/03/31 14:15:35 $ */
+/* $Revision: 1.6 $ */
+/* $Date: 2006/11/29 23:43:57 $ */

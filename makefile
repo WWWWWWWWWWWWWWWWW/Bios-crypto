@@ -9,7 +9,7 @@ cli_tool: cli_tool.o depends/libtomcrypt_cli.a depends/libtfm_cli.a
 	$(CC) $(CFLAGS) cli_tool.o depends/libtomcrypt_cli.a depends/libtfm_cli.a -o $@ 
 
 depends/libtomcrypt_cli.a:
-	cd depends/libtomcrypt ; CFLAGS="-DTFM_DESC ${CFLAGS}" make ; cp libtomcrypt.a ../libtomcrypt_cli.a ; make clean
+	cd depends/libtomcrypt ; CFLAGS="-DTFM_DESC ${CFLAGS} -I../tomsfastmath/ " make ; cp libtomcrypt.a ../libtomcrypt_cli.a ; make clean
 
 depends/libtfm_cli.a:
 	cd depends/tomsfastmath ; CFLAGS="${CFLAGS}" make ; cp libtfm.a ../libtfm_cli.a ; make clean

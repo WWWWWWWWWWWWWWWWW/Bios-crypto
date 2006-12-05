@@ -114,7 +114,7 @@ int ecc_verify_hash(const unsigned char *sig,  unsigned long siglen,
    /* find mG and mQ */
    if ((err = mp_read_radix(mG->x, (char *)key->dp->Gx, 16)) != CRYPT_OK)                               { goto error; }
    if ((err = mp_read_radix(mG->y, (char *)key->dp->Gy, 16)) != CRYPT_OK)                               { goto error; }
-   mp_set(mG->z, 1);  
+   if ((err = mp_set(mG->z, 1)) != CRYPT_OK)                                                            { goto error; }
 
    if ((err = mp_copy(key->pubkey.x, mQ->x)) != CRYPT_OK)                                               { goto error; }
    if ((err = mp_copy(key->pubkey.y, mQ->y)) != CRYPT_OK)                                               { goto error; }
@@ -160,6 +160,6 @@ error:
 
 #endif
 /* $Source: /cvs/libtom/libtomcrypt/src/pk/ecc/ecc_verify_hash.c,v $ */
-/* $Revision: 1.11 $ */
-/* $Date: 2006/12/02 21:07:05 $ */
+/* $Revision: 1.12 $ */
+/* $Date: 2006/12/04 05:07:59 $ */
 

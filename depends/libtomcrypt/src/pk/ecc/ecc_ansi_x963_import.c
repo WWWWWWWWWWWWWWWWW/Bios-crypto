@@ -37,7 +37,7 @@ int ecc_ansi_x963_import_ex(const unsigned char *in, unsigned long inlen, ecc_ke
 {
    int x, err;
  
-   LTC_ARGCHK(in != NULL);
+   LTC_ARGCHK(in  != NULL);
    LTC_ARGCHK(key != NULL);
    
    /* must be odd */
@@ -64,7 +64,7 @@ int ecc_ansi_x963_import_ex(const unsigned char *in, unsigned long inlen, ecc_ke
    if ((err = mp_read_unsigned_bin(key->pubkey.y, (unsigned char *)in+1+((inlen-1)>>1), (inlen-1)>>1)) != CRYPT_OK) {
       goto error;
    }
-   mp_set(key->pubkey.z, 1);
+   if ((err = mp_set(key->pubkey.z, 1)) != CRYPT_OK) { goto error; }
 
    if (dp == NULL) {
      /* determine the idx */
@@ -100,5 +100,5 @@ error:
 #endif
 
 /* $Source: /cvs/libtom/libtomcrypt/src/pk/ecc/ecc_ansi_x963_import.c,v $ */
-/* $Revision: 1.8 $ */
-/* $Date: 2006/11/21 00:16:55 $ */
+/* $Revision: 1.9 $ */
+/* $Date: 2006/12/04 22:17:46 $ */

@@ -152,7 +152,7 @@ int ecc_import_ex(const unsigned char *in, unsigned long inlen, ecc_key *key, co
      key->dp = dp;
    }
    /* set z */
-   mp_set(key->pubkey.z, 1);
+   if ((err = mp_set(key->pubkey.z, 1)) != CRYPT_OK) { goto done; }
    
    /* is it a point on the curve?  */
    if ((err = is_point(key)) != CRYPT_OK) {
@@ -167,6 +167,6 @@ done:
 }
 #endif
 /* $Source: /cvs/libtom/libtomcrypt/src/pk/ecc/ecc_import.c,v $ */
-/* $Revision: 1.10 $ */
-/* $Date: 2006/11/21 00:16:55 $ */
+/* $Revision: 1.11 $ */
+/* $Date: 2006/12/04 02:19:48 $ */
 

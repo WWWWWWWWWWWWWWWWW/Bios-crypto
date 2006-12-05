@@ -1,4 +1,5 @@
-stopped at ecc x963 import
+stopped at ch10
+-- needs examples for ecc/dsa!!! (and for asn.1)
 
 must have for v1.16
 - document PK build flags

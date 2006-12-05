@@ -170,19 +170,19 @@ int der_encode_sequence_ex(ltc_asn1_list *list, unsigned long inlen,
    out[x++] = (type_of == LTC_ASN1_SEQUENCE) ? 0x30 : 0x31;
       
    if (z < 128) {
-      out[x++] = z;
+      out[x++] = (unsigned char)z;
    } else if (z < 256) {
       out[x++] = 0x81;
-      out[x++] = z;
+      out[x++] = (unsigned char)z;
    } else if (z < 65536UL) {
       out[x++] = 0x82;
-      out[x++] = (z>>8UL)&255;
-      out[x++] = z&255;
+      out[x++] = (unsigned char)((z>>8UL)&255);
+      out[x++] = (unsigned char)(z&255);
    } else if (z < 16777216UL) {
       out[x++] = 0x83;
-      out[x++] = (z>>16UL)&255;
-      out[x++] = (z>>8UL)&255;
-      out[x++] = z&255;
+      out[x++] = (unsigned char)((z>>16UL)&255);
+      out[x++] = (unsigned char)((z>>8UL)&255);
+      out[x++] = (unsigned char)(z&255);
    }
 
    /* store data */

@@ -31,7 +31,7 @@
 */
 int ecc_ansi_x963_export(ecc_key *key, unsigned char *out, unsigned long *outlen)
 {
-   unsigned char buf[128];
+   unsigned char buf[ECC_BUF_SIZE];
    unsigned long numlen;
 
    LTC_ARGCHK(key    != NULL);
@@ -68,5 +68,5 @@ int ecc_ansi_x963_export(ecc_key *key, unsigned char *out, unsigned long *outlen
 #endif
 
 /* $Source: /cvs/libtom/libtomcrypt/src/pk/ecc/ecc_ansi_x963_export.c,v $ */
-/* $Revision: 1.3 $ */
-/* $Date: 2006/11/21 00:10:18 $ */
+/* $Revision: 1.4 $ */
+/* $Date: 2006/12/04 02:50:11 $ */

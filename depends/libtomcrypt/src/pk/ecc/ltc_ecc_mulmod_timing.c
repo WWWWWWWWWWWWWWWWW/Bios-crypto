@@ -56,8 +56,8 @@ int ltc_ecc_mulmod(void *k, ecc_point *G, ecc_point *R, void *modulus, int map)
       return err;
    }
    if ((err = mp_montgomery_normalization(mu, modulus)) != CRYPT_OK) {
-      mp_montgomery_free(mp);
       mp_clear(mu);
+      mp_montgomery_free(mp);
       return err;
    }
 
@@ -68,8 +68,8 @@ int ltc_ecc_mulmod(void *k, ecc_point *G, ecc_point *R, void *modulus, int map)
          for (j = 0; j < i; j++) {
              ltc_ecc_del_point(M[j]);
          }
-         mp_montgomery_free(mp);
          mp_clear(mu);
+         mp_montgomery_free(mp);
          return CRYPT_MEM;
       }
   }
@@ -162,6 +162,6 @@ done:
 #endif
 #endif
 /* $Source: /cvs/libtom/libtomcrypt/src/pk/ecc/ltc_ecc_mulmod_timing.c,v $ */
-/* $Revision: 1.10 $ */
-/* $Date: 2006/12/02 20:41:45 $ */
+/* $Revision: 1.11 $ */
+/* $Date: 2006/12/04 22:17:46 $ */
 

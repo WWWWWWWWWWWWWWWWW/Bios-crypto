@@ -4035,7 +4035,6 @@ The ECC key pointed to by \textit{key} is exported in public fashion to the arra
 section 4.3.6 of the standard.  It does not allow for the export of private keys.
 
 \subsection{ANSI X9.63 Import}
-
 The following function imports an ANSI X9.63 section 4.3.6 format public ECC key:
 
 \index{ecc\_ansi\_x963\_import()}
@@ -4045,14 +4044,23 @@ int ecc_ansi_x963_import(const unsigned char *in,
                                      ecc_key *key);
 \end{verbatim}
 This will import the key stored in the array pointed to by \textit{in} of length \textit{inlen} octets.  The imported key is stored in the ECC key pointed to by 
-\textit{key}.  The function will 
-
+\textit{key}.  The function will free any allocated memory upon error.
 
 \subsection{Extended ANSI X9.63 Import}
-%int ecc_ansi_x963_import_ex(const unsigned char *in, unsigned long inlen, ecc_key *key, ltc_ecc_set_type *dp);
+The following function allows the importing of an ANSI x9.63 section 4.3.6 format public ECC key using user specified domain parameters:
+
+\index{ecc\_ansi\_x963\_import\_ex()}
+\begin{verbatim}
+int ecc_ansi_x963_import_ex(const unsigned char *in, 
+                                  unsigned long  inlen, 
+                                        ecc_key *key, 
+                               ltc_ecc_set_type *dp);
+\end{verbatim}
+This will import the key stored in the array pointed to by \textit{in} of length \textit{inlen} octets using the domain parameters pointed to by \textit{dp}.  
+The imported key is stored in the ECC key pointed to by \textit{key}.  The function will free any allocated memory upon error.
 
 \subsection{ECC Shared Secret}
-Finally when you share your public key you can make a shared secret with the following.
+To construct a Diffie-Hellman shared secret with a private and public ECC key, use the following function:
 \index{ecc\_shared\_secret()}
 \begin{verbatim}
 int ecc_shared_secret(      ecc_key *private_key, 
@@ -4060,13 +4068,15 @@ int ecc_shared_secret(      ecc_key *private_key,
                       unsigned char *out, 
                       unsigned long *outlen);
 \end{verbatim}
-The \textit{private\_key} is your own key and \textit{public\_key} is the key the other user sent you.   Note that this function stores only the 
-$x$ co-ordinate of the shared elliptic point as described in ANSI X9.63 ECC--DH.  
+The \textit{private\_key} is typically the local private key, and \textit{public\_key} is the key the remote party has shared.   
+Note: this function stores only the $x$ co-ordinate of the shared elliptic point as described in ANSI X9.63 ECC--DH.  
 
 \mysection{ECC Diffie-Hellman Encryption}
-Similar to the RSA API there are two functions which encrypt and decrypt symmetric keys using the ECC public key
-algorithms.
+ECC--DH Encryption is performed by producing a random key, hashing it, and XOR'ing the digest against the plaintext.  It is not strictly ANSI X9.63 compliant
+but it is very similar.  It has been extended by using an ASN.1 sequence and hash object identifiers to allow portable usage.  The following function
+encrypts a short string (no longer than the message digest) using this technique:
 
+\subsection{ECC-DH Encryption}
 \index{ecc\_encrypt\_key()}
 \begin{verbatim}
 int ecc_encrypt_key(const unsigned char *in,
@@ -4079,15 +4089,15 @@ int ecc_encrypt_key(const unsigned char *in,
                                 ecc_key *key);
 \end{verbatim}
 
-Where \textit{in} is an input symmetric key of no more than 64 bytes.  This function creates a random public key
-and computes the hash of the shared secret.  The message digest is then XOR'ed against the symmetric key.  All of the required
-data is placed in \textit{out} by \textit{ecc\_encrypt\_key()}.   The hash chosen must produce a message digest at least as large
-as the symmetric key you are trying to share.
+As the name implies this function encrypts a (symmetric) key, and is not intended for encrypting long messages directly.  It will encrypt the 
+plaintext in the array pointed to by \textit{in} of length \textit{inlen} octets.  It uses the public ECC key pointed to by \textit{key}, and
+hash algorithm indexed by \textit{hash} to construct a shared secret which may be XOR'ed against the plaintext.  The ciphertext is stored in
+the output buffer pointed to by \textit{out} of length \textit{outlen} octets.
 
-The data is encrypted to the public ECC \textit{key} such that only the holder of the private key can decrypt the payload.  If you want
-to have multiple recipients you will have to call this function for each public ECC key you want to encrypt to.
+The data is encrypted to the public ECC \textit{key} such that only the holder of the private key can decrypt the payload.  To have multiple 
+recipients multiple call to this function for each public ECC key is required.
 
-
+\subsection{ECC-DH Decryption}
 \index{ecc\_decrypt\_key()}
 \begin{verbatim}
 int ecc_decrypt_key(const unsigned char *in, 
@@ -4098,11 +4108,10 @@ int ecc_decrypt_key(const unsigned char *in,
 \end{verbatim}
 
 This function will decrypt an encrypted payload.  The \textit{key} provided must be the private key corresponding to the public key
-used during encryption.  If the wrong key is provided the function won't specifically return an error code.  It is important
+used during encryption.  If the wrong key is provided the function will not specifically return an error code.  It is important
 to use some form of challenge response in that case (e.g. compute a MAC of a known string).
 
-\subsection{Encrypt Encryption Format}
-
+\subsection{ECC Encryption Format}
 The packet format for the encrypted keys is the following ASN.1 SEQUENCE:
 
 \begin{verbatim}
@@ -4114,9 +4123,14 @@ ECCEncrypt ::= SEQUENCE {
 }
 \end{verbatim}
 
-\mysection{ECC DSA Signatures}
+\mysection{EC DSA Signatures}
 
-There are also functions to sign and verify the hash of a message.
+There are also functions to sign and verify messages.  They use the ANSI X9.62 EC-DSA algorithm to generate and verify signatures in the
+ANSI X9.62 format.  
+
+\subsection{EC-DSA Signature Generation}
+To sign a message digest (hash) use the following function:
+
 \index{ecc\_sign\_hash()}
 \begin{verbatim}
 int ecc_sign_hash(const unsigned char *in,  
@@ -4128,10 +4142,11 @@ int ecc_sign_hash(const unsigned char *in,
                               ecc_key *key);
 \end{verbatim}
 
-This function will EC--DSA sign the message digest stored in the buffer \textit{in} of length inlen octets.  The signature
-will be stored in the \textit{out} buffer of length \textit{outlen}.  The function requires a properly seeded PRNG and 
+This function will EC--DSA sign the message digest stored in the array pointed to by \textit{in} of length \textit{inlen} octets.  The signature
+will be stored in the array pointed to by \textit{out} of length \textit{outlen} octets.  The function requires a properly seeded PRNG, and 
 the ECC \textit{key} provided must be a private key.
 
+\subsection{EC-DSA Signature Verification}
 \index{ecc\_verify\_hash()}
 \begin{verbatim}
 int ecc_verify_hash(const unsigned char *sig, 
@@ -4142,32 +4157,27 @@ int ecc_verify_hash(const unsigned char *sig,
                                 ecc_key *key);
 \end{verbatim}
 
-This function will verify the EC-DSA signature in \textit{sig} of length \textit{siglen} against the message digest \textit{hash}.  
-It will store a non--zero value in \textit{stat} if the signature is valid.  Note that the function will not return
-an error if the signature is invalid.  It will if the actual signature payload is an invalid format.  They ECC \textit{key}
-must be the public (or private) ECC key corresponding to the key that performed the signature.
+This function will verify the EC-DSA signature in the array pointed to by \textit{sig} of length \textit{siglen} octets, against the message digest 
+pointed to by the array \textit{hash} of length \textit{hashlen}.  It will store a non--zero value in \textit{stat} if the signature is valid.  Note: 
+the function will not return an error if the signature is invalid.  It will return an error, if the actual signature payload is an invalid format.  
+The ECC \textit{key} must be the public (or private) ECC key corresponding to the key that performed the signature.
 
 \subsection{Signature Format}
-The signature code is an implementation of X9.62 EC--DSA and the output is conformant for GF(p) curves.
+The signature code is an implementation of X9.62 EC--DSA, and the output is conformant for GF(p) curves.
 
 \mysection{ECC Keysizes}
-With ECC if you try and sign a hash that is bigger than your ECC key you can run into problems.  The math will still work
-and in effect the signature will still work.  With ECC keys the strength of the signature is limited by the size of
-the hash or the size of they key, whichever is smaller.  For example, if you sign with SHA256 and an ECC-192 key in effect
-you have 96-bits of security.  
+With ECC if you try to sign a hash that is bigger than your ECC key you can run into problems.  The math will still work, and in effect the signature will still 
+work.  With ECC keys the strength of the signature is limited by the size of the hash, or the size of they key, whichever is smaller.  For example, if you sign with 
+SHA256 and an ECC-192 key, you in effect have 96--bits of security.  
 
-The library will not warn you if you make this mistake so it is important to check yourself before using the 
-signatures.
+The library will not warn you if you make this mistake, so it is important to check yourself before using the signatures.
 
 \chapter{Digital Signature Algorithm}
 \mysection{Introduction}
 The Digital Signature Algorithm (or DSA) is a variant of the ElGamal Signature scheme which has been modified to 
-reduce the bandwidth of a signature.  For example, to have \textit{80-bits of security} with ElGamal you need a group of 
-order at least 1024-bits.  With DSA you need a group of order at least 160-bits.  By comparison the ElGamal signature
-would require at least 256 bytes where as the DSA signature would require only at least 40 bytes.  
-
-The API for the DSA is essentially the same as the other PK algorithms.  Except in the case of DSA no encryption or
-decryption routines are provided.  
+reduce the bandwidth of the signatures.  For example, to have \textit{80-bits of security} with ElGamal, you need a group with an order of at least 1024--bits.  
+With DSA, you need a group of order at least 160--bits.  By comparison, the ElGamal signature would require at least 256 bytes of storage, whereas the DSA signature 
+would require only at least 40 bytes.  
 
 \mysection{Key Format}
 Since no useful public standard for DSA key storage was presented to me during the course of this development I made my own ASN.1 SEQUENCE which I document
@@ -4204,15 +4214,17 @@ DSAPrivateKey ::= SEQUENCE {
 }
 \end{verbatim}
 
-The leading BIT STRING has a single bit in it which is zero for public keys and one for private keys.  This makes the structure uniquely decodable and easy
-to work with.
+The leading BIT STRING has a single bit in it which is zero for public keys and one for private keys.  This makes the structure uniquely decodable, 
+and easy to work with.
 
 \mysection{Key Generation}
 To make a DSA key you must call the following function
 \begin{verbatim}
-int dsa_make_key(prng_state *prng, int wprng, 
-                 int group_size, int modulus_size, 
-                 dsa_key *key);
+int dsa_make_key(prng_state *prng, 
+                        int  wprng, 
+                        int  group_size, 
+                        int  modulus_size, 
+                    dsa_key *key);
 \end{verbatim}
 The variable \textit{prng} is an active PRNG state and \textit{wprng} the index to the descriptor.  \textit{group\_size} and 
 \textit{modulus\_size} control the difficulty of forging a signature.  Both parameters are in bytes.  The larger the
@@ -4283,7 +4295,7 @@ and should not be used at all.  If the result is $stat = 1$ the DSA key is valid
 
 \mysection{Signatures}
 \subsection{Signature Generation}
-To generate a DSA signature call the following function
+To generate a DSA signature call the following function:
 
 \index{dsa\_sign\_hash()}
 \begin{verbatim}
@@ -4301,7 +4313,7 @@ of the signature in \textit{outlen}.  If the signature is longer than the size y
 is stored and the function returns an error code.  The DSA \textit{key} must be of the \textbf{PK\_PRIVATE} persuasion.
 
 \subsection{Signature Verification}
-To verify a hash created with that function use the following function
+To verify a hash created with that function use the following function:
 
 \index{dsa\_verify\_hash()} 
 \begin{verbatim}
@@ -4316,8 +4328,9 @@ Which will verify the data in \textit{hash} of length \textit{inlen} against the
 It will set \textit{stat} to $1$ if the signature is valid, otherwise it sets \textit{stat} to $0$.  
 
 \mysection{DSA Encrypt and Decrypt}
-As of version 1.07 the DSA keys can be used to encrypt and decrypt small payloads.  It works similar to the ECC encryption where
-a shared key is computed and the hash of the shared key XOR'ed against the plaintext forms the ciphertext.
+As of version 1.07, the DSA keys can be used to encrypt and decrypt small payloads.  It works similar to the ECC encryption where
+a shared key is computed, and the hash of the shared key XOR'ed against the plaintext forms the ciphertext.  The format used is functional port of
+the ECC encryption format to the DSA algorithm.
 
 \subsection{DSA Encryption}
 This function will encrypt a small payload with a recipients public DSA key.
@@ -4348,11 +4361,13 @@ int dsa_decrypt_key(const unsigned char *in,
                           unsigned long *outlen, 
                                 dsa_key *key);
 \end{verbatim}
-This will decrypt the ciphertext \textit{in} of length \textit{inlen} and store the original payload in \textit{out} of length \textit{outlen}.  The DSA \textit{key} must be a private key.
+This will decrypt the ciphertext \textit{in} of length \textit{inlen}, and store the original payload in \textit{out} of length \textit{outlen}.  
+The DSA \textit{key} must be a private key.
 
-\mysection{Import and Export}
+\mysection{DSA Key Import and Export}
 
-To export a DSA key so that it can be transported use the following function
+\subsection{DSA Key Export}
+To export a DSA key so that it can be transported use the following function:
 \index{dsa\_export()}
 \begin{verbatim}
 int dsa_export(unsigned char *out, 
@@ -4364,8 +4379,9 @@ This will export the DSA \textit{key} to the buffer \textit{out} and set the len
 initialized to the maximum buffer size).  The \textit{type} variable may be either \textbf{PK\_PRIVATE} or \textbf{PK\_PUBLIC}
 depending on whether you want to export a private or public copy of the DSA key.
 
+\subsection{DSA Key Import}
 To import an exported DSA key use the following function
-
+:
 \index{dsa\_import()}
 \begin{verbatim}
 int dsa_import(const unsigned char *in, 
@@ -6394,5 +6410,5 @@ Since the function is given the entire RSA key (for private keys only) CRT is po
 \end{document}
 
 % $Source: /cvs/libtom/libtomcrypt/crypt.tex,v $   
-% $Revision: 1.114 $   
-% $Date: 2006/12/01 00:29:44 $ 
+% $Revision: 1.116 $   
+% $Date: 2006/12/04 23:21:53 $ 

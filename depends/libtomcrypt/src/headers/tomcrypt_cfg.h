@@ -132,5 +132,5 @@ LTC_EXPORT int   LTC_CALL XSTRCMP(const char *s1, const char *s2);
 
 
 /* $Source: /cvs/libtom/libtomcrypt/src/headers/tomcrypt_cfg.h,v $ */
-/* $Revision: 1.18 $ */
-/* $Date: 2006/09/20 00:40:40 $ */
+/* $Revision: 1.19 $ */
+/* $Date: 2006/12/04 02:19:48 $ */

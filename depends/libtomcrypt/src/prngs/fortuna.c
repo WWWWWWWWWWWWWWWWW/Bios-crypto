@@ -143,8 +143,8 @@ int fortuna_start(prng_state *prng)
           return err;
        }
    }
-   prng->fortuna.pool_idx = prng->fortuna.pool0_len = prng->fortuna.reset_cnt = 
-   prng->fortuna.wd = 0;
+   prng->fortuna.pool_idx = prng->fortuna.pool0_len = prng->fortuna.wd = 0;
+   prng->fortuna.reset_cnt = 0;
 
    /* reset bufs */
    zeromem(prng->fortuna.K, 32);
@@ -186,7 +186,7 @@ int fortuna_add_entropy(const unsigned char *in, unsigned long inlen, prng_state
 
    /* add s || length(in) || in to pool[pool_idx] */
    tmp[0] = 0;
-   tmp[1] = inlen;
+   tmp[1] = (unsigned char)inlen;
    if ((err = sha256_process(&prng->fortuna.pool[prng->fortuna.pool_idx], tmp, 2)) != CRYPT_OK) {
       LTC_MUTEX_UNLOCK(&prng->fortuna.prng_lock);
       return err;
@@ -423,5 +423,5 @@ int fortuna_test(void)
 
 
 /* $Source: /cvs/libtom/libtomcrypt/src/prngs/fortuna.c,v $ */
-/* $Revision: 1.11 $ */
-/* $Date: 2006/11/01 09:28:17 $ */
+/* $Revision: 1.12 $ */
+/* $Date: 2006/12/04 21:34:03 $ */

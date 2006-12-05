@@ -86,6 +86,7 @@ int rsa_verify_hash_ex(const unsigned char *sig,      unsigned long siglen,
 
   /* make sure the output is the right size */
   if (x != siglen) {
+     XFREE(tmpbuf);
      return CRYPT_INVALID_PACKET;
   }
 
@@ -162,5 +163,5 @@ bail_2:
 #endif /* MRSA */
 
 /* $Source: /cvs/libtom/libtomcrypt/src/pk/rsa/rsa_verify_hash.c,v $ */
-/* $Revision: 1.10 $ */
-/* $Date: 2006/11/09 23:39:21 $ */
+/* $Revision: 1.11 $ */
+/* $Date: 2006/12/04 03:09:28 $ */

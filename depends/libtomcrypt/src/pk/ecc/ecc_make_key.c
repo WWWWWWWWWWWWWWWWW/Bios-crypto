@@ -55,9 +55,9 @@ int ecc_make_key_ex(prng_state *prng, int wprng, ecc_key *key, const ltc_ecc_set
    unsigned char *buf;
    int            keysize;
 
-   LTC_ARGCHK(key != NULL);
+   LTC_ARGCHK(key         != NULL);
    LTC_ARGCHK(ltc_mp.name != NULL);
-   LTC_ARGCHK(dp != NULL);
+   LTC_ARGCHK(dp          != NULL);
 
    /* good prng? */
    if ((err = prng_is_valid(wprng)) != CRYPT_OK) {
@@ -65,8 +65,8 @@ int ecc_make_key_ex(prng_state *prng, int wprng, ecc_key *key, const ltc_ecc_set
    }
 
    key->idx = -1;
-   key->dp = dp;
-   keysize = dp->size;
+   key->dp  = dp;
+   keysize  = dp->size;
 
    /* allocate ram */
    base = NULL;
@@ -78,48 +78,48 @@ int ecc_make_key_ex(prng_state *prng, int wprng, ecc_key *key, const ltc_ecc_set
    /* make up random string */
    if (prng_descriptor[wprng].read(buf, (unsigned long)keysize, prng) != (unsigned long)keysize) {
       err = CRYPT_ERROR_READPRNG;
-      goto LBL_ERR2;
+      goto ERR_BUF;
    }
 
    /* setup the key variables */
    if ((err = mp_init_multi(&key->pubkey.x, &key->pubkey.y, &key->pubkey.z, &key->k, &prime, NULL)) != CRYPT_OK) {
-      goto done;
+      goto ERR_BUF;
    }
    base = ltc_ecc_new_point();
    if (base == NULL) {
-      mp_clear_multi(key->pubkey.x, key->pubkey.y, key->pubkey.z, key->k, prime, NULL);
       err = CRYPT_MEM;
-      goto done;
+      goto errkey;
    }
 
    /* read in the specs for this key */
-   if ((err = mp_read_radix(prime, (char *)key->dp->prime, 16)) != CRYPT_OK)                    { goto done; }
-   if ((err = mp_read_radix(base->x, (char *)key->dp->Gx, 16)) != CRYPT_OK)                     { goto done; }
-   if ((err = mp_read_radix(base->y, (char *)key->dp->Gy, 16)) != CRYPT_OK)                     { goto done; }
-   mp_set(base->z, 1);
-   if ((err = mp_read_unsigned_bin(key->k, (unsigned char *)buf, keysize)) != CRYPT_OK)         { goto done; }
+   if ((err = mp_read_radix(prime,   (char *)key->dp->prime, 16)) != CRYPT_OK)                  { goto errkey; }
+   if ((err = mp_read_radix(base->x, (char *)key->dp->Gx, 16)) != CRYPT_OK)                     { goto errkey; }
+   if ((err = mp_read_radix(base->y, (char *)key->dp->Gy, 16)) != CRYPT_OK)                     { goto errkey; }
+   if ((err = mp_set(base->z, 1)) != CRYPT_OK)                                                  { goto errkey; }
+   if ((err = mp_read_unsigned_bin(key->k, (unsigned char *)buf, keysize)) != CRYPT_OK)         { goto errkey; }
 
    /* make the public key */
-   if ((err = ltc_mp.ecc_ptmul(key->k, base, &key->pubkey, prime, 1)) != CRYPT_OK)              { goto done; }
+   if ((err = ltc_mp.ecc_ptmul(key->k, base, &key->pubkey, prime, 1)) != CRYPT_OK)              { goto errkey; }
    key->type = PK_PRIVATE;
 
    /* free up ram */
    err = CRYPT_OK;
-done:
+   goto cleanup;
+errkey:
+   mp_clear_multi(key->pubkey.x, key->pubkey.y, key->pubkey.z, key->k, NULL);
+cleanup:
    ltc_ecc_del_point(base);
    mp_clear(prime);
-LBL_ERR2:
+ERR_BUF:
 #ifdef LTC_CLEAN_STACK
    zeromem(buf, ECC_MAXSIZE);
 #endif
-
    XFREE(buf);
-
    return err;
 }
 
 #endif
 /* $Source: /cvs/libtom/libtomcrypt/src/pk/ecc/ecc_make_key.c,v $ */
-/* $Revision: 1.7 $ */
-/* $Date: 2006/11/21 00:10:18 $ */
+/* $Revision: 1.9 $ */
+/* $Date: 2006/12/04 02:50:11 $ */
 

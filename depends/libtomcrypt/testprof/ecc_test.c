@@ -58,9 +58,8 @@ int ecc_test_shamir(void)
        DO(mp_read_radix(modulus, ltc_ecc_sets[z].prime, 16));
        DO(mp_montgomery_setup(modulus, &mp));
 
-       /* do 1k random tests */
-       for (y = 0; y < 1000; y++) {
-          if (!(y % 250)) { printf("."); fflush(stdout); }
+       /* do 100 random tests */
+       for (y = 0; y < 100; y++) {
           /* pick a random r1, r2 */
           LTC_ARGCHK(yarrow_read(buf, sizes[x], &yarrow_prng) == sizes[x]);
           DO(mp_read_unsigned_bin(rA, buf, sizes[x]));
@@ -249,5 +248,5 @@ int ecc_tests(void)
 #endif
 
 /* $Source: /cvs/libtom/libtomcrypt/testprof/ecc_test.c,v $ */
-/* $Revision: 1.20 $ */
-/* $Date: 2006/12/03 14:39:15 $ */
+/* $Revision: 1.21 $ */
+/* $Date: 2006/12/04 03:21:03 $ */

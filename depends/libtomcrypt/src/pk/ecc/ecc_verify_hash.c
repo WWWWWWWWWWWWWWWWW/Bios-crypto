@@ -149,12 +149,12 @@ int ecc_verify_hash(const unsigned char *sig,  unsigned long siglen,
    /* clear up and return */
    err = CRYPT_OK;
 error:
-   ltc_ecc_del_point(mG);
-   ltc_ecc_del_point(mQ);
-   mp_clear_multi(r, s, v, w, u1, u2, p, e, m, NULL);
    if (mp != NULL) { 
       mp_montgomery_free(mp);
    }
+   ltc_ecc_del_point(mQ);
+   ltc_ecc_del_point(mG);
+   mp_clear_multi(m, e, p, u2, u1, w, v, s, r, NULL);
    return err;
 }
 

@@ -99,7 +99,7 @@ int rsa_make_key(prng_state *prng, int wprng, int size, long e, rsa_key *key)
    err       = CRYPT_OK;
    goto cleanup;
 errkey:
-   mp_clear_multi(key->d, key->e, key->N, key->dQ, key->dP, key->qP, key->p, key->q, NULL);
+   mp_clear_multi(key->q, key->p, key->qP, key->dP, key->dQ, key->N, key->d, key->e, NULL);
 cleanup:
    mp_clear_multi(tmp3, tmp2, tmp1, p, q, NULL);
    return err;

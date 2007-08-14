@@ -64,7 +64,7 @@ int ltc_ecc_map(ecc_point *P, void *modulus, void *mp)
 
    err = CRYPT_OK;
 done:
-   mp_clear_multi(t1, t2, NULL);
+   mp_clear_multi(t2, t1, NULL);
    return err;
 }
 

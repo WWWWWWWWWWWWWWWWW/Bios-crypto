@@ -58,8 +58,8 @@ int ltc_ecc_mulmod(void *k, ecc_point *G, ecc_point *R, void *modulus, int map)
       return err;
    }
    if ((err = mp_montgomery_normalization(mu, modulus)) != CRYPT_OK) {
-      mp_montgomery_free(mp);
       mp_clear(mu);
+      mp_montgomery_free(mp);
       return err;
    }
   
@@ -67,11 +67,11 @@ int ltc_ecc_mulmod(void *k, ecc_point *G, ecc_point *R, void *modulus, int map)
   for (i = 0; i < 8; i++) {
       M[i] = ltc_ecc_new_point();
       if (M[i] == NULL) {
-         for (j = 0; j < i; j++) {
-             ltc_ecc_del_point(M[j]);
+         while (--i >= 0) {
+             ltc_ecc_del_point(M[i]);
          }
-         mp_montgomery_free(mp);
          mp_clear(mu);
+         mp_montgomery_free(mp);
          return CRYPT_MEM;
       }
   }
@@ -90,8 +90,6 @@ int ltc_ecc_mulmod(void *k, ecc_point *G, ecc_point *R, void *modulus, int map)
       if ((err = mp_mulmod(G->y, mu, modulus, tG->y)) != CRYPT_OK)                   { goto done; }
       if ((err = mp_mulmod(G->z, mu, modulus, tG->z)) != CRYPT_OK)                   { goto done; }
    }
-   mp_clear(mu);
-   mu = NULL;
    
    /* calc the M tab, which holds kG for k==8..15 */
    /* M[0] == 8G */
@@ -200,14 +198,15 @@ int ltc_ecc_mulmod(void *k, ecc_point *G, ecc_point *R, void *modulus, int map)
       err = CRYPT_OK;
    }
 done:
-   if (mu != NULL) {
-      mp_clear(mu);
-   }
-   mp_montgomery_free(mp);
    ltc_ecc_del_point(tG);
-   for (i = 0; i < 8; i++) {
+   for (i = 7; i >= 0; i--) {
        ltc_ecc_del_point(M[i]);
    }
+   if (mu != NULL) {
+      mp_clear(mu);
+      mu = NULL;
+   }
+   mp_montgomery_free(mp);
    return err;
 }
 

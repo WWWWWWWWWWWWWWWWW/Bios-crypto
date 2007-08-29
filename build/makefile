@@ -4,7 +4,7 @@ CFLAGS += -Os -m32 -I../depends/libtomcrypt/src/headers -I../depends/tomsfastmat
 
 VPATH = ..
 
-CLI = makekey sign verify
+CLI = makekey sign verify sig01
 
 default: bios_crypto.img $(CLI)
 
@@ -28,10 +28,6 @@ bios_side: bios_side.o stack_alloc.o ../depends/libtomcrypt.a ../depends/libtfm.
 cli_tool: cli_tool.o ../depends/libtomcrypt_cli.a ../depends/libtfm_cli.a
 	$(CC) $(CFLAGS) cli_tool.o ../depends/libtomcrypt_cli.a ../depends/libtfm_cli.a -o $@ 
 
-test: test.o ../depends/libtomcrypt_cli.a ../depends/libtfm_cli.a
-	$(CC) $(CFLAGS) test.o ../depends/libtomcrypt_cli.a ../depends/libtfm_cli.a -o $@ 
-
-
 makekey: makekey.o ../depends/libtomcrypt_cli.a ../depends/libtfm_cli.a
 	$(CC) $(CFLAGS) makekey.o ../depends/libtomcrypt_cli.a ../depends/libtfm_cli.a -o $@ 
 
@@ -43,9 +39,6 @@ sig01: sig01.o ../depends/libtomcrypt_cli.a ../depends/libtfm_cli.a
 
 verify: verify.o ../depends/libtomcrypt_cli.a ../depends/libtfm_cli.a
 	$(CC) $(CFLAGS) verify.o ../depends/libtomcrypt_cli.a ../depends/libtfm_cli.a -o $@ 
-
-cli_tool_ecc256: cli_tool_ecc256.o ../depends/libtomcrypt_cli.a ../depends/libtfm_cli.a
-	$(CC) $(CFLAGS) cli_tool_ecc256.o ../depends/libtomcrypt_cli.a ../depends/libtfm_cli.a -o $@ 
 
 ../depends/libtomcrypt_cli.a:
 	cd ../depends/libtomcrypt ; CFLAGS="-DTFM_DESC ${CFLAGS} -I../tomsfastmath/ " make ; cp libtomcrypt.a ../libtomcrypt_cli.a ; make clean

@@ -1,12 +1,12 @@
 #!/bin/sh
 
 # Make a signed OS bundle
-# Usage: sign-os keyname infile outfile
+# Usage: sign-os keyname infile outfile.zip
 # Examples:
 # sign-os  olpc_os_key  vmlinuz  runos.zip
 # sign-os  olpc_os_key  initrd   runrd.zip
 
-[ $# != 3 ] && echo Usage: $0 keyname infile outfile && exit 1
+[ $# != 3 ] && echo Usage: $0 keyname infile outfile.zip && exit 1
 
 keyname=$1
 infile=$2

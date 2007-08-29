@@ -20,7 +20,7 @@ void run_cmd(int res, int line, char *file, char *cmd)
 
 
 /* --- BIOS SUPPORT ROUTINES --- */
-int bios_strcmp(const char *s1, const char *s2)
+int strcmp(const char *s1, const char *s2)
 {
    while (*s1 || *s2) {
       if (*s1 > *s2) return 1;
@@ -30,7 +30,7 @@ int bios_strcmp(const char *s1, const char *s2)
    return 0;
 }
 
-int bios_memcmp(const void *s1, const void *s2, size_t len)
+int memcmp(const void *s1, const void *s2, size_t len)
 {
    unsigned char *t1, *t2;
    t1 = (unsigned char*)s1; t2 = (unsigned char*)s2;
@@ -42,7 +42,7 @@ int bios_memcmp(const void *s1, const void *s2, size_t len)
    return 0;
 }
 
-void *bios_memcpy(void *dest, const void *src, size_t len)
+void *memcpy(void *dest, const void *src, size_t len)
 {
    unsigned char *d, *s;
    d = dest; s = (unsigned char*)src;
@@ -52,7 +52,7 @@ void *bios_memcpy(void *dest, const void *src, size_t len)
    return dest;
 }
 
-void *bios_memset(void *dest, int c, size_t len)
+void *memset(void *dest, int c, size_t len)
 {
    unsigned char *d;
    d = dest;
@@ -63,166 +63,11 @@ void *bios_memset(void *dest, int c, size_t len)
 }
 
 /* required by ASN.1 SET type, but we're not using it ... */
-void bios_qsort(void *base, size_t nmemb, size_t size, int(*compar)(const void *, const void *))
+void qsort(void *base, size_t nmemb, size_t size, int(*compar)(const void *, const void *))
 {
 }
-
-typedef struct _heap_node {
-   void       *base;
-   size_t      len;
-   int         free;
-} heap_node;
-
-#define NODES 128
-static heap_node heap[NODES];
-
-/** Setup the library 
-  @param base      The base of free memory
-  @param s         The size in octets (should be at least 64KB)
-*/
-void bios_heap_start(void *base, size_t s)
-{
-   bios_memset(heap, 0, sizeof(heap));
-   heap[0].base = base;
-   heap[0].len  = s;
-   heap[0].free = 1;
-   register_hash(&sha512_desc);
-   register_hash(&whirlpool_desc);
-   ltc_mp = tfm_desc;
-}
-
-void *bios_calloc(size_t p, size_t q)
-{
-   int x, y;
-   size_t r;
-
-   /* find a node free that is p*q in size */
-   r = p * q;
-   for (x = 0; x < NODES; x++) {
-      if (heap[x].base != NULL && heap[x].free == 1 && heap[x].len >= r) {
-         break;
-      }
-   }
-   /* if x == NODES we have no node */
-   if (x == NODES) { 
-#ifdef DEBUG 
-   printk("Tried to allocate %lu bytes\n", r);
-   check_heap();
-#endif
-      return NULL;
-   }
-
-   /* now we need a node where base == NULL */   
-   for (y = 0; y < NODES; y++) {
-      if (x != y && heap[y].base == NULL) {
-         break;
-      }
-   }
-   /* no room to split a node, can't allocate mem */
-   if (y == NODES) { 
-#ifdef DEBUG 
-   printk("Tried to allocate %lu bytes\n", r);
-   check_heap();
-#endif
-      return NULL;
-   }
-
-   /* now split node x into two parts of len-r, and r bytes, the former is free, the latter is not */
-   heap[x].len  = heap[x].len - r;
-   heap[y].base = heap[x].base + heap[x].len;
-   heap[y].len  = r;
-   heap[y].free = 0;
-
-   return bios_memset(heap[y].base, 0, heap[y].len);
-}
-
-void *bios_malloc(size_t n)
-{
-   return bios_calloc(1, n);
-}
-
-void bios_free(void *p)
-{
-   int x, y, t;
-
-   /* find it and mark it free */
-   for (x = 0; x < NODES; x++) {
-      if (heap[x].base == p) break;
-   }
-   if (x == NODES) {
-      // SHOULD NOT GET HERE! 
-      printk("invalid free...\n"); for(;;);
-   }
-
-   /* join x if possible */
-   for (y = 0; y < NODES; y++) {
-      if (y != x && heap[y].free == 1 && (heap[y].base + heap[y].len) == heap[x].base) {
-         /* heap[y] precedes heap x, merge them */
-         heap[y].len += heap[x].len;
-         break;
-      }
-   }
-
-   if (y != NODES) {
-      /* heap[x] was merged, zero it */
-      heap[x].free = 0;
-      heap[x].len  = 0;
-      heap[x].base = NULL;
-   } else {
-      /* could not merge heap[x] ... so sad */
-      heap[x].free = 1;
-   }
-
-   /* defrag memory (kids: don't try this at home) */
-   do {
-     t = 0;
-     for (x = 0; x < NODES; x++) {
-        for (y = 0; y < NODES; y++) {
-            if (x != y && heap[x].base != NULL && heap[y].base != NULL && heap[x].free == 1 && heap[y].free == 1) {
-              if (heap[x].base + heap[x].len == heap[y].base) {
-                 /* join y to x */
-                 t = 1;
-                 heap[x].len += heap[y].len;
-                 heap[y].len  = 0;
-                 heap[y].base = NULL;
-                 heap[y].free = 0;
-              }
-           }
-      }
-    }
-  } while (t == 1);
-}
-
-void *bios_realloc(void *p, size_t r)
-{
-   void *tmp;
-   tmp = bios_malloc(r);
-   if (tmp == NULL) return NULL;
-   XMEMCPY(tmp, p, r);
-   bios_free(p);
-   return tmp;
-}
-
-#ifdef DEBUG
-void check_heap(void)
-{
-   int x;
-   size_t heapleft;
-
-   for (x = heapleft = 0; x < NODES; x++) {
-      if (heap[x].base != NULL || heap[x].len != 0) {
-         printk("Node %d is {%p, %lu, %d}\n", x, heap[x].base, heap[x].len, heap[x].free);
-      }
-      if (heap[x].free) heapleft += heap[x].len;
-   }
-   printk("Heapleft == %lu bytes\n", heapleft);
-}
-#endif
-
 
 /* --- END OF BIOS SUPPORT ROUTINES --- */
-
-
 
 
 /** Verify a signature 
@@ -242,10 +87,14 @@ int verify_data(
    const unsigned char *sigdata,
          unsigned long  sigdatalen)
 {
+#ifdef USE_ECC
    ecc_key ecckey;
+   unsigned char eccbuf[1024];
+   unsigned long ecclen;
+#endif
    rsa_key rsakey;
-   unsigned char rsabuf[2048], eccbuf[1024], md[2][MAXBLOCKSIZE], sigs[4][512];
-   unsigned long rsalen, ecclen, mdlen[2], siglen[4];
+   unsigned char rsabuf[2048], md[2][MAXBLOCKSIZE], sigs[4][512];
+   unsigned long rsalen, mdlen[2], siglen[4];
    ltc_asn1_list key[2], sig[4];
    int           stat;
 
@@ -257,14 +106,18 @@ int verify_data(
 
    /* build ASN1 list */
    LTC_SET_ASN1(key, 0, LTC_ASN1_OCTET_STRING, rsabuf, sizeof(rsabuf));
+#ifdef USE_ECC
    LTC_SET_ASN1(key, 1, LTC_ASN1_OCTET_STRING, eccbuf, sizeof(eccbuf));
+#endif
 
    /* decode ASN1 */
    DO(der_decode_sequence(keydata, keydatalen, key, 2));
 
    /* now try to import the RSA/ECC keys */
    DO(rsa_import(key[0].data, key[0].size, &rsakey));
+#ifdef USE_ECC
    DO(ecc_import(key[1].data, key[1].size, &ecckey));
+#endif
 
    /* build list */
    LTC_SET_ASN1(sig, 0, LTC_ASN1_OCTET_STRING, sigs[0], sizeof(sigs[0]));
@@ -288,6 +141,7 @@ int verify_data(
      DO(rsa_verify_hash(sig[1].data, sig[1].size, md[1], mdlen[1], find_hash("sha512"), 8, &stat, &rsakey));
      if (stat == 0) { printk( "SIGNATURE FAILED\n"); return -1; }  
 
+#ifdef USE_ECC
      /* ecc+whirl */
      printk( "\tECC+WHIRLPOOL\n");
      DO(ecc_verify_hash(sig[2].data, sig[2].size, md[0], mdlen[0], &stat, &ecckey));
@@ -297,11 +151,14 @@ int verify_data(
      printk( "\tECC+SHA512\n");
      DO(ecc_verify_hash(sig[3].data, sig[3].size, md[1], mdlen[1], &stat, &ecckey));
      if (stat == 0) { printk( "SIGNATURE FAILED\n"); return -1; }  
+#endif
  
   /* done */
      printk( "Signatures valid\n");
  
+#ifdef USE_ECC
    ecc_free(&ecckey);
+#endif
    rsa_free(&rsakey);
    return 0;
 }
@@ -396,9 +253,14 @@ const unsigned char sigdata[] = {
 0x06, 0x88, 0x64, 0xcc, 0x2d, 
 };
 
+#define HEAP_SIZE 0x40000
+char heap_mem[HEAP_SIZE];
 int main(void)
 {
-   bios_heap_start(malloc(64*1024), 64*1024);
+   heap_start(heap_mem, HEAP_SIZE);
+   register_hash(&sha512_desc);
+   register_hash(&whirlpool_desc);
+   ltc_mp = tfm_desc;
    
    /* you would call this with other parameters, but I'm lazy and only made one signature/keypair
     * called it multiple times to check for leaks 
@@ -406,6 +268,7 @@ int main(void)
    if (verify_data(filedata, sizeof(filedata), keydata, sizeof(keydata), sigdata, sizeof(sigdata)) != 0) {
      printk("verify_data == -1, uh oh\n") return 0;
    }
+#ifdef NOTDEF
    if (verify_data(filedata, sizeof(filedata), keydata, sizeof(keydata), sigdata, sizeof(sigdata)) != 0) {
      printk("verify_data == -1, uh oh\n") return 0;
    }
@@ -415,6 +278,7 @@ int main(void)
    if (verify_data(filedata, sizeof(filedata), keydata, sizeof(keydata), sigdata, sizeof(sigdata)) != 0) {
      printk("verify_data == -1, uh oh\n") return 0;
    }
+#endif
    check_heap();
    return 0;
 }

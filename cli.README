@@ -36,7 +36,7 @@ ECCKey is in a format specified in the LibTomCrypt library.
 Data Signing
 ------------
 
-cli_tool -sign filename keyname
+cli_tool -sign keyname filename
 
 Generates a signature called filename.sig using the private key named by keyname.  It uses
 both RSA and ECC, as well as both Whirlpool and SHA-512 to produce four signatures of the

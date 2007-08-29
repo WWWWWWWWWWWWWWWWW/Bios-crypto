@@ -27,6 +27,13 @@ Sign a firmware file:
 
 Lower level tools:
 
+Calculate a future date in the stipulated format:
+
+  Usage:    ./futureday.py days
+  Example:  ./futureday.py 5
+
+  Output goes to stdout
+
 Create a sig01-format signature blob:
 
   Usage:    ./sig01 hashname keyname infile

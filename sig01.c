@@ -22,8 +22,8 @@ int main(int argc, char **argv)
    FILE          *infile;
    int i;
 
-   if (argc < 4) { 
-     fprintf(stderr, "%s: hashname key_file_name signed_file_name\n", argv[0]);
+   if (argc < 3) { 
+     fprintf(stderr, "Usage: %s hashname key_file_name [signed_file_name]\n", argv[0]);
      return EXIT_FAILURE;
    }
 
@@ -38,7 +38,11 @@ int main(int argc, char **argv)
 
    /* get hashes of file */
    mdlen = sizeof(md);
-   DO(hash_file(find_hash(argv[1]), argv[3], md, &mdlen));
+   if (argc > 3) {
+     DO(hash_file(find_hash(argv[1]), argv[3], md, &mdlen));
+   } else {
+     DO(hash_filehandle(find_hash(argv[1]), stdin, md, &mdlen));
+   }
 
    /* read keyblob and import key from it */
    strncpy(fname, argv[2], 256);
@@ -52,8 +56,6 @@ int main(int argc, char **argv)
    DO(rsa_import(buf, buflen, &rsakey));
 
    /* now sign the hashes */
-   fprintf(stderr, "Generating signature...RSA+%s\n", hashname);
-
    siglen = sizeof(sig);
    DO(rsa_sign_hash(md, mdlen, sig, &siglen, NULL, find_prng("sprng"), find_hash(hashname), 8, &rsakey));
 

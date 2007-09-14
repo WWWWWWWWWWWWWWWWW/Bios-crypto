@@ -18,12 +18,12 @@ char heap_mem[HEAP_SIZE];
 */
 int verify_data(
    char  *hashname,
-   const unsigned char *filedata,
-         unsigned long  filedatalen,
-   const unsigned char *keydata,
          unsigned long  keydatalen,
+   const unsigned char *keydata,
+         unsigned long  sigdatalen,
    const unsigned char *sigdata,
-         unsigned long  sigdatalen)
+         unsigned long  filedatalen,
+   const unsigned char *filedata)
 {
    rsa_key rsakey;
    unsigned char rsabuf[2048], md[MAXBLOCKSIZE];

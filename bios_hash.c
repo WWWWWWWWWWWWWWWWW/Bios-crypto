@@ -4,7 +4,8 @@
 #define HEAP_SIZE 64*1024
 char heap_mem[HEAP_SIZE];
 
-/** Compute a whirlpool hash
+/** Compute a hash
+   @param hashname	[in] The name of the hash (sha256, sha512, rmd160, whirl)
    @param filedata	[in] The contents of the file being verified
    @param filedatalen	[in] The length of the file in octets
    @param resultdata	[in] Where to put the result
@@ -24,6 +25,7 @@ int bios_hash(
    heap_start(heap_mem, HEAP_SIZE);
    register_hash(&sha256_desc);
    register_hash(&sha512_desc);
+   register_hash(&rmd160_desc);
    register_hash(&whirlpool_desc);
 
    /* get hashes of filedata */

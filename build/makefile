@@ -55,6 +55,14 @@ verify: verify.o ../depends/libtomcrypt.a ../depends/libtfm.a
 sig01: sig01.o ../depends/libtomcrypt.a ../depends/libtfm.a
 	$(CC) $(CFLAGS) sig01.o ../depends/libtomcrypt.a ../depends/libtfm.a -o $@ 
 
+# python binding for verify functionality.
+pyverify.c: pyverify.pyx pyverify.h
+	pyrexc -o $@ $<
+pyverify.o: pyverify.c
+	gcc -c -fPIC -I/usr/include/python2.5/ -I../depends/libtomcrypt/src/headers -I.. $<
+pyverify.so: pyverify.o ../depends/libtomcrypt.a ../depends/libtfm.a
+	gcc -shared $^ -o $@
+
 # With ARGTYPE=1, LTC_ARGCHK() is equivalent to assert(), which is a reasonable
 # behavior for this program.  The default value - ARGTYPE=0 - results in LTC_ARGTYPE()
 # calling crypt_argchk(), which is not defined in the smaller (non-_cli) libraries.

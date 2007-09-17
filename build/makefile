@@ -57,11 +57,11 @@ sig01: sig01.o ../depends/libtomcrypt.a ../depends/libtfm.a
 
 # python binding for verify functionality.
 pyverify.c: pyverify.pyx pyverify.h
-	pyrexc $<
+	pyrexc -o $@ $<
 pyverify.o: pyverify.c
-	gcc -c -fPIC -I/usr/include/python2.5/ -I../depends/libtomcrypt/src/headers $<
-pyverify.so: pyverify.o
-	gcc -shared $< ../depends/libtomcrypt.a ../depends/libtfm.a -o $@
+	gcc -c -fPIC -I/usr/include/python2.5/ -I../depends/libtomcrypt/src/headers -I.. $<
+pyverify.so: pyverify.o ../depends/libtomcrypt.a ../depends/libtfm.a
+	gcc -shared $^ -o $@
 
 # With ARGTYPE=1, LTC_ARGCHK() is equivalent to assert(), which is a reasonable
 # behavior for this program.  The default value - ARGTYPE=0 - results in LTC_ARGTYPE()

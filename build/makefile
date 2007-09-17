@@ -1,6 +1,6 @@
 LIBDIRS=-L/usr/lib/gcc/i486-linux-gnu/4.1/
 
-CFLAGS += -Os -m32 -I../depends/libtomcrypt/src/headers -I../depends/tomsfastmath
+CFLAGS += -Os -I../depends/libtomcrypt/src/headers -I../depends/tomsfastmath
 
 VPATH = ..
 
@@ -30,6 +30,14 @@ bios_hash.elf: bios_hash.o stack_alloc.o bios_string.o ../depends/libtomcrypt.a 
 bios_side: bios_side.o stack_alloc.o ../depends/libtomcrypt.a ../depends/libtfm.a
 	$(CC) $(CFLAGS) bios_side.o stack_alloc.o ../depends/libtomcrypt.a ../depends/libtfm.a -o $@
 
+bios_verify.o: bios_verify.c
+	$(CC) -c $(CFLAGS) -m32 -DARGTYPE=1 $< -o $@
+
+bios_hash.o: bios_hash.c
+	$(CC) -c $(CFLAGS) -m32 -DARGTYPE=1 $< -o $@
+
+bios_side.o: bios_side.c
+	$(CC) -c $(CFLAGS) -m32 -DARGTYPE=1 $< -o $@
 
 # We build these individual command lines tool to have smaller binaries
 # by linking to the non-_cli versions of the libraries, thus reducing their

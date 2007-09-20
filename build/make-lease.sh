@@ -18,4 +18,4 @@ else
 fi
 
 expire=`./futureday.py $days`
-echo act01: $sn $expire `echo -n $sn:$uu:$expire | ./sig01 sha256 os` >$outfile
+echo act01: $sn K $expire `echo -n $sn:$uu:K:$expire | ./sig01 sha256 lease` >$outfile

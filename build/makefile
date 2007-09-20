@@ -4,7 +4,7 @@ CFLAGS += -Os -I../depends/libtomcrypt/src/headers -I../depends/tomsfastmath
 
 VPATH = ..
 
-CLI = makekey sign verify sig01
+CLI = makekey sign verify sig01 key01
 
 default: bios_verify.img $(CLI)
 
@@ -55,6 +55,9 @@ verify: verify.o ../depends/libtomcrypt.a ../depends/libtfm.a
 sig01: sig01.o ../depends/libtomcrypt.a ../depends/libtfm.a
 	$(CC) $(CFLAGS) sig01.o ../depends/libtomcrypt.a ../depends/libtfm.a -o $@ 
 
+key01: key01.o ../depends/libtomcrypt.a ../depends/libtfm.a
+	$(CC) $(CFLAGS) key01.o ../depends/libtomcrypt.a ../depends/libtfm.a -o $@ 
+
 # python binding for verify functionality.
 pyverify.c: pyverify.pyx pyverify.h
 	pyrexc -o $@ $<
@@ -77,6 +80,9 @@ verify.o: verify.c
 	$(CC) -c $(CFLAGS) -DARGTYPE=1 $< -o $@
 
 sig01.o: sig01.c
+	$(CC) -c $(CFLAGS) -DARGTYPE=1 $< -o $@
+
+key01.o: key01.c
 	$(CC) -c $(CFLAGS) -DARGTYPE=1 $< -o $@
 
 # The non-_cli versions of the libraries are used by the firmware crypto code and

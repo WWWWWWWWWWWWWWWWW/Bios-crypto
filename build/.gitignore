@@ -1,8 +1,10 @@
-/a.out
+*~
+/*.dis
 /*.elf
 /*.img
 /*.o
-/*.dis
-/*.sig
-/*.public
 /*.private
+/*.public
+/*.sig
+/a.out
+/*.zip

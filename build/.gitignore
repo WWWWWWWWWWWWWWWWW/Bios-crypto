@@ -1,4 +1,4 @@
-*~
+/*~
 /*.dis
 /*.elf
 /*.img
@@ -8,4 +8,6 @@
 /*.sig
 /*.zip
 /a.out
+/hashfs
+/makekey
 /sig01

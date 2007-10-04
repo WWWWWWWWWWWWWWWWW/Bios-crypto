@@ -58,6 +58,10 @@ sig01: sig01.o ../depends/libtomcrypt.a ../depends/libtfm.a
 key01: key01.o ../depends/libtomcrypt.a ../depends/libtfm.a
 	$(CC) $(CFLAGS) key01.o ../depends/libtomcrypt.a ../depends/libtfm.a -o $@ 
 
+hashfs: hashfs.o ../depends/libtomcrypt.a ../depends/libtfm.a
+	$(CC) $(CFLAGS) hashfs.o ../depends/libtomcrypt.a ../depends/libtfm.a -o $@ 
+
+
 # python binding for verify functionality.
 pyverify.c: pyverify.pyx pyverify.h
 	pyrexc -o $@ $<
@@ -69,6 +73,9 @@ pyverify.so: pyverify.o ../depends/libtomcrypt.a ../depends/libtfm.a
 # With ARGTYPE=1, LTC_ARGCHK() is equivalent to assert(), which is a reasonable
 # behavior for this program.  The default value - ARGTYPE=0 - results in LTC_ARGTYPE()
 # calling crypt_argchk(), which is not defined in the smaller (non-_cli) libraries.
+
+hashfs.o: hashfs.c
+	$(CC) -c $(CFLAGS) -DARGTYPE=1 $< -o $@
 
 makekey.o: makekey.c
 	$(CC) -c $(CFLAGS) -DARGTYPE=1 $< -o $@

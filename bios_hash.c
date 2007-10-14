@@ -13,11 +13,11 @@ char heap_mem[HEAP_SIZE];
    @return 0 on sucess, else error code
 */
 int bios_hash(
-   const unsigned char *hashname,
-   const unsigned char *filedata,
-         unsigned long  filedatalen,
+         unsigned long *resultlen,
          unsigned char *resultdata,
-         unsigned long *resultlen
+   const unsigned char *hashname,
+         unsigned long  filedatalen,
+   const unsigned char *filedata
 )
 {
    int           res;

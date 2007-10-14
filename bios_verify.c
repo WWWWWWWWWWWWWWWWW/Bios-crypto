@@ -19,9 +19,9 @@ char heap_mem[HEAP_SIZE];
 int verify_data(
    char  *hashname,
          unsigned long  keydatalen,
-   const unsigned char *keydata,
+         unsigned char *keydata,
          unsigned long  sigdatalen,
-   const unsigned char *sigdata,
+         unsigned char *sigdata,
          unsigned long  filedatalen,
    const unsigned char *filedata)
 {
@@ -37,6 +37,13 @@ int verify_data(
 //   register_hash(&whirlpool_desc);
    register_hash(&rmd160_desc);
    ltc_mp = tfm_desc;
+
+   if (keydatalen == 0) {
+       *(unsigned long *)keydata = sigdatalen;
+       res = hash_memory(find_hash(hashname), filedata, filedatalen, sigdata, (unsigned long *)keydata);
+
+       return res;
+   }
 
    mdlen = sizeof(md);
    DO(hash_memory(find_hash(hashname), filedata, filedatalen, md, &mdlen));

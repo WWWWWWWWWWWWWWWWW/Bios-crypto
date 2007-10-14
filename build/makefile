@@ -23,7 +23,7 @@ bios_verify.elf: bios_verify.o stack_alloc.o bios_string.o ../depends/libtomcryp
 # A BIOS module that does only hashing.  It was used as a test.
 
 bios_hash.elf: bios_hash.o stack_alloc.o bios_string.o ../depends/libtomcrypt.a ../depends/libtfm.a
-	$(LD) -Ttext 0xc0000 -Tbss 0xd0000 --defsym _start=bios_hash bios_hash.o stack_alloc.o bios_string.o ../depends/libtomcrypt.a ../depends/libtfm.a $(LIBDIRS) -lgcc -o $@
+	$(LD) -Ttext 0xa0000 -Tbss 0xa8000 --defsym _start=bios_hash bios_hash.o stack_alloc.o bios_string.o ../depends/libtomcrypt.a ../depends/libtfm.a $(LIBDIRS) -lgcc -o $@
 
 
 # Command line tool used for testing the bios code.
@@ -58,6 +58,10 @@ sig01: sig01.o ../depends/libtomcrypt.a ../depends/libtfm.a
 key01: key01.o ../depends/libtomcrypt.a ../depends/libtfm.a
 	$(CC) $(CFLAGS) key01.o ../depends/libtomcrypt.a ../depends/libtfm.a -o $@ 
 
+hashfs: hashfs.o ../depends/libtomcrypt.a ../depends/libtfm.a
+	$(CC) $(CFLAGS) hashfs.o ../depends/libtomcrypt.a ../depends/libtfm.a -o $@ 
+
+
 # python binding for verify functionality.
 %.o: %.pyx
 	pyrexc -o $*.c $<
@@ -72,6 +76,9 @@ pysign.o: pysign.h
 # With ARGTYPE=1, LTC_ARGCHK() is equivalent to assert(), which is a reasonable
 # behavior for this program.  The default value - ARGTYPE=0 - results in LTC_ARGTYPE()
 # calling crypt_argchk(), which is not defined in the smaller (non-_cli) libraries.
+
+hashfs.o: hashfs.c
+	$(CC) -c $(CFLAGS) -DARGTYPE=1 $< -o $@
 
 makekey.o: makekey.c
 	$(CC) -c $(CFLAGS) -DARGTYPE=1 $< -o $@

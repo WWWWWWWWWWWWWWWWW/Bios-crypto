@@ -65,5 +65,5 @@ def sign_buffer(private_key, buffer):
 def sig01(public_key, sig):
     """Return a 'sig01'-format signature, given a (binary) public key and
     signature."""
-    return 'sig01: %s %s %s' % \
+    return 'sig01: %s %s %s\n' % \
            ('sha256', hexlify(public_key[-32:]), hexlify(sig))

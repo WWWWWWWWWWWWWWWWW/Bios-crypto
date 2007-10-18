@@ -38,32 +38,32 @@ def _check(int st):
         msg = "Bad signature"
     raise OSError(msg)
 
-def sign_file(private_key, filename):
+def sign_file(private_key, filename, hash='sha256'):
     """Sign the file with the given name with the given private key.
 
-    Throws OSError on signature error.  Only rsa-sha256 signatures.
+    Throws OSError on signature error.  Only rsa-sha256/rsa-rmd160 signatures.
     """
     cdef char sig[4096]
     cdef unsigned long  siglen
     siglen = sizeof(sig)
-    _check(crypt_sign_file("sha256", private_key, len(private_key),
+    _check(crypt_sign_file(hash, private_key, len(private_key),
                            sig, &siglen, filename))
     return PyString_FromStringAndSize(sig, siglen)
 
-def sign_buffer(private_key, buffer):
+def sign_buffer(private_key, buffer, hash='sha256'):
     """Sign the given buffer with the given private key.
 
-    Throws OSError on verification error.  Only rsa-sha256 signatures.
+    Throws OSError on verification error.  Only rsa-sha256/rsa-rmd160 signatures.
     """
     cdef char sig[4096]
     cdef unsigned long  siglen
     siglen = sizeof(sig)
-    _check(crypt_sign_buffer("sha256", private_key, len(private_key),
+    _check(crypt_sign_buffer(hash, private_key, len(private_key),
                              sig, &siglen, buffer, len(buffer)))
     return PyString_FromStringAndSize(sig, siglen)
 
-def sig01(public_key, sig):
+def sig01(public_key, sig, hash='sha256'):
     """Return a 'sig01'-format signature, given a (binary) public key and
     signature."""
     return 'sig01: %s %s %s\n' % \
-           ('sha256', hexlify(public_key[-32:]), hexlify(sig))
+           (hash, hexlify(public_key[-32:]), hexlify(sig))

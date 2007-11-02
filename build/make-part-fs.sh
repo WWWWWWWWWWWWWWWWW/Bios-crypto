@@ -2,7 +2,7 @@
 
 # Make a partitioned filesystem update bundle
 # Usage: make-parts build-directory
-# The output file is fs.zip
+# The output files are dirname.sha , dirname.img, version.txt
 # The build directory name should contain the version number
 
 [ $# != 1 ] && echo Usage: $0 build-directory && exit 1

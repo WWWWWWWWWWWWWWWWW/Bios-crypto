@@ -14,7 +14,8 @@ hashname=sha256
 # hashname=rmd160
 outfile=fs.zip
 
-echo "data: ${build}.img" >data.img
+echo 'warning off : write-partition-map write-partition-map " read-partmap" $call-nand  ;' >data.img
+echo "data: ${build}.img" >>data.img
 echo "partitions:  boot ff  root f00  home -1" >>data.img
 
 echo "set-partition: boot" >>data.img

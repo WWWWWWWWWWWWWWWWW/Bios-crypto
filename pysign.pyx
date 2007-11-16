@@ -20,6 +20,9 @@ cdef extern from "pysign.h":
                           unsigned long private_key_len,
                           char *sig_contents, unsigned long *sig_len_p,
                           char *msg_contents, unsigned long msg_len)
+    int _hash_buffer(char *hashname,
+                     char *inbuf, unsigned long inlen,
+                     char *outbuf, unsigned long *outlen)
 
 def _check(int st):
     if st == 0: return
@@ -67,3 +70,11 @@ def sig01(public_key, sig, hash='sha256'):
     signature."""
     return 'sig01: %s %s %s\n' % \
            (hash, hexlify(public_key[-32:]), hexlify(sig))
+
+def hash_buffer(buffer, hash='sha256'):
+    """Hash the given buffer; return a hexadecimal string."""
+    cdef char hashbuf[4096]
+    cdef unsigned long hashlen
+    hashlen = sizeof(hashbuf)
+    _check(_hash_buffer(hash, buffer, len(buffer), hashbuf, &hashlen));
+    return hexlify(PyString_FromStringAndSize(hashbuf, hashlen))

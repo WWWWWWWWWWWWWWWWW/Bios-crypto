@@ -105,3 +105,18 @@ crypt_sign_buffer(char *hashname,
     return _crypt_sign(hash_idx, private_key_contents, private_key_len,
 		       sig_contents, sig_len_p, md, mdlen);
 }
+
+static int
+_hash_buffer(char *hashname,
+	     unsigned char *in, unsigned long inlen,
+	     unsigned char *out, unsigned long *outlen) {
+    int hash_idx, st;
+
+    /* initialize the hash list */
+    st = _crypt_init();
+    if (st != 0) return st;
+    hash_idx = find_hash(hashname);
+    st = hash_memory(hash_idx, in, inlen, out, outlen);
+    if (st != CRYPT_OK) return ERR_HASH;
+    return 0;
+}

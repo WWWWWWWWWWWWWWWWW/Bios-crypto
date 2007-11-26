@@ -4,7 +4,7 @@ CFLAGS += -Os -I../depends/libtomcrypt/src/headers -I../depends/tomsfastmath
 
 VPATH = ..
 
-CLI = makekey sign verify sig01 key01
+CLI = makekey sign verify sig01 key01 hashfs
 
 default: bios_verify.img $(CLI)
 

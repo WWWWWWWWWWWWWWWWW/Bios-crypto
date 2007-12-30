@@ -17,6 +17,8 @@ cdef extern from "pyverify.h":
                             char *msg_contents, unsigned long msg_len)
 
 def _check(int st):
+    """Raise an appropriate `OSError` if the given libtomcrypt status code
+    is not 0."""
     if st == 0: return
     msg = "Unknown problem"
     if st == ERR_NO_INIT:
@@ -37,14 +39,14 @@ def verify_file(key, filename, sig):
     """Verify the given signature by the given public key on the file with
     the given name.
 
-    Throws OSError on verification error.  Only rsa-sha256 signatures.
+    Throws `OSError` on verification error.  Only rsa-sha256 signatures.
     """
     _check(crypt_verify_file("sha256", key, len(key), sig, len(sig), filename))
 
 def verify_buffer(key, buffer, sig):
     """Verify the given signature by the given public key on the given buffer.
 
-    Throws OSError on verification error.  Only rsa-sha256 signatures.
+    Throws `OSError` on verification error.  Only rsa-sha256 signatures.
     """
     _check(crypt_verify_buffer("sha256", key, len(key), sig, len(sig),
                                buffer, len(buffer)))

@@ -6,19 +6,19 @@
  * The library is free for all purposes without any express
  * guarantee it works.
  *
- * Tom St Denis, tomstdenis@gmail.com, http://libtomcrypt.com
+ * Tom St Denis, tomstdenis@gmail.com, http://libtom.org
  */
 #include "tomcrypt.h"
 
 
 /**
   @file md5.c
-  MD5 hash function by Tom St Denis 
+  LTC_MD5 hash function by Tom St Denis 
 */
 
-#ifdef MD5
+#ifdef LTC_MD5
 
-const struct ltc_hash_descriptor md5_desc =
+const struct ltc_hash_descriptor ltc_md5_desc =
 {
     "md5",
     3,
@@ -29,10 +29,10 @@ const struct ltc_hash_descriptor md5_desc =
    { 1, 2, 840, 113549, 2, 5,  },
    6,
 
-    &md5_init,
-    &md5_process,
-    &md5_done,
-    &md5_test,
+    &ltc_md5_init,
+    &ltc_md5_process,
+    &ltc_md5_done,
+    &ltc_md5_test,
     NULL
 };
 
@@ -230,7 +230,7 @@ static int md5_compress(hash_state *md, unsigned char *buf)
    @param md   The hash state you wish to initialize
    @return CRYPT_OK if successful
 */
-int md5_init(hash_state * md)
+int ltc_md5_init(hash_state * md)
 {
    LTC_ARGCHK(md != NULL);
    md->md5.state[0] = 0x67452301UL;
@@ -249,7 +249,7 @@ int md5_init(hash_state * md)
    @param inlen  The length of the data (octets)
    @return CRYPT_OK if successful
 */
-HASH_PROCESS(md5_process, md5_compress, md5, 64)
+HASH_PROCESS(ltc_md5_process, md5_compress, md5, 64)
 
 /**
    Terminate the hash to get the digest
@@ -257,7 +257,7 @@ HASH_PROCESS(md5_process, md5_compress, md5, 64)
    @param out [out] The destination of the hash (16 bytes)
    @return CRYPT_OK if successful
 */
-int md5_done(hash_state * md, unsigned char *out)
+int ltc_md5_done(hash_state * md, unsigned char *out)
 {
     int i;
 
@@ -310,7 +310,7 @@ int md5_done(hash_state * md, unsigned char *out)
   Self-test the hash
   @return CRYPT_OK if successful, CRYPT_NOP if self-tests have been disabled
 */  
-int  md5_test(void)
+int  ltc_md5_test(void)
 {
  #ifndef LTC_TEST
     return CRYPT_NOP;
@@ -348,9 +348,9 @@ int  md5_test(void)
   hash_state md;
 
   for (i = 0; tests[i].msg != NULL; i++) {
-      md5_init(&md);
-      md5_process(&md, (unsigned char *)tests[i].msg, (unsigned long)strlen(tests[i].msg));
-      md5_done(&md, tmp);
+      ltc_md5_init(&md);
+      ltc_md5_process(&md, (unsigned char *)tests[i].msg, (unsigned long)strlen(tests[i].msg));
+      ltc_md5_done(&md, tmp);
       if (XMEMCMP(tmp, tests[i].hash, 16) != 0) {
          return CRYPT_FAIL_TESTVECTOR;
       }
@@ -364,5 +364,5 @@ int  md5_test(void)
 
 
 /* $Source: /cvs/libtom/libtomcrypt/src/hashes/md5.c,v $ */
-/* $Revision: 1.8 $ */
-/* $Date: 2006/11/01 09:28:17 $ */
+/* $Revision: 1.10 $ */
+/* $Date: 2007/05/12 14:25:28 $ */

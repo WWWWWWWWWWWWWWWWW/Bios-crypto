@@ -51,13 +51,13 @@
 \newcommand{\mysection}[1]    % Re-define the chaptering command to use
 	{                   % THESE headers.
 	\section{#1}
-   \markboth{\textsf{www.libtomcrypt.com}}{\thesection ~ {#1}}
+   \markboth{\textsf{www.libtom.org}}{\thesection ~ {#1}}
 	}
 
 \newcommand{\mystarsection}[1]    % Re-define the chaptering command to use
 	{                   % THESE headers.
 	\section*{#1}
-   \markboth{\textsf{www.libtomcrypt.com}}{{#1}}
+   \markboth{\textsf{www.libtom.org}}{{#1}}
 	}
 \pagestyle{empty}
 \begin{document}
@@ -88,8 +88,28 @@ LibTom Projects
 \end{tabular}
 \end{center}
 \vfil
+\newpage
+This document is part of the LibTomCrypt package and is hereby released into the public domain.
 
-%\pagestyle{plain}
+~
+
+Open Source.  Open Academia.  Open Minds.
+
+~
+
+\begin{flushright}
+Tom St Denis
+~
+
+Ottawa, Ontario
+~
+
+Canada
+~
+\vfil
+\end{flushright}
+\newpage
+
 \tableofcontents
 \listoffigures
 \pagestyle{myheadings}
@@ -108,7 +128,7 @@ also performs extensive parameter error checking to prevent any number of run-ti
 \subsection{What the library IS for?}
 
 The library serves as a toolkit for developers who have to solve cryptographic problems.  Out of the box LibTomCrypt
-does not process SSL or OpenPGP messages, it doesn't read X.591 certificates, or write PEM encoded data.  It does, however,
+does not process SSL or OpenPGP messages, it doesn't read X.509 certificates, or write PEM encoded data.  It does, however,
 provide all of the tools required to build such functionality.  LibTomCrypt was designed to be a flexible library that 
 was not tied to any particular cryptographic problem.  
 
@@ -170,7 +190,7 @@ The project is hereby released as public domain.
 \mysection{Patent Disclosure}
 
 The author (Tom St Denis) is not a patent lawyer so this section is not to be treated as legal advice.  To the best
-of the authors knowledge the only patent related issues within the library are the RC5 and RC6 symmetric block ciphers.  
+of the author's knowledge the only patent related issues within the library are the RC5 and RC6 symmetric block ciphers.  
 They can be removed from a build by simply commenting out the two appropriate lines in \textit{tomcrypt\_custom.h}.  The rest
 of the ciphers and hashes are patent free or under patents that have since expired.
 
@@ -298,9 +318,7 @@ There are 32 and 64-bit cyclic rotations as well:
 \mysection{Functions with Variable Length Output}
 Certain functions such as (for example) \textit{rsa\_export()} give an output that is variable length.  To prevent buffer overflows you
 must pass it the length of the buffer where the output will be stored.  For example:
-\index{rsa\_export()}
-\index{error\_to\_string()}
-\index{variable length output}
+\index{rsa\_export()} \index{error\_to\_string()} \index{variable length output}
 \begin{small}
 \begin{verbatim}
 #include <tomcrypt.h>
@@ -345,8 +363,7 @@ the PRNG themselves so it is the responsibility of the calling function to initi
 Certain PRNG algorithms do not require a \textit{prng\_state} argument (sprng for example).  The \textit{prng\_state} argument
 may be passed as \textbf{NULL} in such situations.
 
-\index{register\_prng()}
-\index{rsa\_make\_key()}
+\index{register\_prng()} \index{rsa\_make\_key()}
 \begin{small}
 \begin{verbatim}
 #include <tomcrypt.h>
@@ -380,10 +397,6 @@ special care to work properly on platforms where an \textit{unsigned char} is no
 
 For the purposes of this library, the term \textit{byte} will refer to an octet or eight bit word.  Typically an array of
 type \textit{byte} will be synonymous with an array of type \textit{unsigned char.}
-
-
-
-
 
 \chapter{Symmetric Block Ciphers}
 \mysection{Core Functions}
@@ -444,6 +457,7 @@ based upon.
 
 \subsection{Key Sizing}
 For each cipher there is a function which will help find a desired key size.  It is specified as follows:
+\index{Key Sizing}
 \begin{verbatim}
 int XXX_keysize(int *keysize);
 \end{verbatim}
@@ -481,6 +495,7 @@ setup function must also call the respective cipher done function when finished.
 \subsection{Simple Encryption Demonstration}
 An example snippet that encodes a block with Blowfish in ECB mode.
 
+\index{blowfish\_setup()} \index{blowfish\_ecb\_encrypt()} \index{blowfish\_ecb\_decrypt()} \index{blowfish\_done()}
 \begin{small}
 \begin{verbatim}
 #include <tomcrypt.h>
@@ -543,7 +558,7 @@ size.
 \mysection{The Cipher Descriptors}
 \index{Cipher Descriptor}
 To facilitate automatic routines an array of cipher descriptors is provided in the array \textit{cipher\_descriptor}.  An element
-of this array has the following format:
+of this array has the following (partial) format (See Section \ref{sec:cipherdesc}):
 
 \begin{small}
 \begin{verbatim}
@@ -565,249 +580,7 @@ struct _cipher_descriptor {
 
    /** default number of rounds */
         default_rounds;
-
-   /** Setup the cipher 
-      @param key         The input symmetric key
-      @param keylen      The length of the input key (octets)
-      @param num_rounds  The requested number of rounds (0==default)
-      @param skey        [out] The destination of the scheduled key
-      @return CRYPT_OK if successful
-   */
-   int  (*setup)(const unsigned char *key, 
-                                 int  keylen, 
-                                 int  num_rounds, 
-                       symmetric_key *skey);
-
-   /** Encrypt a block
-      @param pt      The plaintext
-      @param ct      [out] The ciphertext
-      @param skey    The scheduled key
-      @return CRYPT_OK if successful
-   */
-   int (*ecb_encrypt)(const unsigned char *pt, 
-                            unsigned char *ct, 
-                            symmetric_key *skey);
-
-   /** Decrypt a block
-      @param ct      The ciphertext
-      @param pt      [out] The plaintext
-      @param skey    The scheduled key
-      @return CRYPT_OK if successful
-   */
-   int (*ecb_decrypt)(const unsigned char *ct, 
-                            unsigned char *pt, 
-                            symmetric_key *skey);
-
-   /** Test the block cipher
-       @return CRYPT_OK if successful
-               CRYPT_NOP if self-testing has been disabled
-   */
-   int (*test)(void);
-
-   /** Terminate the context 
-      @param skey    The scheduled key
-   */
-   void (*done)(symmetric_key *skey);      
-
-   /** Determine a key size
-       @param keysize    [in/out] The size of the key desired
-       @return CRYPT_OK if successful
-   */
-   int  (*keysize)(int *keysize);
-
-/** Accelerators **/
-   /** Accelerated ECB encryption 
-       @param pt      Plaintext
-       @param ct      Ciphertext
-       @param blocks  The number of complete blocks to process
-       @param skey    The scheduled key context
-       @return CRYPT_OK if successful
-   */
-   int (*accel_ecb_encrypt)(const unsigned char *pt, 
-                                  unsigned char *ct, 
-                                  unsigned long  blocks, 
-                                  symmetric_key *skey);
-
-   /** Accelerated ECB decryption 
-       @param pt      Plaintext
-       @param ct      Ciphertext
-       @param blocks  The number of complete blocks to process
-       @param skey    The scheduled key context
-       @return CRYPT_OK if successful
-   */
-   int (*accel_ecb_decrypt)(const unsigned char *ct, 
-                                  unsigned char *pt, 
-                                  unsigned long  blocks, 
-                                  symmetric_key *skey);
-
-   /** Accelerated CBC encryption 
-       @param pt      Plaintext
-       @param ct      Ciphertext
-       @param blocks  The number of complete blocks to process
-       @param IV      The initial value (input/output)
-       @param skey    The scheduled key context
-       @return CRYPT_OK if successful
-   */
-   int (*accel_cbc_encrypt)(const unsigned char *pt, 
-                                  unsigned char *ct, 
-                                  unsigned long  blocks, 
-                                  unsigned char *IV, 
-                                  symmetric_key *skey);
-
-   /** Accelerated CBC decryption 
-       @param pt      Plaintext
-       @param ct      Ciphertext
-       @param blocks  The number of complete blocks to process
-       @param IV      The initial value (input/output)
-       @param skey    The scheduled key context
-       @return CRYPT_OK if successful
-   */
-   int (*accel_cbc_decrypt)(const unsigned char *ct, 
-                                  unsigned char *pt, 
-                                  unsigned long  blocks, 
-                                  unsigned char *IV, 
-                                  symmetric_key *skey);
-
-   /** Accelerated CTR encryption 
-       @param pt      Plaintext
-       @param ct      Ciphertext
-       @param blocks  The number of complete blocks to process
-       @param IV      The initial value (input/output)
-       @param mode    little or big endian counter (mode=0 or mode=1)
-       @param skey    The scheduled key context
-       @return CRYPT_OK if successful
-   */
-   int (*accel_ctr_encrypt)(const unsigned char *pt, 
-                                  unsigned char *ct, 
-                                  unsigned long  blocks, 
-                                  unsigned char *IV, 
-                                            int  mode, 
-                                  symmetric_key *skey);
-
-   /** Accelerated LRW 
-       @param pt      Plaintext
-       @param ct      Ciphertext
-       @param blocks  The number of complete blocks to process
-       @param IV      The initial value (input/output)
-       @param tweak   The LRW tweak
-       @param skey    The scheduled key context
-       @return CRYPT_OK if successful
-   */
-   int (*accel_lrw_encrypt)(const unsigned char *pt, 
-                                  unsigned char *ct, 
-                                  unsigned long  blocks, 
-                                  unsigned char *IV, 
-                            const unsigned char *tweak, 
-                                  symmetric_key *skey);
-
-   /** Accelerated LRW 
-       @param ct      Ciphertext
-       @param pt      Plaintext
-       @param blocks  The number of complete blocks to process
-       @param IV      The initial value (input/output)
-       @param tweak   The LRW tweak
-       @param skey    The scheduled key context
-       @return CRYPT_OK if successful
-   */
-   int (*accel_lrw_decrypt)(const unsigned char *ct, 
-                                  unsigned char *pt, 
-                                  unsigned long  blocks, 
-                                  unsigned char *IV, 
-                            const unsigned char *tweak, 
-                                  symmetric_key *skey);
-
-   /** Accelerated CCM packet (one-shot)
-       @param key        The secret key to use
-       @param keylen     The length of the secret key (octets)
-       @param uskey      A previously scheduled key [can be NULL]
-       @param nonce      The session nonce [use once]
-       @param noncelen   The length of the nonce
-       @param header     The header for the session
-       @param headerlen  The length of the header (octets)
-       @param pt         [out] The plaintext
-       @param ptlen      The length of the plaintext (octets)
-       @param ct         [out] The ciphertext
-       @param tag        [out] The destination tag
-       @param taglen     [in/out] Initial/final size of the tag
-       @param direction  CCM_ENCRYPT or CCM_DECRYPT
-       @return CRYPT_OK if successful
-   */
-   int (*accel_ccm_memory)(
-       const unsigned char *key,    unsigned long keylen,
-       symmetric_key       *uskey,
-       const unsigned char *nonce,  unsigned long noncelen,
-       const unsigned char *header, unsigned long headerlen,
-             unsigned char *pt,     unsigned long ptlen,
-             unsigned char *ct,
-             unsigned char *tag,    unsigned long *taglen,
-                       int  direction);
-
-   /** Accelerated GCM packet (one shot)
-       @param key        The secret key
-       @param keylen     The length of the secret key
-       @param IV         The initial vector 
-       @param IVlen      The length of the initial vector
-       @param adata      The additional authentication data
-       @param adatalen   The length of the adata
-       @param pt         The plaintext
-       @param ptlen      The length of the plaintext
-       @param ct         The ciphertext
-       @param tag        [out] The MAC tag
-       @param taglen     [in/out] The MAC tag length
-       @param direction  GCM_ENCRYPT or GCM_DECRYPT
-       @return CRYPT_OK on success
-   */
-   int (*accel_gcm_memory)(
-       const unsigned char *key,    unsigned long keylen,
-       const unsigned char *IV,     unsigned long IVlen,
-       const unsigned char *adata,  unsigned long adatalen,
-             unsigned char *pt,     unsigned long ptlen,
-             unsigned char *ct, 
-             unsigned char *tag,    unsigned long *taglen,
-                       int direction);
-
-   /** Accelerated one shot OMAC 
-       @param key            The secret key
-       @param keylen         The key length (octets) 
-       @param in             The message 
-       @param inlen          Length of message (octets)
-       @param out            [out] Destination for tag
-       @param outlen         [in/out] Initial and final size of out
-       @return CRYPT_OK on success
-   */
-   int (*omac_memory)(
-       const unsigned char *key, unsigned long keylen,
-       const unsigned char *in,  unsigned long inlen,
-             unsigned char *out, unsigned long *outlen);
-
-   /** Accelerated one shot XCBC 
-       @param key            The secret key
-       @param keylen         The key length (octets) 
-       @param in             The message 
-       @param inlen          Length of message (octets)
-       @param out            [out] Destination for tag
-       @param outlen         [in/out] Initial and final size of out
-       @return CRYPT_OK on success
-   */
-   int (*xcbc_memory)(
-       const unsigned char *key, unsigned long keylen,
-       const unsigned char *in,  unsigned long inlen,
-             unsigned char *out, unsigned long *outlen);
-
-   /** Accelerated one shot F9 
-       @param key            The secret key
-       @param keylen         The key length (octets) 
-       @param in             The message 
-       @param inlen          Length of message (octets)
-       @param out            [out] Destination for tag
-       @param outlen         [in/out] Initial and final size of out
-       @return CRYPT_OK on success
-       @remark Requires manual padding
-   */
-   int (*f9_memory)(
-       const unsigned char *key, unsigned long keylen,
-       const unsigned char *in,  unsigned long inlen,
-             unsigned char *out, unsigned long *outlen);
+...<snip>...
 };
 \end{verbatim}
 \end{small}
@@ -827,6 +600,8 @@ marked when \textit{name} equals {\bf NULL}.
 As of this release the current cipher\_descriptors elements are the following:
 \vfil
 \index{Cipher descriptor table}
+\index{blowfish\_desc} \index{xtea\_desc} \index{rc2\_desc} \index{rc5\_desc} \index{rc6\_desc} \index{saferp\_desc} \index{aes\_desc} \index{twofish\_desc}
+\index{des\_desc} \index{des3\_desc} \index{noekeon\_desc} \index{skipjack\_desc} \index{anubis\_desc} \index{khazad\_desc} \index{kseed\_desc} \index{kasumi\_desc}
 \begin{figure}[hpbt]
 \begin{small}
 \begin{center}
@@ -841,8 +616,8 @@ As of this release the current cipher\_descriptors elements are the following:
      \hline AES & aes\_desc & 16 & 16, 24, 32 & 10, 12, 14 \\
                 & aes\_enc\_desc & 16 & 16, 24, 32 & 10, 12, 14 \\
      \hline Twofish & twofish\_desc & 16 & 16, 24, 32 & 16 \\
-     \hline DES & des\_desc & 8 & 7 & 16 \\
-     \hline 3DES (EDE mode) & des3\_desc & 8 & 21 & 16 \\
+     \hline DES & des\_desc & 8 & 8 & 16 \\
+     \hline 3DES (EDE mode) & des3\_desc & 8 & 24 & 16 \\
      \hline CAST5 (CAST-128) & cast5\_desc & 8 & 5 $\ldots$ 16 & 12, 16 \\
      \hline Noekeon & noekeon\_desc & 16 & 16 & 16 \\
      \hline Skipjack & skipjack\_desc & 8 & 10 & 32 \\
@@ -889,7 +664,7 @@ speed increase is useful when \textit{TWOFISH\_SMALL} is defined since the s-box
 Twofish round function.
 
 \begin{figure}[hpbt]
-\index{Twofish build options}
+\index{Twofish build options} \index{TWOFISH\_SMALL} \index{TWOFISH\_TABLES}
 \begin{small}
 \begin{center}
 \begin{tabular}{|l|l|l|}
@@ -916,7 +691,7 @@ int find_cipher(char *name)
 Which will search for a given name in the array.  It returns $-1$ if the cipher is not found, otherwise it returns
 the location in the array where the cipher was found.  For example, to indirectly setup Blowfish you can also use:
 \begin{small}
-\index{register\_cipher()}
+\index{register\_cipher()} \index{find\_cipher()} \index{error\_to\_string()}
 \begin{verbatim}
 #include <tomcrypt.h>
 int main(void)
@@ -1104,14 +879,37 @@ of the cipher you choose.  It is important that the IV  be random for each uniqu
 parameters \textit{key}, \textit{keylen} and \textit{num\_rounds} are the same as in the XXX\_setup() function call.  The final parameter 
 is a pointer to the structure you want to hold the information for the mode of operation.
 
+The routines return {\bf CRYPT\_OK} if the cipher initialized correctly, otherwise, they return an error code.  
 
+\subsubsection{CTR Mode}
 In the case of CTR mode there is an additional parameter \textit{ctr\_mode} which specifies the mode that the counter is to be used in.
 If \textbf{CTR\_COUNTER\_ LITTLE\_ENDIAN} was specified then the counter will be treated as a little endian value.  Otherwise, if 
 \textbf{CTR\_COUNTER\_BIG\_ENDIAN} was specified the counter will be treated as a big endian value.  As of v1.15 the RFC 3686 style of
 increment then encrypt is also supported.  By OR'ing \textbf{LTC\_CTR\_RFC3686} with the CTR \textit{mode} value, ctr\_start() will increment
 the counter before encrypting it for the first time.
 
-The routines return {\bf CRYPT\_OK} if the cipher initialized correctly, otherwise, they return an error code.  
+As of V1.17, the library supports variable length counters for CTR mode.  The (optional) counter length is specified by OR'ing the octet
+length of the counter against the \textit{ctr\_mode} parameter.  The default, zero, indicates that a full block length counter will be used.  This also
+ensures backwards compatibility with software that uses older versions of the library.
+
+\begin{small}
+\begin{verbatim}
+symmetric_CTR ctr;
+int           err;
+unsigned char IV[16], key[16];
+
+/* use a 32-bit little endian counter */
+if ((err = ctr_start(find_cipher("aes"),
+                     IV, key, 16, 0,
+                     CTR_COUNTER_LITTLE_ENDIAN | 4, 
+                     &ctr)) != CRYPT_OK) {
+   handle_error(err);
+}
+\end{verbatim}
+\end{small}
+
+Changing the counter size has little (really no) effect on the performance of the CTR chaining mode.  It is provided for compatibility
+with other software (and hardware) which have smaller fixed sized counters.
 
 \subsection{Encryption and Decryption}
 To actually encrypt or decrypt the following routines are provided:
@@ -1317,6 +1115,55 @@ To terminate the LRW state use the following:
 \begin{verbatim}
 int lrw_done(symmetric_LRW *lrw);
 \end{verbatim}
+
+\subsection{XTS Mode}
+As of v1.17, LibTomCrypt supports XTS mode with code donated by Elliptic Semiconductor Inc.\footnote{www.ellipticsemi.com}.  
+XTS is a chaining mode for 128--bit block ciphers, recommended by IEEE (P1619) 
+for disk encryption.  It is meant to be an encryption mode with random access to the message data without compromising privacy.  It requires two private keys (of equal 
+length) to perform the encryption process.  Each encryption invocation includes a sector number or unique identifier specified as a 128--bit string.  
+
+To initialize XTS mode use the following function call:
+
+\index{xts\_start()}
+\begin{verbatim}
+int xts_start(                int  cipher,
+              const unsigned char *key1, 
+              const unsigned char *key2, 
+                    unsigned long  keylen,
+                              int  num_rounds, 
+                    symmetric_xts *xts)
+\end{verbatim}
+This will start the XTS mode with the two keys pointed to by \textit{key1} and \textit{key2} of length \textit{keylen} octets each.  
+
+To encrypt or decrypt a sector use the following calls:
+
+\index{xts\_encrypt()} \index{xts\_decrypt()}
+\begin{verbatim}
+int xts_encrypt(
+   const unsigned char *pt, unsigned long ptlen,
+         unsigned char *ct,
+   const unsigned char *tweak,
+         symmetric_xts *xts);
+
+int xts_decrypt(
+   const unsigned char *ct, unsigned long ptlen,
+         unsigned char *pt,
+   const unsigned char *tweak,
+         symmetric_xts *xts);
+\end{verbatim}
+The first will encrypt the plaintext pointed to by \textit{pt} of length \textit{ptlen} octets, and store the ciphertext in the array pointed to by 
+\textit{ct}.  It uses the 128--bit tweak pointed to by \textit{tweak} to encrypt the block.  The decrypt function performs the opposite operation.  Both 
+functions support ciphertext stealing (blocks that are not multiples of 16 bytes).  
+
+The P1619 specification states the tweak for sector number shall be represented as a 128--bit little endian string.  
+
+To terminate the XTS state call the following function:
+
+\index{xts\_done()}
+\begin{verbatim}
+void xts_done(symmetric_xts *xts);
+\end{verbatim}
+
 
 \subsection{F8 Mode}
 \index{F8 Mode}
@@ -1631,7 +1478,7 @@ message).
 \subsubsection{Packet Functions}
 To make life simpler the following two functions are provided for memory bound OCB.
 
-\index{ocb\_encrypt\_authenticate\_memory()}
+%\index{ocb\_encrypt\_authenticate\_memory()}
 \begin{verbatim}
 int ocb_encrypt_authenticate_memory(
                     int  cipher,
@@ -2014,7 +1861,7 @@ To test a hash function call:
 int XXX_test(void);
 \end{verbatim}
 
-This will return {\bf CRYPTO\_OK} if the hash matches the test vectors, otherwise it returns an error code.  An
+This will return {\bf CRYPT\_OK} if the hash matches the test vectors, otherwise it returns an error code.  An
 example snippet that hashes a message with md5 is given below.
 \begin{small}
 \begin{verbatim}
@@ -2323,8 +2170,8 @@ int hmac_process(         hmac_state *hmac,
                  const unsigned char *in, 
                        unsigned long  inlen);
 \end{verbatim}
-\textit{hmac} is the HMAC state you are working with. \textit{buf} is the array of octets to send into the HMAC process.  \textit{len} is the
-number of octets to process.  Like the hash process routines you can send the data in arbitrarily sized chunks. When you 
+\textit{hmac} is the HMAC state you are working with. \textit{in} is the array of octets to send into the HMAC process.  \textit{inlen} is the
+number of octets to process.  Like the hash process routines, you can send the data in arbitrarily sized chunks. When you 
 are finished with the HMAC process you must call the following function to get the HMAC code:
 \index{hmac\_done()}
 \begin{verbatim}
@@ -2605,7 +2452,7 @@ int pmac_done(   pmac_state *state,
               unsigned char *out, 
               unsigned long *outlen);
 \end{verbatim}
-This will store upto \textit{outlen} bytes of the tag for the given \textit{state} into \textit{out}.  Note that if \textit{outlen} is larger
+This will store up to \textit{outlen} bytes of the tag for the given \textit{state} into \textit{out}.  Note that if \textit{outlen} is larger
 than the size of the tag it is set to the amount of bytes stored in \textit{out}.
 
 Similar to the OMAC code the file and memory functions are also provided.  To PMAC a buffer of memory in one shot use the 
@@ -2722,7 +2569,7 @@ int main(void)
 
 \mysection{XCBC-MAC}
 As of LibTomCrypt v1.15, XCBC-MAC (RFC 3566) has been provided to support TLS encryption suites.  Like OMAC, it computes a message authentication code
-by using a cipher in CBC mode.  It also uses a single key which it expands into the requisit three keys for the MAC function.  A XCBC--MAC state is
+by using a cipher in CBC mode.  It also uses a single key which it expands into the requisite three keys for the MAC function.  A XCBC--MAC state is
 initialized with the following function:
 
 \index{xcbc\_init()}
@@ -2735,6 +2582,13 @@ int xcbc_init(         xcbc_state *xcbc,
 
 This will initialize the XCBC--MAC state \textit{xcbc}, with the key specified in \textit{key} of length \textit{keylen} octets.  The cipher indicated
 by the \textit{cipher} index can be either a 64 or 128--bit block cipher.  This will return \textbf{CRYPT\_OK} on success.
+
+\index{LTC\_XCBC\_PURE}
+It is possible to use XCBC in a three key mode by OR'ing the value \textbf{LTC\_XCBC\_PURE} against the \textit{keylen} parameter.  In this mode, the key is
+interpretted as three keys.  If the cipher has a block size of $n$ octets, the first key is then $keylen - 2n$ octets and is the encryption key.  The next 
+$2n$ octets are the $K_1$ and $K_2$ padding keys (used on the last block).  For example, to use AES--192 \textit{keylen} should be $24 + 2 \cdot 16 = 56$ octets.
+The three keys are interpretted as if they were concatenated in the \textit{key} buffer.
+
 
 To process data through XCBC--MAC use the following function:
 
@@ -2901,14 +2755,14 @@ int XXX_add_entropy(const unsigned char *in,
                           unsigned long  inlen, 
                              prng_state *prng);
 \end{verbatim}
-Which returns {\bf CRYPTO\_OK} if the entropy was accepted.  Once you think you have enough entropy you call another
+Which returns {\bf CRYPT\_OK} if the entropy was accepted.  Once you think you have enough entropy you call another
 function to put the entropy into action.
 \index{PRNG ready}
 \begin{verbatim}
 int XXX_ready(prng_state *prng);
 \end{verbatim}
 
-Which returns {\bf CRYPTO\_OK} if it is ready.  Finally to actually read bytes call:
+Which returns {\bf CRYPT\_OK} if it is ready.  Finally to actually read bytes call:
 \index{PRNG read}
 \begin{verbatim}
 unsigned long XXX_read(unsigned char *out, 
@@ -2962,7 +2816,7 @@ When a program is first executed the normal course of operation is:
 
 When your program is finished you simply call the export function and save the state to a medium (disk,
 flash memory, etc).  The next time your application starts up you can detect the state, feed it to the 
-import function and go on your way.  It is ideal that (as soon as possible) after startup you export a
+import function and go on your way.  It is ideal that (as soon as possible) after start up you export a
 fresh state.  This helps in the case that the program aborts or the machine is powered down without
 being given a chance to exit properly.  
 
@@ -3086,7 +2940,7 @@ will return \textbf{CRYPT\_OK} if the PRNG was found and removed.  Otherwise, it
 Yarrow is fast PRNG meant to collect an unspecified amount of entropy from sources 
 (keyboard, mouse, interrupts, etc), and produce an unbounded string of random bytes.  
 
-\textit{Note:} This PRNG is still secure for most taskings but is no longer recommended.  Users
+\textit{Note:} This PRNG is still secure for most tasks but is no longer recommended.  Users
 should use Fortuna instead.
 
 \subsubsection{Fortuna}
@@ -3518,7 +3372,7 @@ This will load the bignum from \textit{in} as a big endian integer in the format
 in \textit{out} and the size of the result in \textit{outlen}. \textit{which} is set to {\bf PK\_PUBLIC} to use \textit{e} 
 (i.e. for encryption/verifying) and set to {\bf PK\_PRIVATE} to use \textit{d} as the exponent (i.e. for decrypting/signing).
 
-Note: the output of this function is zero--padded as per PKCS \#1 specification.  This allows this routine to interoprate with PKCS \#1 padding functions properly.
+Note: the output of this function is zero--padded as per PKCS \#1 specification.  This allows this routine to work with PKCS \#1 padding functions properly.
 
 \mysection{RSA Key Encryption}
 Normally RSA is used to encrypt short symmetric keys which are then used in block ciphers to encrypt a message.
@@ -3582,7 +3436,7 @@ int rsa_decrypt_key(
                     int *stat,
                 rsa_key *key);
 \end{verbatim}
-This function will RSA decrypt \textit{in} of length \textit{inlen} then OAEP depad the resulting data and store it in
+This function will RSA decrypt \textit{in} of length \textit{inlen} then OAEP de-pad the resulting data and store it in
 \textit{out} of length \textit{outlen}.  The \textit{lparam} and \textit{lparamlen} are the same parameters you would pass
 to pkcs\_1\_oaep\_decode().
 
@@ -3852,7 +3706,7 @@ than or equal to 256-bits is sufficient for long term security.
 \index{Fixed Point ECC}
 \index{MECC\_FP}
 As of v1.12 of LibTomCrypt, support for Fixed Point ECC point multiplication has been added.  It is a generic optimization that is
-supported by any conformant math plugin.  It is enabled by defining \textbf{MECC\_FP} during the build, such as 
+supported by any conforming math plugin.  It is enabled by defining \textbf{MECC\_FP} during the build, such as 
 
 \begin{verbatim}
 CFLAGS="-DTFM_DESC -DMECC_FP" make 
@@ -4163,7 +4017,7 @@ the function will not return an error if the signature is invalid.  It will retu
 The ECC \textit{key} must be the public (or private) ECC key corresponding to the key that performed the signature.
 
 \subsection{Signature Format}
-The signature code is an implementation of X9.62 EC--DSA, and the output is conformant for GF(p) curves.
+The signature code is an implementation of X9.62 EC--DSA, and the output is compliant for GF(p) curves.
 
 \mysection{ECC Keysizes}
 With ECC if you try to sign a hash that is bigger than your ECC key you can run into problems.  The math will still work, and in effect the signature will still 
@@ -4396,10 +4250,10 @@ will automatically free all of the heap allocated in the process (you don't have
 \mysection{ASN.1 Formats}
 LibTomCrypt supports a variety of ASN.1 data types encoded with the Distinguished Encoding Rules (DER) suitable for various cryptographic protocols.  The data types
 are all provided with three basic functions with \textit{similar} prototypes.  One function has been dedicated to calculate the length in octets of a given
-format and two functions have been dedicated to encoding and decoding the format.  
+format, and two functions have been dedicated to encoding and decoding the format.  
 
 On top of the basic data types are the SEQUENCE and SET data types which are collections of other ASN.1 types.  They are provided 
-in the same manner as the other data types except they use list of objects known as the \textbf{ltc\_asn1\_list} structure.  It is defined as 
+in the same manner as the other data types except they use list of objects known as the \textbf{ltc\_asn1\_list} structure.  It is defined as the following:
 
 \index{ltc\_asn1\_list structure}
 \begin{verbatim}
@@ -4461,6 +4315,7 @@ LTC_SET_ASN1(sequence, x++, LTC_ASN1_NULL,           NULL,   0);
 \hline LTC\_ASN1\_NULL               & NULL \\
 \hline LTC\_ASN1\_OBJECT\_IDENTIFIER & OBJECT IDENTIFIER  \\
 \hline LTC\_ASN1\_IA5\_STRING        & IA5 STRING (one octet per char) \\
+\hline LTC\_ASN1\_UTF8\_STRING       & UTF8 STRING (one wchar\_t per char) \\
 \hline LTC\_ASN1\_PRINTABLE\_STRING  & PRINTABLE STRING (one octet per char) \\
 \hline LTC\_ASN1\_UTCTIME            & UTCTIME (see ltc\_utctime structure) \\
 \hline LTC\_ASN1\_SEQUENCE           & SEQUENCE (and SEQUENCE OF) \\
@@ -4555,19 +4410,39 @@ These either encode or decode (respectively) a SEQUENCE data type where the item
 The list of items are specified as a triple of the form \textit{(type, size, data)}  where \textit{type} is an \textbf{int}, \textit{size} is a \textbf{unsigned long}
 and \textit{data} is \textbf{void} pointer.  The list of items must be terminated with an item with the type \textbf{LTC\_ASN1\_EOL}.
 
-It's ideal that you cast the \textit{size} values to unsigned long to ensure that the proper data type is passed to the function.  Constants such as \textit{1} without
+It is ideal that you cast the \textit{size} values to unsigned long to ensure that the proper data type is passed to the function.  Constants such as \textit{1} without
 a cast or prototype are of type \textbf{int} by default.  Appending \textit{UL} or pre-pending \textit{(unsigned long)} is enough to cast it to the correct type.
+
+\begin{small}
+\begin{verbatim}
+unsigned char buf[MAXBUFSIZE];
+unsigned long buflen;
+int           err;
+
+   buflen = sizeof(buf);
+   if ((err = 
+        der_encode_sequence_multi(buf, &buflen,
+        LTC_ASN1_IA5_STRING, 5UL, "Hello",
+        LTC_ASN1_IA5_STRING, 7UL, " World!",
+        LTC_ASN1_EOL,        0UL, NULL)) != CRYPT_OK) {
+      // error handling
+   }
+\end{verbatim}
+\end{small}
+
+This example encodes a SEQUENCE with two IA5 STRING types containing ``Hello'' and `` World!'' respectively.  Note the usage of the \textbf{UL} modifier
+on the size parameters.  This forces the compiler to pass the numbers as the required \textbf{unsigned long} type that the function expects.
 
 \subsection{SET and SET OF}
 
 \index{SET} \index{SET OF}
-SET and SET OF are related to the SEQUENCE type in that they can be pretty much be decoded with the same code.  However, they are different and they should
-be carefully noted.  The SET type is an unordered array of ASN.1 types sorted by the TAG (type identifier) whereas the SET OF type is an ordered array of 
+SET and SET OF are related to the SEQUENCE type in that they can be pretty much be decoded with the same code.  However, they are different, and they should
+be carefully noted.  The SET type is an unordered array of ASN.1 types sorted by the TAG (type identifier), whereas the SET OF type is an ordered array of 
 a \textbf{single} ASN.1 object sorted in ascending order by the DER their respective encodings.
 
 \subsubsection{SET Encoding}
 
-SETs use the same array structure of ltc\_asn1\_list that the SEQUENCE functions use.  They are encoded with the following function.
+SETs use the same array structure of ltc\_asn1\_list that the SEQUENCE functions use.  They are encoded with the following function:
 
 \index{der\_encode\_set()}
 \begin{verbatim}
@@ -4577,11 +4452,11 @@ int der_encode_set(ltc_asn1_list *list,
                    unsigned long *outlen);
 \end{verbatim}            
 
-This will encode the list of ASN.1 objects in \textit{list} of length \textit{inlen} objects and store the output in \textit{out} of length \textit{outlen} bytes.  The function
-will make a copy of the list provided and sort it by the TAG.  Objects with identical TAGs are additionally sorted on their original placement in the 
+This will encode the list of ASN.1 objects in \textit{list} of length \textit{inlen} objects, and store the output in \textit{out} of length \textit{outlen} bytes.  
+The function will make a copy of the list provided, and sort it by the TAG.  Objects with identical TAGs are additionally sorted on their original placement in the 
 array (to make the process deterministic).
 
-This function will \textbf{NOT} recognize \textit{DEFAULT} objects and it is the responsibility of the caller to remove them as required.
+This function will \textbf{NOT} recognize \textit{DEFAULT} objects, and it is the responsibility of the caller to remove them as required.
 
 \subsubsection{SET Decoding}
 
@@ -4630,28 +4505,24 @@ Like the SET type the der\_length\_sequence() function can be used to determine 
 
 To encode or decode INTEGER data types use the following functions.
 
-\index{der\_encode\_integer()}
-\index{der\_decode\_integer()}
-\index{der\_length\_integer()}
+\index{der\_encode\_integer()}\index{der\_decode\_integer()}\index{der\_length\_integer()}
 \begin{verbatim}
-int der_encode_integer(       mp_int *num, 
+int der_encode_integer(         void *num, 
                        unsigned char *out, 
                        unsigned long *outlen);
 
 int der_decode_integer(const unsigned char *in, 
                              unsigned long  inlen, 
-                                    mp_int *num);
+                                      void *num);
 
-int der_length_integer(       mp_int *num, 
+int der_length_integer(         void *num, 
                        unsigned long *len);
 \end{verbatim}
 
-These will encode or decode a signed INTEGER data type using the \textit{mp\_int} data type to store the large INTEGER.  To encode smaller values without allocating
-an mp\_int to store the value the \textit{short} INTEGER functions were made available.
+These will encode or decode a signed INTEGER data type using the bignum data type to store the large INTEGER.  To encode smaller values without allocating
+a bignum to store the value, the \textit{short} INTEGER functions were made available.
 
-\index{der\_encode\_short\_integer()}
-\index{der\_decode\_short\_integer()}
-\index{der\_length\_short\_integer()}
+\index{der\_encode\_short\_integer()}\index{der\_decode\_short\_integer()}\index{der\_length\_short\_integer()}
 \begin{verbatim}
 int der_encode_short_integer(unsigned long  num, 
                              unsigned char *out, 
@@ -4670,9 +4541,7 @@ and short integer functions can encode and decode each others outputs.
 
 \subsection{ASN.1 BIT STRING}
 
-\index{der\_encode\_bit\_string()}
-\index{der\_decode\_bit\_string()}
-\index{der\_length\_bit\_string()}
+\index{der\_encode\_bit\_string()}\index{der\_decode\_bit\_string()}\index{der\_length\_bit\_string()}
 \begin{verbatim}
 int der_encode_bit_string(const unsigned char *in, 
                                 unsigned long  inlen,
@@ -4689,13 +4558,11 @@ int der_length_bit_string(unsigned long  nbits,
 \end{verbatim}
 
 These will encode or decode a BIT STRING data type.  The bits are passed in (or read out) using one \textbf{char} per bit.  A non--zero value will be interpreted
-as a one bit and a zero value a zero bit.
+as a one bit, and a zero value a zero bit.
 
 \subsection{ASN.1 OCTET STRING}
 
-\index{der\_encode\_octet\_string()}
-\index{der\_decode\_octet\_string()}
-\index{der\_length\_octet\_string()}
+\index{der\_encode\_octet\_string()}\index{der\_decode\_octet\_string()}\index{der\_length\_octet\_string()}
 \begin{verbatim}
 int der_encode_octet_string(const unsigned char *in, 
                                   unsigned long  inlen,
@@ -4711,13 +4578,11 @@ int der_length_octet_string(unsigned long  noctets,
                             unsigned long *outlen);
 \end{verbatim}
 
-These will encode or decode an OCTET STRING data type.  The octets are stored using one \textbf{char} each.  
+These will encode or decode an OCTET STRING data type.  The octets are stored using one \textbf{unsigned char} each.  
 
 \subsection{ASN.1 OBJECT IDENTIFIER}
 
-\index{der\_encode\_object\_identifier()}
-\index{der\_decode\_object\_identifier()}
-\index{der\_length\_object\_identifier()}
+\index{der\_encode\_object\_identifier()}\index{der\_decode\_object\_identifier()}\index{der\_length\_object\_identifier()}
 \begin{verbatim}
 int der_encode_object_identifier(unsigned long *words, 
                                  unsigned long  nwords,
@@ -4734,14 +4599,12 @@ int der_length_object_identifier(unsigned long *words,
                                  unsigned long *outlen);
 \end{verbatim}
 
-These will encode or decode an OBJECT IDENTIFIER object.  The words of the OID are stored in individual \textbf{unsigned long} elements and must be in the range
+These will encode or decode an OBJECT IDENTIFIER object.  The words of the OID are stored in individual \textbf{unsigned long} elements, and must be in the range
 $0 \ldots 2^{32} - 1$.  
 
 \subsection{ASN.1 IA5 STRING}
 
-\index{der\_encode\_ia5\_string()}
-\index{der\_decode\_ia5\_string()}
-\index{der\_length\_ia5\_string()}
+\index{der\_encode\_ia5\_string()}\index{der\_decode\_ia5\_string()}\index{der\_length\_ia5\_string()}
 \begin{verbatim}
 int der_encode_ia5_string(const unsigned char *in, 
                                 unsigned long  inlen,
@@ -4758,18 +4621,14 @@ int der_length_ia5_string(const unsigned char *octets,
                                 unsigned long *outlen);
 \end{verbatim}
 
-These will encode or decode an IA5 STRING.  The characters are read or stored in individual \textbf{char} elements.  This functions performs internal character
+These will encode or decode an IA5 STRING.  The characters are read or stored in individual \textbf{char} elements.  These functions performs internal character
 to numerical conversions based on the conventions of the compiler being used.  For instance, on an x86\_32 machine 'A' == 65 but the same may not be true on 
-say a SPARC machine.  Internally these functions have a table of literal characters and their numerical ASCII values.  This provides a stable conversion provided
-that the build platform honours the run-time platforms character conventions.
-
-If you're worried try building the test suite and running it.  It has hard coded test vectors to ensure it is operating properly. 
+say a SPARC machine.  Internally, these functions have a table of literal characters and their numerical ASCII values.  This provides a stable conversion provided
+that the build platform honours the run--time platforms character conventions.
 
 \subsection{ASN.1 PRINTABLE STRING}
 
-\index{der\_encode\_printable\_string()}
-\index{der\_decode\_printable\_string()}
-\index{der\_length\_printable\_string()}
+\index{der\_encode\_printable\_string()}\index{der\_decode\_printable\_string()}\index{der\_length\_printable\_string()}
 \begin{verbatim}
 int der_encode_printable_string(const unsigned char *in, 
                                       unsigned long  inlen,
@@ -4786,17 +4645,41 @@ int der_length_printable_string(const unsigned char *octets,
                                       unsigned long *outlen);
 \end{verbatim}
 
-These will encode or decode an PRINTABLE STRING.  The characters are read or stored in individual \textbf{char} elements.  This functions performs internal character
+These will encode or decode an PRINTABLE STRING.  The characters are read or stored in individual \textbf{char} elements.  These functions performs internal character
 to numerical conversions based on the conventions of the compiler being used.  For instance, on an x86\_32 machine 'A' == 65 but the same may not be true on 
-say a SPARC machine.  Internally these functions have a table of literal characters and their numerical ASCII values.  This provides a stable conversion provided
+say a SPARC machine.  Internally, these functions have a table of literal characters and their numerical ASCII values.  This provides a stable conversion provided
 that the build platform honours the run-time platforms character conventions.
 
-If you're worried try building the test suite and running it.  It has hard coded test vectors to ensure it is operating properly. 
+\subsection{ASN.1 UTF8 STRING}
+
+\index{der\_encode\_utf8\_string()}\index{der\_decode\_utf8\_string()}\index{der\_length\_utf8\_string()}
+\begin{verbatim}
+int der_encode_utf8_string(const wchar_t *in, 
+                           unsigned long  inlen,
+                           unsigned char *out, 
+                           unsigned long *outlen);
+
+int der_decode_utf8_string(const unsigned char *in, 
+                                 unsigned long  inlen,
+                                       wchar_t *out, 
+                                 unsigned long *outlen);
+
+int der_length_utf8_string(const wchar_t *octets, 
+                           unsigned long  noctets, 
+                           unsigned long *outlen);
+\end{verbatim}
+
+These will encode or decode an UTF8 STRING.  The characters are read or stored in individual \textbf{wchar\_t} elements.  These function performs no internal
+mapping and treat the characters as literals.  
+
+These functions use the \textbf{wchar\_t} type which is not universally available.  In those cases, the library will typedef it to \textbf{unsigned long}.  If you 
+intend to use the ISO C functions for working with wide--char arrays, you should make sure that wchar\_t has been defined previously.
 
 \subsection{ASN.1 UTCTIME}
 
 The UTCTIME type is to store a date and time in ASN.1 format.  It uses the following structure to organize the time.
 
+\index{ltc\_utctime structure}
 \begin{verbatim}
 typedef struct {
    unsigned YY, /* year    00--99 */
@@ -4811,14 +4694,11 @@ typedef struct {
 } ltc_utctime;
 \end{verbatim}
 
-The time can be offset plus or minus a set amount of hours (off\_hh) and minutes (off\_mm).  When \textit{off\_dir} is zero the time will be added otherwise it 
-will be subtracted.  
+The time can be offset plus or minus a set amount of hours (off\_hh) and minutes (off\_mm).  When \textit{off\_dir} is zero, the time will be added otherwise it 
+will be subtracted.  For instance, the array $\lbrace 5, 6, 20, 22, 4, 00, 0, 5, 0 \rbrace$ represents the current time of 
+\textit{2005, June 20th, 22:04:00} with a time offset of +05h00.  
 
-For instance, the array $\lbrace 5, 6, 20, 22, 4, 00, 0, 5, 0 \rbrace$ represents the current time of 2005, June 20th, 22:04:00 with a time offset of +05h00.  
-
-\index{der\_encode\_utctime()}
-\index{der\_decode\_utctime()}
-\index{der\_length\_utctime()}
+\index{der\_encode\_utctime()}\index{der\_decode\_utctime()}\index{der\_length\_utctime()}
 \begin{verbatim}
 int der_encode_utctime(  ltc_utctime *utctime, 
                        unsigned char *out,   
@@ -4832,7 +4712,7 @@ int der_length_utctime(  ltc_utctime *utctime,
                        unsigned long *outlen);
 \end{verbatim}
 
-The encoder will store time in one of the two ASN.1 formats, either \textit{YYMMDDhhmmssZ} or \textit{YYMMDDhhmmss$\pm$hhmm} and perform minimal error checking on the 
+The encoder will store time in one of the two ASN.1 formats, either \textit{YYMMDDhhmmssZ} or \textit{YYMMDDhhmmss$\pm$hhmm}, and perform minimal error checking on the 
 input.  The decoder will read all valid ASN.1 formats and perform range checking on the values (not complete but rational) useful for catching packet errors.
 
 It is suggested that decoded data be further scrutinized (e.g. days of month in particular).
@@ -4853,13 +4733,13 @@ int der_decode_choice(const unsigned char *in,
                             unsigned long  outlen);
 \end{verbatim}
 
-This will decode the input in the \textit{in} field of length \textit{inlen}.  It uses the provided ASN.1 list specified in the \textit{list} field which has \textit{outlen} elements.  
-The \textit{inlen} field will be updated with the length of the decoded data type as well as the respective entry in the \textit{list} field will have the \textit{used} flag 
-set to non--zero to reflect it was the data type decoded.
+This will decode the input in the \textit{in} field of length \textit{inlen}.  It uses the provided ASN.1 list specified in the \textit{list} field which has 
+\textit{outlen} elements.  The \textit{inlen} field will be updated with the length of the decoded data type, as well as the respective entry in the \textit{list} field 
+will have the \textit{used} flag set to non--zero to reflect it was the data type decoded.
 
 \subsection{ASN.1 Flexi Decoder}
 The ASN.1 \textit{flexi} decoder allows the developer to decode arbitrary ASN.1 DER packets (provided they use data types LibTomCrypt supports) without first knowing
-the structure of the data.  Where der\_decode\_sequence() requires the developer to specify the data types to decode in advance the flexi decoder is entirely
+the structure of the data.  Where der\_decode \_sequence() requires the developer to specify the data types to decode in advance the flexi decoder is entirely
 free form.
 
 The flexi decoder uses the same \textit{ltc\_asn1\_list} but instead of being stored in an array it uses the linked list pointers \textit{prev}, \textit{next}, \textit{parent} 
@@ -4879,15 +4759,77 @@ int  der_decode_sequence_flexi(const unsigned char *in,
 This will decode items in the \textit{in} buffer of max input length \textit{inlen} and store the newly created pointer to the list in \textit{out}.  This function allocates
 all required memory for the decoding.  It stores the number of octets read back into \textit{inlen}.
 
-The function will terminate when either it hits an invalid ASN.1 type octet or it reads \textit{inlen} octets.  An early terminate is a soft error and returns
+The function will terminate when either it hits an invalid ASN.1 tag, or it reads \textit{inlen} octets.  An early termination is a soft error, and returns
 normally.  The decoded list \textit{out} will point to the very first element of the list (e.g. both parent and prev pointers will be \textbf{NULL}).  
 
-An invalid decoding will terminate the process and free the allocated memory automatically.  
+An invalid decoding will terminate the process, and free the allocated memory automatically.  
 
-\textbf{Note} that the list decoded by this function is \textbf{NOT} in the correct form for der\_encode\_sequence() to use directly.  You will have to first 
+\textbf{Note:} the list decoded by this function is \textbf{NOT} in the correct form for der\_encode\_sequence() to use directly.  You will have to first 
 have to convert the list by first storing all of the siblings in an array then storing all the children as sub-lists of a sequence using the \textit{.data} 
 pointer.  Currently no function in LibTomCrypt provides this ability.
 
+\subsubsection{Sample Decoding}
+Suppose we decode the following structure:
+\begin{small}
+\begin{verbatim}
+User ::= SEQUENCE {
+   Name        IA5 STRING
+   LoginToken  SEQUENCE {
+      passwdHash   OCTET STRING
+      pubkey       ECCPublicKey
+   }
+   LastOn      UTCTIME
+}
+\end{verbatim}
+\end{small}
+\begin{flushleft}and we decoded it with the following code:\end{flushleft}
+
+\begin{small}
+\begin{verbatim}
+unsigned char inbuf[MAXSIZE];
+unsigned long inbuflen;
+ltc_asn1_list *list;
+int           err;
+
+/* somehow fill inbuf/inbuflen */
+if ((err = der_decode_sequence_flexi(inbuf, inbuflen, &list)) != CRYPT_OK) {
+   printf("Error decoding: %s\n", error_to_string(err));
+   exit(EXIT_FAILURE);
+}
+\end{verbatim}
+\end{small}
+
+At this point \textit{list} would point to the SEQUENCE identified by \textit{User}.  It would have no sibblings (prev or next), and only a child node.  Walking to the child
+node with the following code will bring us to the \textit{Name} portion of the SEQUENCE:
+\begin{small}
+\begin{verbatim}
+list = list->child;
+\end{verbatim}
+\end{small}
+Now \textit{list} points to the \textit{Name} member (with the tag IA5 STRING).  The \textit{data}, \textit{size}, and \textit{type} members of \textit{list} should reflect
+that of an IA5 STRING.  The sibbling will now be the \textit{LoginToken} SEQUENCE.  The sibbling has a child node which points to the \textit{passwdHash} OCTET STRING.
+We can walk to this node with the following code:
+\begin{small}
+\begin{verbatim}
+/* list already pointing to 'Name' */
+list = list->next->child;
+\end{verbatim}
+\end{small}
+At this point, \textit{list} will point to the \textit{passwdHash} member of the innermost SEQUENCE.  This node has a sibbling, the \textit{pubkey} member of the SEQUENCE.
+The \textit{LastOn} member of the SEQUENCE is a sibbling of the LoginToken node, if we wanted to walk there we would have to go up and over via:
+\begin{small}
+\begin{verbatim}
+list = list->parent->next;
+\end{verbatim}
+\end{small}
+At this point, we are pointing to the last node of the list.  Lists are terminated in all directions by a \textbf{NULL} pointer.  All nodes are doubly linked so that you 
+can walk up and down the nodes without keeping pointers lying around.
+
+
+
+
+
+\subsubsection{Free'ing a Flexi List}
 To free the list use the following function.
 
 \index{der\_sequence\_free()}
@@ -4905,7 +4847,7 @@ is made up of two algorithms, Algorithm One and Algorithm Two.  Algorithm One is
 for completeness.  Algorithm Two is a bit more modern and more flexible to work with.
 
 \subsection{Algorithm One}
-Algorithm One accepts as input a password, an 8--byte salt and an iteration counter.  The iteration counter is meant to act as delay for
+Algorithm One accepts as input a password, an 8--byte salt, and an iteration counter.  The iteration counter is meant to act as delay for
 people trying to brute force guess the password.  The higher the iteration counter the longer the delay.  This algorithm also requires a hash 
 algorithm and produces an output no longer than the output of the hash.  
 
@@ -4919,17 +4861,17 @@ int pkcs_5_alg1(const unsigned char *password,
                       unsigned char *out,
                       unsigned long *outlen)
 \end{alltt}
-Where \textit{password} is the users password.  Since the algorithm allows binary passwords you must also specify the length in \textit{password\_len}.  
+Where \textit{password} is the user's password.  Since the algorithm allows binary passwords you must also specify the length in \textit{password\_len}.  
 The \textit{salt} is a fixed size 8--byte array which should be random for each user and session.  The \textit{iteration\_count} is the delay desired
 on the password.  The \textit{hash\_idx} is the index of the hash you wish to use in the descriptor table.  
 
-The output of length upto \textit{outlen} is stored in \textit{out}.  If \textit{outlen} is initially larger than the size of the hash functions output
+The output of length up to \textit{outlen} is stored in \textit{out}.  If \textit{outlen} is initially larger than the size of the hash functions output
 it is set to the number of bytes stored.  If it is smaller than not all of the hash output is stored in \textit{out}.
 
 \subsection{Algorithm Two}
 
-Algorithm Two is the recommended algorithm for this task.  It allows variable length salts and can produce outputs larger than the 
-hash functions output.  As such it can easily be used to derive session keys for ciphers and MACs as well initial vectors as required
+Algorithm Two is the recommended algorithm for this task.  It allows variable length salts, and can produce outputs larger than the 
+hash functions output.  As such, it can easily be used to derive session keys for ciphers and MACs as well initial vectors as required
 from a single password and invocation of this algorithm.
 
 \index{pkcs\_5\_alg2()}
@@ -4945,11 +4887,12 @@ int pkcs_5_alg2(const unsigned char *password,
 \end{alltt}
 Where \textit{password} is the users password.  Since the algorithm allows binary passwords you must also specify the length in \textit{password\_len}.  
 The \textit{salt} is an array of size \textit{salt\_len}.  It should be random for each user and session.  The \textit{iteration\_count} is the delay desired
-on the password.  The \textit{hash\_idx} is the index of the hash you wish to use in the descriptor table.   The output of length upto 
+on the password.  The \textit{hash\_idx} is the index of the hash you wish to use in the descriptor table.   The output of length up to 
 \textit{outlen} is stored in \textit{out}.
 
 \begin{verbatim}
-/* demo to show how to make session state material from a password */
+/* demo to show how to make session state material 
+ * from a password */
 #include <tomcrypt.h>
 int main(void)
 {
@@ -4965,8 +4908,9 @@ int main(void)
 
     /* create the material (100 iterations in algorithm) */
     outlen = sizeof(outbuf);
-    if ((err = pkcs_5_alg2(password, password_len, salt, salt_len, 
-                           100, hash_idx, outbuf, &outlen)) 
+    if ((err = pkcs_5_alg2(password, password_len, salt, 
+                           salt_len, 100, hash_idx, outbuf, 
+                           &outlen)) 
        != CRYPT_OK) {
        /* error handle */
     }
@@ -4982,17 +4926,16 @@ int main(void)
 
 \chapter{Miscellaneous}
 \mysection{Base64 Encoding and Decoding}
-The library provides functions to encode and decode a RFC1521 base64 coding scheme.  This means that it can decode what it 
-encodes but the format used does not comply to any known standard.  The characters used in the mappings are:
+The library provides functions to encode and decode a RFC 1521 base--64 coding scheme.  The characters used in the mappings are:
 \begin{verbatim}
 ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/
 \end{verbatim}
-Those characters should are supported in virtually any 7-bit ASCII system which means they can be used for transport over
+Those characters are supported in the 7-bit ASCII map, which means they can be used for transport over
 common e-mail, usenet and HTTP mediums.  The format of an encoded stream is just a literal sequence of ASCII characters
 where a group of four represent 24-bits of input.  The first four chars of the encoders output is the length of the 
 original input.  After the first four characters is the rest of the message.
 
-Often it is desirable to line wrap the output to fit nicely in an e-mail or usenet posting.  The decoder allows you to
+Often, it is desirable to line wrap the output to fit nicely in an e-mail or usenet posting.  The decoder allows you to
 put any character (that is not in the above sequence) in between any character of the encoders output.  You may not however,
 break up the first four characters.
 
@@ -5058,37 +5001,37 @@ is very likely prime.
 \chapter{Programming Guidelines}
 
 \mysection{Secure Pseudo Random Number Generators}
-Probably the single most vulnerable point of any cryptosystem is the PRNG.  Without one generating and protecting secrets
-would be impossible.  The requirement that one be setup correctly is vitally important and to address this point the library
-does provide two RNG sources that will address the largest amount of end users as possible.  The \textit{sprng} PRNG provided 
-provides and easy to access source of entropy for any application on a *NIX or Windows computer.  
+Probably the single most vulnerable point of any cryptosystem is the PRNG.  Without one, generating and protecting secrets
+would be impossible.  The requirement that one be setup correctly is vitally important, and to address this point the library
+does provide two RNG sources that will address the largest amount of end users as possible.  The \textit{sprng} PRNG provides an easy to 
+access source of entropy for any application on a UNIX (and the like) or Windows computer.  
 
-However, when the end user is not on one of these platforms the application developer must address the issue of finding
+However, when the end user is not on one of these platforms, the application developer must address the issue of finding
 entropy.  This manual is not designed to be a text on cryptography.  I would just like to highlight that when you design
 a cryptosystem make sure the first problem you solve is getting a fresh source of entropy.  
 
 \mysection{Preventing Trivial Errors}
-Two simple ways to prevent trivial errors is to prevent overflows and to check the return values.  All of the functions
+Two simple ways to prevent trivial errors is to prevent overflows, and to check the return values.  All of the functions
 which output variable length strings will require you to pass the length of the destination.  If the size of your output
 buffer is smaller than the output it will report an error.  Therefore, make sure the size you pass is correct!
 
-Also virtually all of the functions return an error code or {\bf CRYPT\_OK}.  You should detect all errors as simple 
-typos or such can cause algorithms to fail to work as desired.
+Also, virtually all of the functions return an error code or {\bf CRYPT\_OK}.  You should detect all errors, as simple 
+typos can cause algorithms to fail to work as desired.
 
 \mysection{Registering Your Algorithms}
-To avoid linking and other run-time errors it is important to register the ciphers, hashes and PRNGs you intend to use 
+To avoid linking and other run--time errors it is important to register the ciphers, hashes and PRNGs you intend to use 
 before you try to use them.  This includes any function which would use an algorithm indirectly through a descriptor table.
 
 A neat bonus to the registry system is that you can add external algorithms that are not part of the library without 
 having to hack the library.  For example, suppose you have a hardware specific PRNG on your system.  You could easily 
-write the few functions required plus a descriptor.  After registering your PRNG all of the library functions that 
-need a PRNG can instantly take advantage of it.
+write the few functions required plus a descriptor.  After registering your PRNG, all of the library functions that 
+need a PRNG can instantly take advantage of it.  The same applies for ciphers, hashes, and bignum math routines.
 
 \mysection{Key Sizes}
 
 \subsection{Symmetric Ciphers}
-For symmetric ciphers use as large as of a key as possible.  For the most part \textit{bits are cheap} so using a 256-bit key
-is not a hard thing to do.  
+For symmetric ciphers, use as large as of a key as possible.  For the most part \textit{bits are cheap} so using a 256--bit key
+is not a hard thing to do.  As a good rule of thumb do not use a key smaller than 128 bits.
 
 \subsection{Asymmetric Ciphers}
 The following chart gives the work factor for solving a DH/RSA public key using the NFS.  The work factor for a key of order
@@ -5099,6 +5042,7 @@ e^{1.923 \cdot ln(n)^{1 \over 3} \cdot ln(ln(n))^{2 \over 3}}
 
 Note that $n$ is not the bit-length but the magnitude.  For example, for a 1024-bit key $n = 2^{1024}$.  The work required 
 is:
+\begin{figure}[here]
 \begin{center}
 \begin{tabular}{|c|c|}
     \hline RSA/DH Key Size (bits) & Work Factor ($log_2$) \\
@@ -5113,12 +5057,18 @@ is:
     \hline 
 \end{tabular}
 \end{center}
+\caption{RSA/DH Key Strength}
+\end{figure}
 
 The work factor for ECC keys is much higher since the best attack is still fully exponential.  Given a key of magnitude
 $n$ it requires $\sqrt n$ work.  The following table summarizes the work required:
+\begin{figure}[here]
 \begin{center}
 \begin{tabular}{|c|c|}
     \hline ECC Key Size (bits) & Work Factor ($log_2$) \\
+    \hline 112 & 56 \\
+    \hline 128 & 64 \\
+    \hline 160 & 80 \\
     \hline 192 & 96  \\
     \hline 224 & 112 \\
     \hline 256 & 128 \\
@@ -5127,71 +5077,68 @@ $n$ it requires $\sqrt n$ work.  The following table summarizes the work require
     \hline
 \end{tabular}
 \end{center}
+\caption{ECC Key Strength}
+\end{figure}
 
 Using the above tables the following suggestions for key sizes seems appropriate:
 \begin{center}
 \begin{tabular}{|c|c|c|}
     \hline Security Goal & RSA/DH Key Size (bits) & ECC Key Size (bits) \\
-    \hline Short term (less than a year) & 1024 & 160 \\
-    \hline Short term (less than five years) & 1536 & 192 \\
-    \hline Long Term (less than ten years) & 2560 & 256 \\
+    \hline Near term   & 1024 & 160 \\
+    \hline Short term  & 1536 & 192 \\
+    \hline Long Term   & 2560 & 384 \\
     \hline 
 \end{tabular}
 \end{center}
 
 \mysection{Thread Safety}
-The library is not thread safe but several simple precautions can be taken to avoid any problems.  The registry functions
-such as register\_cipher() are not thread safe no matter what you do.  Its best to call them from your programs initialization
+The library is not fully thread safe but several simple precautions can be taken to avoid any problems.  The registry functions
+such as register\_cipher() are not thread safe no matter what you do.  It is best to call them from your programs initialization
 code before threads are initiated.
 
 The rest of the code uses state variables you must pass it such as hash\_state, hmac\_state, etc.  This means that if each
-thread has its own state variables then they will not affect each other.  This is fairly simple with symmetric ciphers
-and hashes.  However, the keyring and PRNG support is something the threads will want to share.  The simplest workaround 
-is create semaphores or mutexes around calls to those functions.  
+thread has its own state variables then they will not affect each other, and are fully thread safe.  This is fairly simple with symmetric ciphers
+and hashes.  
 
-Since C does not have standard semaphores this support is not native to LibTomCrypt.  Even a C based semaphore is not entire
-possible as some compilers may ignore the \textit{volatile} keyword or have multiple processors.  Provide your host application
-is modular enough putting the locks in the right place should not bloat the code significantly and will solve all thread
-safety issues within the library.
+\index{LTC\_PTHREAD}
+The only sticky issue is a shared PRNG which can be alleviated with the careful use of mutex devices.  Defining LTC\_PTHREAD for instance, enables
+pthreads based mutex locking in various routines such as the Yarrow and Fortuna PRNGs, the fixed point ECC multiplier, and other routines.
 
 \chapter{Configuring and Building the Library}
 \mysection{Introduction}
-The library is fairly flexible about how it can be built, used and generally distributed.  Additions are being made with
+The library is fairly flexible about how it can be built, used, and generally distributed.  Additions are being made with
 each new release that will make the library even more flexible.  Each of the classes of functions can be disabled during
 the build process to make a smaller library.  This is particularly useful for shared libraries.
 
-As of v1.06 of the library the build process has been moved to two steps for the typical LibTomCrypt application.  This is because
-LibTomCrypt no longer provides a math API on its own and relies on third party libraries (such as LibTomMath or TomsFastMath).
+As of v1.06 of the library, the build process has been moved to two steps for the typical LibTomCrypt application.  This is because
+LibTomCrypt no longer provides a math API on its own and relies on third party libraries (such as LibTomMath, GnuMP, or TomsFastMath).
 
-The build process now consists of installing a math library first then building and installing LibTomCrypt with a math library
+The build process now consists of installing a math library first, and then building and installing LibTomCrypt with a math library
 configured.  Note that LibTomCrypt can be built with no internal math descriptors.  This means that one must be provided at either
-build or run time for the application.  LibTomCrypt comes with two math descriptors that provide a standard interface to math 
-libraries.  One for LibTomMath and one for TomsFastMath.
+build, or run time for the application.  LibTomCrypt comes with three math descriptors that provide a standard interface to math 
+libraries.
 
 \mysection{Makefile variables}
 
 All GNU driven makefiles (including the makefile for ICC) use a set of common variables to control the build and install process.  Most of the 
 settings can be overwritten from the command line which makes custom installation a breeze.
 
-\index{MAKE}
-\index{CC}
-\index{AR}
+\index{MAKE}\index{CC}\index{AR}
 \subsection{MAKE, CC and AR}
 The MAKE, CC and AR flags can all be overwritten.  They default to \textit{make}, \textit{\$CC} and \textit{\$AR} respectively.  
-
-Changing MAKE allows you to change what program will be invoked to handle sub--directories.  E.g.
+Changing MAKE allows you to change what program will be invoked to handle sub--directories. For example, this
 
 \begin{verbatim}
 MAKE=gmake gmake install
 \end{verbatim}
 
-Will build and install the libraries with the \textit{gmake} tool.  Similarly
+\begin{flushleft} will build and install the libraries with the \textit{gmake} tool.  Similarly, \end{flushleft}
 
 \begin{verbatim}
 CC=arm-gcc AR=arm-ar make 
 \end{verbatim}
 
-Will build the library using \textit{arm--gcc} as the compiler and \textit{arm--ar} as the archiver.
+\begin{flushleft} will build the library using \textit{arm--gcc} as the compiler and \textit{arm--ar} as the archiver. \end{flushleft}
 
 \subsection{IGNORE\_SPEED}
 \index{IGNORE\_SPEED}
@@ -5269,7 +5216,8 @@ total 1073
 that GCC expects for global archives.
 
 \begin{verbatim}
-CFLAGS="-DTFM_DESC -DUSE_TFM" EXTRALIBS=-ltfm make install test timing
+CFLAGS="-DTFM_DESC -DUSE_TFM" EXTRALIBS=-ltfm make install \
+                                                   test timing
 \end{verbatim}
 
 This will install the library using the TomsFastMath library and link the \textit{libtfm.a} library out of the default library search path.  The two
@@ -5286,15 +5234,15 @@ Building a static library is fairly trivial as it only requires one invocation o
 CFLAGS="-DTFM_DESC" make install
 \end{verbatim}
 
-That will build LibTomCrypt (including the TomsFastMath descriptor) and install it in the default locations indicated previously.  You can enable 
-the built--in LibTomMath descriptor as well (or in place of the TomsFastMath descriptor).  Similarly you can build the library with no built--in 
+That will build LibTomCrypt (including the TomsFastMath descriptor), and install it in the default locations indicated previously.  You can enable 
+the built--in LibTomMath descriptor as well (or in place of the TomsFastMath descriptor).  Similarly, you can build the library with no built--in 
 math descriptors.  
 
 \begin{verbatim}
 make install
 \end{verbatim}
 
-In this case no math descriptors are present in the library and they will have to be made available at build or run time before you can use any of the 
+In this case, no math descriptors are present in the library and they will have to be made available at build or run time before you can use any of the 
 public key functions.  
 
 Note that even if you include the built--in descriptors you must link against the source library as well.  
@@ -5319,17 +5267,18 @@ CFLAGS="-DTFM_DESC" EXTRALIBS=-ltfm make -f makefile.shared install
 This will build and install the library and link the shared object against the TomsFastMath library (which must be installed as a shared object as well).  The 
 shared build process requires libtool to be installed.
 
-\mysection{tomcrypt\_cfg.h}
-The file \textit{tomcrypt\_cfg.h} is what lets you control various high level macros which control the behaviour 
-of the library. 
+\mysection{Header Configuration}
+The file \textit{tomcrypt\_cfg.h} is what lets you control various high level macros which control the behaviour of the library.  Build options are also
+stored in \textit{tomcrypt\_custom.h} which allow the enabling and disabling of various algorithms.
 
 \subsubsection{ARGTYPE}
-This lets you control how the \_ARGCHK macro will behave.  The macro is used to check pointers inside the functions against
-NULL.  There are three settings for ARGTYPE.  When set to 0 it will have the default behaviour of printing a message to 
-stderr and raising a SIGABRT signal.  This is provided so all platforms that use libtomcrypt can have an error that functions
-similarly.  When set to 1 it will simply pass on to the assert() macro.  When set to 2 the macro will display the error to
+This lets you control how the LTC\_ARGCHK macro will behave.  The macro is used to check pointers inside the functions against
+NULL.  There are four settings for ARGTYPE.  When set to 0, it will have the default behaviour of printing a message to 
+stderr and raising a SIGABRT signal.  This is provided so all platforms that use LibTomCrypt can have an error that functions
+similarly.  When set to 1, it will simply pass on to the assert() macro.  When set to 2, the macro will display the error to
 stderr then return execution to the caller.  This could lead to a segmentation fault (e.g. when a pointer is \textbf{NULL}) but is useful
-if you handle signals on your own.  When set to 3 it will resolve to a empty macro  and no error checking will be performed.
+if you handle signals on your own.  When set to 3, it will resolve to a empty macro and no error checking will be performed.  Finally, when set
+to 4, it will return CRYPT\_INVALID\_ARG to the caller.  
 
 \subsubsection{Endianess}
 There are five macros related to endianess issues.  For little endian platforms define, \textbf{ENDIAN\_LITTLE}.  For big endian
@@ -5340,58 +5289,38 @@ which will work on all platforms.
 Currently LibTomCrypt will detect x86-32, x86-64, MIPS R5900, SPARC and SPARC64 running GCC as well as x86-32 running MSVC.  
 
 \mysection{The Configure Script}
-There are also options you can specify from the configure script or \textit{tomcrypt\_custom.h}.  
+There are also options you can specify from the \textit{tomcrypt\_custom.h} header file.
 
 \subsection{X memory routines}
-At the top of tomcrypt\_custom.h are four macros denoted as XMALLOC, XCALLOC, XREALLOC and XFREE which resolve to 
-the name of the respective functions.  This lets you substitute in your own memory routines.  If you substitute in 
-your own functions they must behave like the standard C library functions in terms of what they expect as input and 
-output.  By default the library uses the standard C routines.
+\index{XMALLOC}\index{XCALLOC}\index{XREALLOC}\index{XFREE}
+At the top of tomcrypt\_custom.h are a series of macros denoted as XMALLOC, XCALLOC, XREALLOC, XFREE, and so on.  They resolve to 
+the name of the respective functions from the standard C library by default.  This lets you substitute in your own memory routines.  
+If you substitute in your own functions they must behave like the standard C library functions in terms of what they expect as input and 
+output.
+
+These macros are handy for working with platforms which do not have a standard C library.  For instance, the OLPC\footnote{See http://dev.laptop.org/git?p=bios-crypto;a=summary}
+bios code uses these macros to redirect to very compact heap and string operations.
 
 \subsection{X clock routines}
 The rng\_get\_bytes() function can call a function that requires the clock() function.  These macros let you override
 the default clock() used with a replacement.  By default the standard C library clock() function is used.
 
-\subsection{NO\_FILE}
-During the build if NO\_FILE is defined then any function in the library that uses file I/O will not call the file I/O 
+\subsection{LTC\_NO\_FILE}
+During the build if LTC\_NO\_FILE is defined then any function in the library that uses file I/O will not call the file I/O 
 functions and instead simply return CRYPT\_NOP.  This should help resolve any linker errors stemming from a lack of
 file I/O on embedded platforms.
 
-\subsection{CLEAN\_STACK}
+\subsection{LTC\_CLEAN\_STACK}
 When this functions is defined the functions that store key material on the stack will clean up afterwards.  
 Assumes that you have no memory paging with the stack.
 
 \subsection{LTC\_TEST}
-When this has been defined the various self--test functions (for ciphers, hashes, prngs, etc) are included in the build.
-When this has been undefined the tests are removed and if called will return CRYPT\_NOP.
+When this has been defined the various self--test functions (for ciphers, hashes, prngs, etc) are included in the build.  This is the default configuration.
+If LTC\_NO\_TEST has been defined, the testing routines will be compacted and only return CRYPT\_NOP.
 
-\subsection{Symmetric Ciphers, One-way Hashes, PRNGS and Public Key Functions}
-There are a plethora of macros for the ciphers, hashes, PRNGs and public key functions which are fairly 
-self-explanatory.  When they are defined the functionality is included otherwise it is not.  There are some 
-dependency issues which are noted in the file.  For instance, Yarrow requires CTR chaining mode, a block 
-cipher and a hash function.
-
-Also see technical note number five for more details.
-
-\subsection{TWOFISH\_SMALL and TWOFISH\_TABLES}
-Twofish is a 128-bit symmetric block cipher that is provided within the library.  The cipher itself is flexible enough
-to allow some trade-offs in the implementation.  When TWOFISH\_SMALL is defined the scheduled symmetric key for Twofish 
-requires only 200 bytes of memory.  This is achieved by not pre-computing the substitution boxes.  Having this 
-defined will also greatly slow down the cipher.  When this macro is not defined Twofish will pre-compute the 
-tables at a cost of 4KB of memory.  The cipher will be much faster as a result.  
-
-When TWOFISH\_TABLES is defined the cipher will use pre-computed (and fixed in code) tables required to work.  This is
-useful when TWOFISH\_SMALL is defined as the table values are computed on the fly.  When this is defined the code size
-will increase by approximately 500 bytes.  If this is defined but TWOFISH\_SMALL is not the cipher will still work but
-it will not speed up the encryption or decryption functions.
-
-\subsection{GCM\_TABLES}
-When defined GCM will use a 64KB table (per GCM state) which will greatly speed up the per--packet latency.  
-It also increases the initialization time and isn't suitable when you are going to use a key a few times only.  
-
-\subsection{SMALL\_CODE}
-When this is defined some of the code such as the Rijndael and SAFER+ ciphers are replaced with smaller code variants.
-These variants are slower but can save quite a bit of code space.
+\subsection{LTC\_NO\_FAST}
+When this has been defined the library will not use faster word oriented operations.  By default, they are only enabled for platforms
+which can be auto-detected.  This macro ensures that they are never enabled.
 
 \subsection{LTC\_FAST}
 This mode (auto-detected with x86\_32,x86\_64 platforms with GCC or MSVC) configures various routines such as ctr\_encrypt() or 
@@ -5413,10 +5342,53 @@ whole word XOR operations.  These operations will be unaligned.
 The simplest precaution is to make sure you process all data in power of two blocks and handle \textit{remainder} at the end.  e.g. If you are 
 CTR'ing a long stream process it in blocks of (say) four kilobytes and handle any remaining incomplete blocks at the end of the stream.  
 
+\index{LTC\_FAST\_TYPE}
 If you do plan on using the \textit{LTC\_FAST} mode you have to also define a \textit{LTC\_FAST\_TYPE} macro which resolves to an optimal sized
 data type you can perform integer operations with.  Ideally it should be four or eight bytes since it must properly divide the size 
 of your block cipher (e.g. 16 bytes for AES).  This means sadly if you're on a platform with 57--bit words (or something) you can't 
 use this mode.  So sad.
+
+\subsection{LTC\_NO\_ASM}
+When this has been defined the library will not use any inline assembler.  Only a few platforms support assembler inlines but various versions of ICC and GCC
+cannot handle all of the assembler functions.  
+
+\subsection{Symmetric Ciphers, One-way Hashes, PRNGS and Public Key Functions}
+There are a plethora of macros for the ciphers, hashes, PRNGs and public key functions which are fairly 
+self-explanatory.  When they are defined the functionality is included otherwise it is not.  There are some 
+dependency issues which are noted in the file.  For instance, Yarrow requires CTR chaining mode, a block 
+cipher and a hash function.
+
+Also see technical note number five for more details.
+
+\subsection{LTC\_EASY}
+When defined the library is configured to build fewer algorithms and modes.  Mostly it sticks to NIST and ANSI approved algorithms.  See 
+the header file \textit{tomcrypt\_custom.h} for more details.  It is meant to provide literally an easy method of trimming the library 
+build to the most minimum of useful functionality.
+
+\subsection{TWOFISH\_SMALL and TWOFISH\_TABLES}
+Twofish is a 128-bit symmetric block cipher that is provided within the library.  The cipher itself is flexible enough
+to allow some trade-offs in the implementation.  When TWOFISH\_SMALL is defined the scheduled symmetric key for Twofish 
+requires only 200 bytes of memory.  This is achieved by not pre-computing the substitution boxes.  Having this 
+defined will also greatly slow down the cipher.  When this macro is not defined Twofish will pre-compute the 
+tables at a cost of 4KB of memory.  The cipher will be much faster as a result.  
+
+When TWOFISH\_TABLES is defined the cipher will use pre-computed (and fixed in code) tables required to work.  This is
+useful when TWOFISH\_SMALL is defined as the table values are computed on the fly.  When this is defined the code size
+will increase by approximately 500 bytes.  If this is defined but TWOFISH\_SMALL is not the cipher will still work but
+it will not speed up the encryption or decryption functions.
+
+\subsection{GCM\_TABLES}
+When defined GCM will use a 64KB table (per GCM state) which will greatly speed up the per--packet latency.  
+It also increases the initialization time and is not suitable when you are going to use a key a few times only.  
+
+\subsection{GCM\_TABLES\_SSE2}
+\index{SSE2}
+When defined GCM will use the SSE2 instructions to perform the $GF(2^x)$ multiply using 16 128--bit XOR operations.  It shaves a few cycles per byte
+of GCM output on both the AMD64 and Intel Pentium 4 platforms.  Requires GCC and an SSE2 equipped platform.
+
+\subsection{LTC\_SMALL\_CODE}
+When this is defined some of the code such as the Rijndael and SAFER+ ciphers are replaced with smaller code variants.
+These variants are slower but can save quite a bit of code space.
 
 \subsection{LTC\_PTHREAD}
 When this is activated all of the descriptor table functions will use pthread locking to ensure thread safe updates to the tables.  Note that 
@@ -5431,56 +5403,63 @@ algorithm which prevents leaking key bits of the private key (scalar).  It is a 
 where timing side channels pose a significant threat.
 
 \subsection{Math Descriptors}
-The library comes with two math descriptors that allow you to interface the public key cryptography API to freely available math
-libraries.  In this case LibTomMath and TomsFastMath.  When either of \textbf{LTM\_DESC} or \textbf{TFM\_DESC} are defined
-descriptors for the respective library are built and included in the library as \textit{ltm\_desc} or \textit{tfm\_desc} respectively.
+The library comes with three math descriptors that allow you to interface the public key cryptography API to freely available math
+libraries.  When \textbf{GMP\_DESC}, \textbf{LTM\_DESC}, or \textbf{TFM\_DESC} are defined
+descriptors for the respective library are built and included in the library as \textit{gmp\_desc}, \textit{ltm\_desc}, or \textit{tfm\_desc} respectively.
 
-In the test demos that use the libraries the additional flags \textbf{USE\_LTM} and \textbf{USE\_TFM} can be defined
-to tell the program which library to use.  They cannot both be defined at once.
+In the test demos that use the libraries the additional flags \textbf{USE\_GMP}, \textbf{USE\_LTM}, and \textbf{USE\_TFM} can be defined
+to tell the program which library to use.  Only one of the USE flags can be defined at once.
 
-\index{LTM\_DESC} \index{TFM\_DESC} \index{USE\_LTM} \index{USE\_TFM}
+\index{GMP\_DESC} \index{USE\_GMP} \index{LTM\_DESC} \index{TFM\_DESC} \index{USE\_LTM} \index{USE\_TFM}
 \begin{small}
 \begin{verbatim}
-CFLAGS="-DLTM_DESC -DTFM_DESC -DUSE_TFM" EXTRALIBS="-ltommath -ltfm" 
-    make -f makefile.shared install timing
+CFLAGS="-DGMP_DESC -DLTM_DESC -DTFM_DESC -DUSE_TFM" \
+EXTRALIBS="-lgmp -ltommath -ltfm" make -f makefile.shared install timing
 \end{verbatim}
 \end{small}
 
-That will build and install the library with both descriptors (and link against both) but then only use TomsFastMath in the timing demo.  
+That will build and install the library with all descriptors (and link against all), but only use TomsFastMath in the timing demo.  
 
 \chapter{Optimizations}
 \mysection{Introduction}
-The entire API was designed with plug and play in mind at the low level.  That is you can swap out any cipher, hash or PRNG and dependent API will not require
-updating.  This has the nice benefit that I can add ciphers not have to re--write large portions of the API.  For the most part LibTomCrypt has also been written
+The entire API was designed with plug and play in mind at the low level.  That is you can swap out any cipher, hash, PRNG or bignum library and the dependent API will not 
+require updating.  This has the nice benefit that one can add ciphers (etc.) not have to re--write portions of the API.  For the most part, LibTomCrypt has also been written
 to be highly portable and easy to build out of the box on pretty much any platform.  As such there are no assembler inlines throughout the code, I make no assumptions
 about the platform, etc...
 
-That works well for most cases but there are times where time is of the essence.  This API also allows optimized routines to be dropped in--place of the existing
-portable routines.  For instance, hand optimized assembler versions of AES could be provided and any existing function that uses the cipher could automatically use
+That works well for most cases but there are times where performance is of the essence.  This API allows optimized routines to be dropped in--place of the existing
+portable routines.  For instance, hand optimized assembler versions of AES could be provided.  Any existing function that uses the cipher could automatically use
 the optimized code without re--writing.  This also paves the way for hardware drivers that can access hardware accelerated cryptographic devices.
 
 At the heart of this flexibility is the \textit{descriptor} system.  A descriptor is essentially just a C \textit{struct} which describes the algorithm and provides pointers
-to functions that do the work.  For a given class of operation (e.g. cipher, hash, prng) the functions have identical prototypes which makes development simple.  In most
-dependent routines all a developer has to do is register\_XXX() the descriptor and they're set.
+to functions that do the required work.  For a given class of operation (e.g. cipher, hash, prng, bignum) the functions of a descriptor have identical prototypes which makes 
+development simple.  In most dependent routines all an end developer has to do is register\_XXX() the descriptor and they are set.
 
 \mysection{Ciphers}
 The ciphers in LibTomCrypt are accessed through the ltc\_cipher\_descriptor structure.
 
+\label{sec:cipherdesc}
 \begin{small}
 \begin{verbatim}
 struct ltc_cipher_descriptor {
    /** name of cipher */
    char *name;
+
    /** internal ID */
    unsigned char ID;
+
    /** min keysize (octets) */
    int  min_key_length, 
+
    /** max keysize (octets) */
         max_key_length, 
+
    /** block size (octets) */
         block_length, 
+
    /** default number of rounds */
         default_rounds;
+
    /** Setup the cipher 
       @param key         The input symmetric key
       @param keylen      The length of the input key (octets)
@@ -5488,23 +5467,34 @@ struct ltc_cipher_descriptor {
       @param skey        [out] The destination of the scheduled key
       @return CRYPT_OK if successful
    */
-   int  (*setup)(const unsigned char *key, int keylen, int num_rounds, symmetric_key *skey);
+   int  (*setup)(const unsigned char *key, 
+                                 int  keylen, 
+                                 int  num_rounds, 
+                       symmetric_key *skey);
+
    /** Encrypt a block
       @param pt      The plaintext
       @param ct      [out] The ciphertext
       @param skey    The scheduled key
       @return CRYPT_OK if successful
    */
-   int (*ecb_encrypt)(const unsigned char *pt, unsigned char *ct, symmetric_key *skey);
+   int (*ecb_encrypt)(const unsigned char *pt, 
+                            unsigned char *ct, 
+                            symmetric_key *skey);
+
    /** Decrypt a block
       @param ct      The ciphertext
       @param pt      [out] The plaintext
       @param skey    The scheduled key
       @return CRYPT_OK if successful
    */
-   int (*ecb_decrypt)(const unsigned char *ct, unsigned char *pt, symmetric_key *skey);
+   int (*ecb_decrypt)(const unsigned char *ct, 
+                            unsigned char *pt, 
+                            symmetric_key *skey);
+
    /** Test the block cipher
-       @return CRYPT_OK if successful, CRYPT_NOP if self-testing has been disabled
+       @return CRYPT_OK if successful, 
+               CRYPT_NOP if self-testing has been disabled
    */
    int (*test)(void);
 
@@ -5514,7 +5504,8 @@ struct ltc_cipher_descriptor {
    void (*done)(symmetric_key *skey);      
 
    /** Determine a key size
-       @param keysize    [in/out] The size of the key desired and the suggested size
+       @param keysize    [in/out] The size of the key desired  
+                                  The suggested size
        @return CRYPT_OK if successful
    */
    int  (*keysize)(int *keysize);
@@ -5527,8 +5518,10 @@ struct ltc_cipher_descriptor {
        @param skey    The scheduled key context
        @return CRYPT_OK if successful
    */
-   int (*accel_ecb_encrypt)(const unsigned char *pt, unsigned char *ct, 
-                                  unsigned long blocks, symmetric_key *skey);
+   int (*accel_ecb_encrypt)(const unsigned char *pt, 
+                                  unsigned char *ct, 
+                                  unsigned long  blocks, 
+                                  symmetric_key *skey);
 
    /** Accelerated ECB decryption 
        @param pt      Plaintext
@@ -5537,8 +5530,10 @@ struct ltc_cipher_descriptor {
        @param skey    The scheduled key context
        @return CRYPT_OK if successful
    */
-   int (*accel_ecb_decrypt)(const unsigned char *ct, unsigned char *pt, 
-                                  unsigned long blocks, symmetric_key *skey);
+   int (*accel_ecb_decrypt)(const unsigned char *ct, 
+                                  unsigned char *pt, 
+                                  unsigned long  blocks, 
+                                  symmetric_key *skey);
 
    /** Accelerated CBC encryption 
        @param pt      Plaintext
@@ -5548,8 +5543,10 @@ struct ltc_cipher_descriptor {
        @param skey    The scheduled key context
        @return CRYPT_OK if successful
    */
-   int (*accel_cbc_encrypt)(const unsigned char *pt,    unsigned char *ct, 
-                                  unsigned long blocks, unsigned char *IV, 
+   int (*accel_cbc_encrypt)(const unsigned char *pt, 
+                                  unsigned char *ct, 
+                                  unsigned long  blocks, 
+                                  unsigned char *IV, 
                                   symmetric_key *skey);
 
    /** Accelerated CBC decryption 
@@ -5560,8 +5557,10 @@ struct ltc_cipher_descriptor {
        @param skey    The scheduled key context
        @return CRYPT_OK if successful
    */
-   int (*accel_cbc_decrypt)(const unsigned char *ct,    unsigned char *pt, 
-                                  unsigned long blocks, unsigned char *IV, 
+   int (*accel_cbc_decrypt)(const unsigned char *ct, 
+                                  unsigned char *pt, 
+                                  unsigned long  blocks, 
+                                  unsigned char *IV, 
                                   symmetric_key *skey);
 
    /** Accelerated CTR encryption 
@@ -5573,9 +5572,12 @@ struct ltc_cipher_descriptor {
        @param skey    The scheduled key context
        @return CRYPT_OK if successful
    */
-   int (*accel_ctr_encrypt)(const unsigned char *pt,    unsigned char *ct,
-                                  unsigned long blocks, unsigned char *IV, 
-                                  int mode, symmetric_key *skey);
+   int (*accel_ctr_encrypt)(const unsigned char *pt, 
+                                  unsigned char *ct, 
+                                  unsigned long  blocks, 
+                                  unsigned char *IV, 
+                                            int  mode, 
+                                  symmetric_key *skey);
 
    /** Accelerated LRW 
        @param pt      Plaintext
@@ -5586,9 +5588,12 @@ struct ltc_cipher_descriptor {
        @param skey    The scheduled key context
        @return CRYPT_OK if successful
    */
-   int (*accel_lrw_encrypt)(const unsigned char *pt,    unsigned char *ct, 
-                                  unsigned long blocks, unsigned char *IV, 
-                            const unsigned char *tweak, symmetric_key *skey);
+   int (*accel_lrw_encrypt)(const unsigned char *pt, 
+                                  unsigned char *ct, 
+                                  unsigned long  blocks, 
+                                  unsigned char *IV, 
+                            const unsigned char *tweak, 
+                                  symmetric_key *skey);
 
    /** Accelerated LRW 
        @param ct      Ciphertext
@@ -5599,14 +5604,17 @@ struct ltc_cipher_descriptor {
        @param skey    The scheduled key context
        @return CRYPT_OK if successful
    */
-   int (*accel_lrw_decrypt)(const unsigned char *ct,    unsigned char *pt, 
-                                  unsigned long blocks, unsigned char *IV, 
-                            const unsigned char *tweak, symmetric_key *skey);
+   int (*accel_lrw_decrypt)(const unsigned char *ct, 
+                                  unsigned char *pt, 
+                                  unsigned long  blocks, 
+                                  unsigned char *IV, 
+                            const unsigned char *tweak, 
+                                  symmetric_key *skey);
 
    /** Accelerated CCM packet (one-shot)
        @param key        The secret key to use
        @param keylen     The length of the secret key (octets)
-       @param uskey      A previously scheduled key [optional can be NULL]
+       @param uskey      A previously scheduled key [can be NULL]
        @param nonce      The session nonce [use once]
        @param noncelen   The length of the nonce
        @param header     The header for the session
@@ -5615,7 +5623,8 @@ struct ltc_cipher_descriptor {
        @param ptlen      The length of the plaintext (octets)
        @param ct         [out] The ciphertext
        @param tag        [out] The destination tag
-       @param taglen     [in/out] The max size and resulting size of the authentication tag
+       @param taglen     [in/out] The max size and resulting size 
+                                  of the authentication tag
        @param direction  Encrypt or Decrypt direction (0 or 1)
        @return CRYPT_OK if successful
    */
@@ -5630,18 +5639,18 @@ struct ltc_cipher_descriptor {
                        int  direction);
 
    /** Accelerated GCM packet (one shot)
-       @param key               The secret key
-       @param keylen            The length of the secret key
-       @param IV                The initial vector 
-       @param IVlen             The length of the initial vector
-       @param adata             The additional authentication data (header)
-       @param adatalen          The length of the adata
-       @param pt                The plaintext
-       @param ptlen             The length of the plaintext (ciphertext length is the same)
-       @param ct                The ciphertext
-       @param tag               [out] The MAC tag
-       @param taglen            [in/out] The MAC tag length
-       @param direction         Encrypt or Decrypt mode (GCM_ENCRYPT or GCM_DECRYPT)
+       @param key        The secret key
+       @param keylen     The length of the secret key
+       @param IV         The initial vector 
+       @param IVlen      The length of the initial vector
+       @param adata      The additional authentication data (header)
+       @param adatalen   The length of the adata
+       @param pt         The plaintext
+       @param ptlen      The length of the plaintext/ciphertext
+       @param ct         The ciphertext
+       @param tag        [out] The MAC tag
+       @param taglen     [in/out] The MAC tag length
+       @param direction  Encrypt or Decrypt mode (GCM_ENCRYPT or GCM_DECRYPT)
        @return CRYPT_OK on success
    */
    int (*accel_gcm_memory)(
@@ -5652,6 +5661,49 @@ struct ltc_cipher_descriptor {
              unsigned char *ct, 
              unsigned char *tag,    unsigned long *taglen,
                        int direction);
+
+   /** Accelerated one shot OMAC 
+       @param key            The secret key
+       @param keylen         The key length (octets) 
+       @param in             The message 
+       @param inlen          Length of message (octets)
+       @param out            [out] Destination for tag
+       @param outlen         [in/out] Initial and final size of out
+       @return CRYPT_OK on success
+   */
+   int (*omac_memory)(
+       const unsigned char *key, unsigned long keylen,
+       const unsigned char *in,  unsigned long inlen,
+             unsigned char *out, unsigned long *outlen);
+
+   /** Accelerated one shot XCBC 
+       @param key            The secret key
+       @param keylen         The key length (octets) 
+       @param in             The message 
+       @param inlen          Length of message (octets)
+       @param out            [out] Destination for tag
+       @param outlen         [in/out] Initial and final size of out
+       @return CRYPT_OK on success
+   */
+   int (*xcbc_memory)(
+       const unsigned char *key, unsigned long keylen,
+       const unsigned char *in,  unsigned long inlen,
+             unsigned char *out, unsigned long *outlen);
+
+   /** Accelerated one shot F9 
+       @param key            The secret key
+       @param keylen         The key length (octets) 
+       @param in             The message 
+       @param inlen          Length of message (octets)
+       @param out            [out] Destination for tag
+       @param outlen         [in/out] Initial and final size of out
+       @return CRYPT_OK on success
+       @remark Requires manual padding
+   */
+   int (*f9_memory)(
+       const unsigned char *key, unsigned long keylen,
+       const unsigned char *in,  unsigned long inlen,
+             unsigned char *out, unsigned long *outlen);
 };
 \end{verbatim}
 \end{small}
@@ -5679,7 +5731,7 @@ To initialize a cipher (for ECB mode) the function setup() was provided.  It acc
 can specify the number of rounds they want through \textit{num\_rounds} where $num\_rounds = 0$ means use the default.  The destination of a scheduled key is stored
 in \textit{skey}.
 
-Inside the \textit{symmetric\_key} union there is a \textit{void *data} which you can use to allocate data if you need a data structure that doesn't fit with the existing
+Inside the \textit{symmetric\_key} union there is a \textit{void *data} which you can use to allocate data if you need a data structure that does not fit with the existing
 ones provided.  Just make sure in your \textit{done()} function that you free the allocated memory.
 
 \subsection{Single block ECB}
@@ -5687,10 +5739,11 @@ To process a single block in ECB mode the ecb\_encrypt() and ecb\_decrypt() func
 must make sure you do not overwrite the output before you are finished with the input.
 
 \subsection{Testing}
-The test() function is used to self--test the \textit{device}.  It takes no arguments and returns \textbf{CRYPT\_OK} if all is working properly.
+The test() function is used to self--test the \textit{device}.  It takes no arguments and returns \textbf{CRYPT\_OK} if all is working properly.  You may return
+\textbf{CRYPT\_NOP} to indicate that no testing was performed.
 
 \subsection{Key Sizing}
-Occasionally a function will want to find a suitable key size to use since the input is oddly sized.  The keysize() function is for this case.  It accepts a 
+Occasionally, a function will want to find a suitable key size to use since the input is oddly sized.  The keysize() function is for this case.  It accepts a 
 pointer to an integer which represents the desired size.  The function then has to match it to the exact or a lower key size that is valid for the cipher.  For
 example, if the input is $25$ and $24$ is valid then it stores $24$ back in the pointed to integer.  It must not round up and must return an error if the keysize
  cannot be mapped to a valid key size for the cipher.
@@ -5759,9 +5812,26 @@ function MUST support both key passing methods.
 \end{small}
 \end{center}
 
+\index{ccm\_memory()} This function is called when the user calls ccm\_memory().
+
 \subsubsection{Accelerated GCM}
+\index{gcm\_memory()}
 This function is meant for accelerated GCM encryption or decryption.  It processes the entire packet in one call.  Note that the setup() function will not
-be called prior to this.  This function must handle scheduling the key provided on its own.
+be called prior to this.  This function must handle scheduling the key provided on its own.  It is called when the user calls gcm\_memory().
+
+\subsubsection{Accelerated OMAC}
+\index{omac\_memory()}
+This function is meant to perform an optimized OMAC1 (CMAC) message authentication code computation when the user calls omac\_memory().  
+
+\subsubsection{Accelerated XCBC-MAC}
+\index{xcbc\_memory()}
+This function is meant to perform an optimized XCBC-MAC message authentication code computation when the user calls xcbc\_memory().  
+
+\subsubsection{Accelerated F9}
+\index{f9\_memory()}
+This function is meant to perform an optimized F9 message authentication code computation when the user calls f9\_memory().  Like f9\_memory(), it requires
+the caller to perform any 3GPP related padding before calling in order to ensure proper compliance with F9.
+
 
 \mysection{One--Way Hashes}
 The hash functions are accessed through the ltc\_hash\_descriptor structure.
@@ -5771,43 +5841,62 @@ The hash functions are accessed through the ltc\_hash\_descriptor structure.
 struct ltc_hash_descriptor {
     /** name of hash */
     char *name;
+
     /** internal ID */
     unsigned char ID;
+
     /** Size of digest in octets */
     unsigned long hashsize;
+
     /** Input block size in octets */
     unsigned long blocksize;
+
     /** ASN.1 OID */
     unsigned long OID[16];
+
     /** Length of DER encoding */
     unsigned long OIDlen;
+
     /** Init a hash state
       @param hash   The hash to initialize
       @return CRYPT_OK if successful
     */
     int (*init)(hash_state *hash);
+
     /** Process a block of data 
       @param hash   The hash state
       @param in     The data to hash
       @param inlen  The length of the data (octets)
       @return CRYPT_OK if successful
     */
-    int (*process)(hash_state *hash, const unsigned char *in, unsigned long inlen);
+    int (*process)(         hash_state *hash, 
+                   const unsigned char *in, 
+                         unsigned long  inlen);
+
     /** Produce the digest and store it
       @param hash   The hash state
       @param out    [out] The destination of the digest
       @return CRYPT_OK if successful
     */
-    int (*done)(hash_state *hash, unsigned char *out);
+    int (*done)(   hash_state *hash, 
+                unsigned char *out);
+
     /** Self-test
-      @return CRYPT_OK if successful, CRYPT_NOP if self-tests have been disabled
+      @return CRYPT_OK if successful, 
+              CRYPT_NOP if self-tests have been disabled
     */
     int (*test)(void);
-    /* accelerated hmac callback: if you need to-do multiple packets just use the 
-       generic hmac_memory and provide a hash callback */
-    int  (*hmac_block)(const unsigned char *key, unsigned long  keylen,
-                       const unsigned char *in,  unsigned long  inlen, 
-                             unsigned char *out, unsigned long *outlen);
+
+    /* accelerated hmac callback: if you need to-do 
+       multiple packets just use the generic hmac_memory 
+       and provide a hash callback 
+    */
+    int  (*hmac_block)(const unsigned char *key, 
+                             unsigned long  keylen,
+                       const unsigned char *in,  
+                             unsigned long  inlen, 
+                             unsigned char *out, 
+                             unsigned long *outlen);
 };
 \end{verbatim}
 \end{small}
@@ -5853,53 +5942,71 @@ The pseudo--random number generators are accessible through the ltc\_prng\_descr
 struct ltc_prng_descriptor {
     /** Name of the PRNG */
     char *name;
+
     /** size in bytes of exported state */
     int  export_size;
+
     /** Start a PRNG state
         @param prng   [out] The state to initialize
         @return CRYPT_OK if successful
     */
     int (*start)(prng_state *prng);
+
     /** Add entropy to the PRNG
         @param in         The entropy
-        @param inlen      Length of the entropy (octets)\
+        @param inlen      Length of the entropy (octets)
         @param prng       The PRNG state
         @return CRYPT_OK if successful
     */
-    int (*add_entropy)(const unsigned char *in, unsigned long inlen, prng_state *prng);
+    int (*add_entropy)(const unsigned char *in, 
+                             unsigned long  inlen, 
+                                prng_state *prng);
+
     /** Ready a PRNG state to read from
         @param prng       The PRNG state to ready
         @return CRYPT_OK if successful
     */
     int (*ready)(prng_state *prng);
+
     /** Read from the PRNG
         @param out     [out] Where to store the data
         @param outlen  Length of data desired (octets)
         @param prng    The PRNG state to read from
         @return Number of octets read
     */
-    unsigned long (*read)(unsigned char *out, unsigned long outlen, prng_state *prng);
+    unsigned long (*read)(unsigned char *out, 
+                          unsigned long  outlen, 
+                             prng_state *prng);
+
     /** Terminate a PRNG state
         @param prng   The PRNG state to terminate
         @return CRYPT_OK if successful
     */
     int (*done)(prng_state *prng);
+
     /** Export a PRNG state  
         @param out     [out] The destination for the state
-        @param outlen  [in/out] The max size and resulting size of the PRNG state
+        @param outlen  [in/out] The max size and resulting size
         @param prng    The PRNG to export
         @return CRYPT_OK if successful
     */
-    int (*pexport)(unsigned char *out, unsigned long *outlen, prng_state *prng);
+    int (*pexport)(unsigned char *out, 
+                   unsigned long *outlen, 
+                      prng_state *prng);
+
     /** Import a PRNG state
         @param in      The data to import
         @param inlen   The length of the data to import (octets)
         @param prng    The PRNG to initialize/import
         @return CRYPT_OK if successful
     */
-    int (*pimport)(const unsigned char *in, unsigned long inlen, prng_state *prng);
+    int (*pimport)(const unsigned char *in, 
+                         unsigned long  inlen, 
+                            prng_state *prng);
+
     /** Self-test the PRNG
-        @return CRYPT_OK if successful, CRYPT_NOP if self-testing has been disabled
+        @return CRYPT_OK if successful, 
+                CRYPT_NOP if self-testing has been disabled
     */
     int (*test)(void);
 };
@@ -5981,14 +6088,14 @@ typedef struct {
 
    /** set small constant 
       @param a    Number to write to
-      @param n    Source upto bits_per_digit (actually meant for very small constants) 
+      @param n    Source upto bits_per_digit (meant for small constants) 
       @return CRYPT_OK on success
    */
    int (*set_int)(void *a, unsigned long n);
 
    /** get small constant 
-      @param a    Number to read, only fetches upto bits_per_digit from the number
-      @return  The lower bits_per_digit of the integer (unsigned)
+      @param a  Small number to read
+      @return   The lower bits_per_digit of the integer (unsigned)
    */
    unsigned long (*get_int)(void *a);
 
@@ -6061,8 +6168,8 @@ typedef struct {
    int (*write_radix)(void *a, char *str, int radix);
 
    /** get size as unsigned char string 
-     @param a     The integer to get the size (when stored in array of octets)
-     @return The length of the integer
+     @param a  The integer to get the size
+     @return   The length of the integer in octets
    */
    unsigned long (*unsigned_size)(void *a);
 
@@ -6079,7 +6186,9 @@ typedef struct {
      @param len   The number of octets 
      @return CRYPT_OK on success
    */
-   int (*unsigned_read)(void *dst, unsigned char *src, unsigned long len);
+   int (*unsigned_read)(         void *dst, 
+                        unsigned char *src, 
+                        unsigned long  len);
 
 /* ---- basic math ---- */
 
@@ -6093,7 +6202,8 @@ typedef struct {
 
    /** add two integers 
      @param a   The first source integer
-     @param b   The second source integer (single digit of upto bits_per_digit in length)
+     @param b   The second source integer 
+               (single digit of upto bits_per_digit in length)
      @param c   The destination of "a + b"
      @return CRYPT_OK on success
    */
@@ -6109,7 +6219,8 @@ typedef struct {
 
    /** subtract two integers 
      @param a   The first source integer
-     @param b   The second source integer (single digit of upto bits_per_digit in length)
+     @param b   The second source integer 
+                (single digit of upto bits_per_digit in length)
      @param c   The destination of "a - b"
      @return CRYPT_OK on success
    */
@@ -6117,7 +6228,8 @@ typedef struct {
 
    /** multiply two integers 
      @param a   The first source integer
-     @param b   The second source integer (single digit of upto bits_per_digit in length)
+     @param b   The second source integer 
+                (single digit of upto bits_per_digit in length)
      @param c   The destination of "a * b"
      @return CRYPT_OK on success
    */
@@ -6125,7 +6237,8 @@ typedef struct {
 
    /** multiply two integers 
      @param a   The first source integer
-     @param b   The second source integer (single digit of upto bits_per_digit in length)
+     @param b   The second source integer 
+                (single digit of upto bits_per_digit in length)
      @param c   The destination of "a * b"
      @return CRYPT_OK on success
    */
@@ -6258,11 +6371,15 @@ typedef struct {
        @param G   The point to multiply
        @param R   The destination for kG  
        @param modulus  The modulus for the field
-       @param map Boolean indicated whether to map back to affine or not (can be 
-                  ignored if you work in affine only)
+       @param map Boolean indicated whether to map back to affine or not 
+                  (can be ignored if you work in affine only)
        @return CRYPT_OK on success
    */
-   int (*ecc_ptmul)(void *k, ecc_point *G, ecc_point *R, void *modulus, int map);
+   int (*ecc_ptmul)(     void *k, 
+                    ecc_point *G, 
+                    ecc_point *R, 
+                         void *modulus, 
+                          int  map);
 
    /** ECC GF(p) point addition 
        @param P    The first point
@@ -6272,7 +6389,11 @@ typedef struct {
        @param mp   The "b" value from montgomery_setup()
        @return CRYPT_OK on success
    */
-   int (*ecc_ptadd)(ecc_point *P, ecc_point *Q, ecc_point *R, void *modulus, void *mp);
+   int (*ecc_ptadd)(ecc_point *P, 
+                    ecc_point *Q, 
+                    ecc_point *R, 
+                         void *modulus, 
+                         void *mp);
 
    /** ECC GF(p) point double 
        @param P    The first point
@@ -6281,36 +6402,61 @@ typedef struct {
        @param mp   The "b" value from montgomery_setup()
        @return CRYPT_OK on success
    */
-   int (*ecc_ptdbl)(ecc_point *P, ecc_point *R, void *modulus, void *mp);
+   int (*ecc_ptdbl)(ecc_point *P, 
+                    ecc_point *R, 
+                         void *modulus, 
+                         void *mp);
 
-   /** ECC mapping from projective to affine, currently uses (x,y,z) => (x/z^2, y/z^3, 1)
+   /** ECC mapping from projective to affine, 
+       currently uses (x,y,z) => (x/z^2, y/z^3, 1)
        @param P     The point to map
        @param modulus The modulus
        @param mp    The "b" value from montgomery_setup()
        @return CRYPT_OK on success
-       @remark The mapping can be different but keep in mind a ecc_point only has 
-               three integers (x,y,z) so if you use a different mapping you have to make it fit.
+       @remark The mapping can be different but keep in mind a 
+               ecc_point only has three integers (x,y,z) so if 
+               you use a different mapping you have to make it fit.
    */
    int (*ecc_map)(ecc_point *P, void *modulus, void *mp);
+
+   /** Computes kA*A + kB*B = C using Shamir's Trick
+       @param A        First point to multiply
+       @param kA       What to multiple A by
+       @param B        Second point to multiply
+       @param kB       What to multiple B by
+       @param C        [out] Destination point (can overlap with A or B)
+       @param modulus  Modulus for curve 
+       @return CRYPT_OK on success
+   */ 
+   int (*ecc_mul2add)(ecc_point *A, void *kA,
+                      ecc_point *B, void *kB,
+                      ecc_point *C,
+                           void *modulus);
+
 
 /* ---- (optional) rsa optimized math (for internal CRT) ---- */
 
    /** RSA Key Generation 
        @param prng     An active PRNG state
        @param wprng    The index of the PRNG desired
-       @param size     The size of the modulus (key size) desired (octets)
-       @param e        The "e" value (public key).  e==65537 is a good choice
+       @param size     The size of the key in octets
+       @param e        The "e" value (public key).  
+                       e==65537 is a good choice
        @param key      [out] Destination of a newly created private key pair
        @return CRYPT_OK if successful, upon error all allocated ram is freed
     */
-    int (*rsa_keygen)(prng_state *prng, int wprng, int size, long e, rsa_key *key);
+    int (*rsa_keygen)(prng_state *prng, 
+                             int  wprng, 
+                             int  size, 
+                            long  e, 
+                         rsa_key *key);
 
    /** RSA exponentiation
       @param in       The octet array representing the base
       @param inlen    The length of the input
       @param out      The destination (to be stored in an octet array format)
-      @param outlen   The length of the output buffer and the resulting size (zero padded to the 
-                      size of the modulus)
+      @param outlen   The length of the output buffer and the resulting size 
+                      (zero padded to the size of the modulus)
       @param which    PK_PUBLIC for public RSA and PK_PRIVATE for private RSA
       @param key      The RSA key to use 
       @return CRYPT_OK on success
@@ -6355,9 +6501,9 @@ typedef struct {
 } ecc_point;
 \end{verbatim}
 
-All ECC functions must use this mapping system.  The only exception is when you remap all three ECC callbacks which will allow you to have more control
+All ECC functions must use this mapping system.  The only exception is when you remap all ECC callbacks which will allow you to have more control
 over how the ECC math will be implemented.  Out of the box you only have three parameters per point to use $(x, y, z)$ however, these are just void pointers.  They
-could point to anything you want.  The only further exception is the ecc\_export() function which expects the values to be in affine format.
+could point to anything you want.  The only further exception is the export functions which expects the values to be in affine format.
 
 \subsubsection{Point Multiply}
 This will multiply the point $G$ by the scalar $k$ and store the result in the point $R$.  The value should be mapped to affine only if $map$ is set to one.  
@@ -6368,6 +6514,14 @@ may be in either affine (with $z = 1$) or projective format and the output point
 
 \subsubsection{Point Mapping}
 This will map the point $P$ back from projective to affine.  The output point $P$ must be of the form $(x, y, 1)$.  
+
+\subsubsection{Shamir's Trick}
+\index{Shamir's Trick}
+\index{ltc\_ecc\_mul2add()}
+To accelerate EC--DSA verification the library provides a built--in function called ltc\_ecc\_mul2add().  This performs two point multiplications and an addition in
+roughly the time of one point multiplication.  It is called from ecc\_verify\_hash() if an accelerator is not present.  The acclerator function must allow the points to
+overlap (e.g., $A \leftarrow k_1A + k_2B$) and must return the final point in affine format.  
+
 
 \subsection{RSA Functions}
 The RSA Modular Exponentiation (ME) function is used by the RSA API to perform exponentiations for private and public key operations.  In particular for
@@ -6410,5 +6564,5 @@ Since the function is given the entire RSA key (for private keys only) CRT is po
 \end{document}
 
 % $Source: /cvs/libtom/libtomcrypt/crypt.tex,v $   
-% $Revision: 1.116 $   
-% $Date: 2006/12/04 23:21:53 $ 
+% $Revision: 1.128 $   
+% $Date: 2007/03/10 23:59:54 $ 

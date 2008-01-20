@@ -6,27 +6,28 @@
  * The library is free for all purposes without any express
  * guarantee it works.
  *
- * Tom St Denis, tomstdenis@gmail.com, http://libtomcrypt.com
+ * Tom St Denis, tomstdenis@gmail.com, http://libtom.org
  */
 #include "tomcrypt.h"
 
-/*! \file pkcs_1_v1_5_decode.c
+/** @file pkcs_1_v1_5_decode.c
  *
- *  PKCS #1 v1.5 Padding. (Andreas Lange)
+ *  LTC_PKCS #1 v1.5 Padding. (Andreas Lange)
  */
 
-#ifdef PKCS_1
+#ifdef LTC_PKCS_1
 
-/*! \brief PKCS #1 v1.5 decode.
+/** @brief LTC_PKCS #1 v1.5 decode.
  *
- *  \param msg              The encoded data to decode
- *  \param msglen           The length of the encoded data (octets)
- *  \param block_type       Block type to use in padding (\sa ltc_pkcs_1_v1_5_blocks)
- *  \param modulus_bitlen   The bit length of the RSA modulus
- *  \param out              [out] Destination of decoding
- *  \param outlen           [in/out] The max size and resulting size of the decoding
+ *  @param msg              The encoded data to decode
+ *  @param msglen           The length of the encoded data (octets)
+ *  @param block_type       Block type to use in padding (\sa ltc_pkcs_1_v1_5_blocks)
+ *  @param modulus_bitlen   The bit length of the RSA modulus
+ *  @param out              [out] Destination of decoding
+ *  @param outlen           [in/out] The max size and resulting size of the decoding
+ *  @param is_valid         [out] Boolean whether the padding was valid
  *
- *  \return CRYPT_OK if successful (even if invalid)
+ *  @return CRYPT_OK if successful (even if invalid)
  */
 int pkcs_1_v1_5_decode(const unsigned char *msg, 
                              unsigned long  msglen,
@@ -102,8 +103,8 @@ bail:
   return result;
 } /* pkcs_1_v1_5_decode */
 
-#endif /* #ifdef PKCS_1 */
+#endif /* #ifdef LTC_PKCS_1 */
 
 /* $Source: /cvs/libtom/libtomcrypt/src/pk/pkcs1/pkcs_1_v1_5_decode.c,v $ */
-/* $Revision: 1.4 $ */
-/* $Date: 2006/11/09 23:39:21 $ */
+/* $Revision: 1.7 $ */
+/* $Date: 2007/05/12 14:32:35 $ */

@@ -6,7 +6,7 @@
  * The library is free for all purposes without any express
  * guarantee it works.
  *
- * Tom St Denis, tomstdenis@gmail.com, http://libtomcrypt.com
+ * Tom St Denis, tomstdenis@gmail.com, http://libtom.org
  */
 #include "tomcrypt.h"
 
@@ -17,6 +17,10 @@
 
 #ifdef LTC_DER
 
+/** Return the size in bytes of a UTF-8 character
+  @param c   The UTF-8 character to measure
+  @return    The size in bytes
+*/
 unsigned long der_utf8_charsize(const wchar_t c)
 {
    if (c <= 0x7F) {
@@ -32,6 +36,7 @@ unsigned long der_utf8_charsize(const wchar_t c)
 
 /**
   Gets length of DER encoding of UTF8 STRING 
+  @param in       The characters to measure the length of
   @param noctets  The number of octets in the string to encode
   @param outlen   [out] The length of the DER encoding for the given string
   @return CRYPT_OK if successful
@@ -74,5 +79,5 @@ int der_length_utf8_string(const wchar_t *in, unsigned long noctets, unsigned lo
 
 
 /* $Source: /cvs/libtom/libtomcrypt/src/pk/asn1/der/utf8/der_length_utf8_string.c,v $ */
-/* $Revision: 1.4 $ */
-/* $Date: 2006/11/26 02:59:57 $ */
+/* $Revision: 1.6 $ */
+/* $Date: 2006/12/28 01:27:24 $ */

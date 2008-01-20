@@ -6,7 +6,7 @@
  * The library is free for all purposes without any express
  * guarantee it works.
  *
- * Tom St Denis, tomstdenis@gmail.com, http://libtomcrypt.com
+ * Tom St Denis, tomstdenis@gmail.com, http://libtom.org
  */
 #include "tomcrypt.h"
 
@@ -15,7 +15,7 @@
    portable way to get secure random bits to feed a PRNG (Tom St Denis)
 */
 
-#ifdef DEVRANDOM
+#ifdef LTC_DEVRANDOM
 /* on *NIX read /dev/random */
 static unsigned long rng_nix(unsigned char *buf, unsigned long len, 
                              void (*callback)(void))
@@ -47,10 +47,10 @@ static unsigned long rng_nix(unsigned char *buf, unsigned long len,
 #endif /* LTC_NO_FILE */
 }
 
-#endif /* DEVRANDOM */
+#endif /* LTC_DEVRANDOM */
 
 /* on ANSI C platforms with 100 < CLOCKS_PER_SEC < 10000 */
-#if defined(CLOCKS_PER_SEC)
+#if defined(CLOCKS_PER_SEC) && !defined(WINCE)
 
 #define ANSI_RNG
 
@@ -87,8 +87,12 @@ static unsigned long rng_ansic(unsigned char *buf, unsigned long len,
 #endif 
 
 /* Try the Microsoft CSP */
-#ifdef WIN32
+#if defined(WIN32) || defined(WINCE)
 #define _WIN32_WINNT 0x0400
+#ifdef WINCE
+   #define UNDER_CE
+   #define ARM
+#endif
 #include <windows.h>
 #include <wincrypt.h>
 
@@ -127,7 +131,7 @@ unsigned long rng_get_bytes(unsigned char *out, unsigned long outlen,
 
    LTC_ARGCHK(out != NULL);
 
-#if defined(DEVRANDOM)
+#if defined(LTC_DEVRANDOM)
    x = rng_nix(out, outlen, callback);   if (x != 0) { return x; }
 #endif
 #ifdef WIN32
@@ -140,5 +144,5 @@ unsigned long rng_get_bytes(unsigned char *out, unsigned long outlen,
 }
 
 /* $Source: /cvs/libtom/libtomcrypt/src/prngs/rng_get_bytes.c,v $ */
-/* $Revision: 1.4 $ */
-/* $Date: 2006/03/31 14:15:35 $ */
+/* $Revision: 1.7 $ */
+/* $Date: 2007/05/12 14:32:35 $ */

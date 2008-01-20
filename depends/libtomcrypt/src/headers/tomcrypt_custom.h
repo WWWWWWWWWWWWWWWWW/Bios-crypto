@@ -312,7 +312,7 @@
 #define LTC_MECC
 
 /* use Shamir's trick for point mul (speeds up signature verification) */
-#define LTC_ECC_SHAMIR
+/* #define LTC_ECC_SHAMIR */
 
 #if defined(TFM_LTC_DESC) && defined(LTC_MECC)
    #define LTC_MECC_ACCEL

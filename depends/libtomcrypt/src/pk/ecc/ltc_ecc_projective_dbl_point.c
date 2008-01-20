@@ -137,7 +137,7 @@ int ltc_ecc_projective_dbl_point(ecc_point *P, ecc_point *R, void *modulus, void
  
    err = CRYPT_OK;
 done:
-   mp_clear_multi(t1, t2, NULL);
+   mp_clear_multi(t2, t1, NULL);
    return err;
 }
 #endif

@@ -53,7 +53,7 @@ int ltc_ecc_projective_add_point(ecc_point *P, ecc_point *Q, ecc_point *R, void 
    if ( (mp_cmp(P->x, Q->x) == LTC_MP_EQ) && 
         (Q->z != NULL && mp_cmp(P->z, Q->z) == LTC_MP_EQ) &&
         (mp_cmp(P->y, Q->y) == LTC_MP_EQ || mp_cmp(P->y, t1) == LTC_MP_EQ)) {
-        mp_clear_multi(t1, t2, x, y, z, NULL);
+        mp_clear_multi(z, y, x, t2, t1, NULL);
         return ltc_ecc_projective_dbl_point(P, R, modulus, mp);
    }
 
@@ -184,7 +184,7 @@ int ltc_ecc_projective_add_point(ecc_point *P, ecc_point *Q, ecc_point *R, void 
 
    err = CRYPT_OK;
 done:
-   mp_clear_multi(t1, t2, x, y, z, NULL);
+   mp_clear_multi(z, y, x, t2, t1, NULL);
    return err;
 }
 

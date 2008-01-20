@@ -131,7 +131,7 @@ int rsa_import(const unsigned char *in, unsigned long inlen, rsa_key *key)
    }
    return CRYPT_OK;
 LBL_ERR:
-   mp_clear_multi(key->d,  key->e, key->N, key->dQ, key->dP, key->qP, key->p, key->q, NULL);
+   mp_clear_multi(key->q,  key->p, key->qP, key->dP, key->dQ, key->N, key->d, key->e, NULL);
    return err;
 }
 

@@ -103,7 +103,7 @@ int ecc_sign_hash(const unsigned char *in,  unsigned long inlen,
 error:
    ecc_free(&pubkey);
 errnokey:
-   mp_clear_multi(r, s, p, e, NULL);
+   mp_clear_multi(e, p, s, r, NULL);
    return err;   
 }
 

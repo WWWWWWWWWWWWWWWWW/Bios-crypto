@@ -40,7 +40,7 @@ int ecc_test(void)
    G   = ltc_ecc_new_point();
    GG  = ltc_ecc_new_point();
    if (G == NULL || GG == NULL) {
-      mp_clear_multi(modulus, order, NULL);
+      mp_clear_multi(order, modulus, NULL);
       ltc_ecc_del_point(G);
       ltc_ecc_del_point(GG);
       return CRYPT_MEM;

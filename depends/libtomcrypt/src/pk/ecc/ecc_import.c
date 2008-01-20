@@ -67,7 +67,7 @@ static int is_point(ecc_key *key)
    }
    
 error:
-   mp_clear_multi(prime, b, t1, t2, NULL);
+   mp_clear_multi(t2, t1, b, prime, NULL);
    return err;
 }
 
@@ -162,7 +162,7 @@ int ecc_import_ex(const unsigned char *in, unsigned long inlen, ecc_key *key, co
    /* we're good */
    return CRYPT_OK;
 done:
-   mp_clear_multi(key->pubkey.x, key->pubkey.y, key->pubkey.z, key->k, NULL);
+   mp_clear_multi(key->k, key->pubkey.z, key->pubkey.y, key->pubkey.x, NULL);
    return err;
 }
 #endif

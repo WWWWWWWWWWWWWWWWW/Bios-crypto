@@ -111,7 +111,7 @@ int ecc_make_key_ex(prng_state *prng, int wprng, ecc_key *key, const ltc_ecc_set
    err = CRYPT_OK;
    goto cleanup;
 errkey:
-   mp_clear_multi(key->pubkey.x, key->pubkey.y, key->pubkey.z, key->k, NULL);
+   mp_clear_multi(key->k, key->pubkey.z, key->pubkey.y, key->pubkey.x, NULL);
 cleanup:
    ltc_ecc_del_point(base);
    mp_clear_multi(prime, order, NULL);

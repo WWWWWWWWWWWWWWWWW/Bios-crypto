@@ -13,7 +13,6 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-#include <ctype.h>
 #include <limits.h>
 
 #ifndef MIN
@@ -558,7 +557,7 @@ void fp_sqr_comba48(fp_int *A, fp_int *B);
 #ifdef TFM_SQR64
 void fp_sqr_comba64(fp_int *A, fp_int *B);
 #endif
-extern const char *fp_s_rmap;
+extern const char fp_s_rmap[];
 
 #endif
 

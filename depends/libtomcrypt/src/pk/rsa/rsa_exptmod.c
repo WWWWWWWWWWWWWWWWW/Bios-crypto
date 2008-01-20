@@ -102,7 +102,7 @@ int rsa_exptmod(const unsigned char *in,   unsigned long inlen,
    /* clean up and return */
    err = CRYPT_OK;
 error:
-   mp_clear_multi(tmp, tmpa, tmpb, NULL);
+   mp_clear_multi(tmpb, tmpa, tmp, NULL);
    return err;
 }
 

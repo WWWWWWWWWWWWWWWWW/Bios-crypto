@@ -36,7 +36,7 @@ typedef struct Rsa_key {
     void *dQ;
 } rsa_key;
 
-int rsa_make_key(prng_state *prng, int wprng, int size, long e, rsa_key *key);
+int rsa_make_key(prng_state *prng1, int wprng1, prng_state *prng2, int wprng2, int size, long e, rsa_key *key);
 
 int rsa_exptmod(const unsigned char *in,   unsigned long inlen,
                       unsigned char *out,  unsigned long *outlen, int which,

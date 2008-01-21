@@ -75,12 +75,6 @@ int ecc_make_key_ex(prng_state *prng, int wprng, ecc_key *key, const ltc_ecc_set
       return CRYPT_MEM;
    }
 
-   /* make up random string */
-   if (prng_descriptor[wprng].read(buf, (unsigned long)keysize, prng) != (unsigned long)keysize) {
-      err = CRYPT_ERROR_READPRNG;
-      goto ERR_BUF;
-   }
-
    /* setup the key variables */
    if ((err = mp_init_multi(&key->pubkey.x, &key->pubkey.y, &key->pubkey.z, &key->k, &prime, &order, NULL)) != CRYPT_OK) {
       goto ERR_BUF;
@@ -99,15 +93,24 @@ int ecc_make_key_ex(prng_state *prng, int wprng, ecc_key *key, const ltc_ecc_set
    if ((err = mp_read_radix(base->y, (char *)key->dp->Gy, 16)) != CRYPT_OK)                     { goto errkey; }
    if ((err = mp_set(base->z, 1)) != CRYPT_OK)                                                  { goto errkey; }
    base->infinity = 0;
-   if ((err = mp_read_unsigned_bin(key->k, (unsigned char *)buf, keysize)) != CRYPT_OK)         { goto errkey; }
 
-   /* the key should be smaller than the order of base point */
-   if (mp_cmp(key->k, order) != LTC_MP_LT) {
-       if((err = mp_mod(key->k, order, key->k)) != CRYPT_OK)                                    { goto errkey; }
+   do{
+     /* make up random string */
+     if (prng_descriptor[wprng].read(buf, (unsigned long)keysize, prng) != (unsigned long)keysize) {
+       err = CRYPT_ERROR_READPRNG;
+       goto ERR_BUF;
+     }
+     if ((err = mp_read_unsigned_bin(key->k, (unsigned char *)buf, keysize)) != CRYPT_OK)         { goto errkey; }
    }
+   /* the key should be smaller than the order of base point */
+   while (mp_cmp(key->k, order) != LTC_MP_LT);
+
    /* make the public key */
    if ((err = ltc_mp.ecc_ptmul(key->k, base, &key->pubkey, prime, 1)) != CRYPT_OK)              { goto errkey; }
+
    key->type = PK_PRIVATE;
+
+   key->pubkey.infinity = 0;
 
    /* free up ram */
    err = CRYPT_OK;

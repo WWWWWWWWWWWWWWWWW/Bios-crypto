@@ -125,7 +125,7 @@ int ecc_validate_key(ecc_key *key)
   
   err = CRYPT_OK;
 error:     
-  mp_clear_multi(test_output->x, test_output->y, test_output->z, order, prime, NULL);
+  mp_clear_multi(prime, order, test_output->z, test_output->y, test_output->x, NULL);
   return err;
 
 

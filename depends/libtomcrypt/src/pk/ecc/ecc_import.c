@@ -71,6 +71,69 @@ error:
    return err;
 }
 
+
+
+/**
+  Validate a key according to ANSI spec
+  @param key     The key to validate
+  @return CRYPT_OK if successful
+*/
+
+int ecc_validate_key(ecc_key *key)
+{
+  int err;
+  void *prime = NULL;
+  void *order = NULL;
+  ecc_point *test_output = NULL;
+  test_output = malloc(sizeof(ecc_point));  
+
+  test_output->infinity = 0;
+  if (mp_init_multi(&(test_output->x), &(test_output->y), &(test_output->z), 
+		    &order, &prime, NULL) != CRYPT_OK) {
+    return CRYPT_MEM;
+  }
+
+
+  /* Test 1: Are the x amd y points of the public key in the field? */
+  if((err = ltc_mp.read_radix(prime, key->dp->prime, 16)) != CRYPT_OK) { goto error;}
+
+  if(ltc_mp.compare_d(key->pubkey.z, 1) == LTC_MP_EQ) {
+    if(
+       (ltc_mp.compare(key->pubkey.x, prime) != LTC_MP_LT) 
+       || (ltc_mp.compare(key->pubkey.y, prime) != LTC_MP_LT)
+       || (ltc_mp.compare_d(key->pubkey.x, 0) != LTC_MP_GT)
+       || (ltc_mp.compare_d(key->pubkey.y, 0) != LTC_MP_GT) )
+      {
+	err = CRYPT_FAIL_TESTVECTOR;
+	goto error;
+      }
+  }
+
+  /* Test 2: is the public key on the curve? */
+  if((err = is_point(key)) != CRYPT_OK) { goto error;}
+
+  /* Test 3: does nG = O? (n = order, 0 = point at infinity, G = public key) */
+  if((err = ltc_mp.read_radix(order, key->dp->order, 16)) != CRYPT_OK) { goto error;}
+  if((err = ltc_ecc_mulmod(order, &(key->pubkey), test_output, prime, 1)) != CRYPT_OK) {
+    goto error;
+  }
+
+  if(!test_output->infinity){
+    err = CRYPT_INVALID_PACKET;
+    goto error;
+  }
+  
+  err = CRYPT_OK;
+error:     
+  mp_clear_multi(test_output->x, test_output->y, test_output->z, order, prime, NULL);
+  return err;
+
+
+
+}
+
+
+
 /**
   Import an ECC key from a binary packet
   @param in      The packet to import

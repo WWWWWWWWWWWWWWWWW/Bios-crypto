@@ -1,6 +1,6 @@
 LIBDIRS=-L/usr/lib/gcc/i486-linux-gnu/4.1/ -L/usr/lib/gcc/i486-linux-gnu/4.1.2/
 
-CFLAGS += -Os -I../depends/libtomcrypt/src/headers -I../depends/tomsfastmath
+CFLAGS += -Os -I../depends/libtomcrypt/src/headers -I../depends/tomsfastmath/src/headers
 
 VPATH = ..
 

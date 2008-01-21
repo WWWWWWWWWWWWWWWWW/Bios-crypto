@@ -56,6 +56,12 @@ int ecc_sign_hash(const unsigned char *in,  unsigned long inlen,
    if (ltc_ecc_is_valid_idx(key->idx) != 1) {
       return CRYPT_PK_INVALID_TYPE;
    }
+
+   /* Does the key contain the point at infinity? */
+   if (key->pubkey.infinity) {
+      return CRYPT_INVALID_ARG;
+   }
+
    
    if ((err = prng_is_valid(wprng)) != CRYPT_OK) {
       return err;

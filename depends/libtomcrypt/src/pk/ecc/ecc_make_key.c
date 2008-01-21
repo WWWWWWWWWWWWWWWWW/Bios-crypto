@@ -85,6 +85,7 @@ int ecc_make_key_ex(prng_state *prng, int wprng, ecc_key *key, const ltc_ecc_set
    if ((err = mp_init_multi(&key->pubkey.x, &key->pubkey.y, &key->pubkey.z, &key->k, &prime, &order, NULL)) != CRYPT_OK) {
       goto ERR_BUF;
    }
+   key->pubkey.infinity = 0;
    base = ltc_ecc_new_point();
    if (base == NULL) {
       err = CRYPT_MEM;
@@ -97,6 +98,7 @@ int ecc_make_key_ex(prng_state *prng, int wprng, ecc_key *key, const ltc_ecc_set
    if ((err = mp_read_radix(base->x, (char *)key->dp->Gx, 16)) != CRYPT_OK)                     { goto errkey; }
    if ((err = mp_read_radix(base->y, (char *)key->dp->Gy, 16)) != CRYPT_OK)                     { goto errkey; }
    if ((err = mp_set(base->z, 1)) != CRYPT_OK)                                                  { goto errkey; }
+   base->infinity = 0;
    if ((err = mp_read_unsigned_bin(key->k, (unsigned char *)buf, keysize)) != CRYPT_OK)         { goto errkey; }
 
    /* the key should be smaller than the order of base point */

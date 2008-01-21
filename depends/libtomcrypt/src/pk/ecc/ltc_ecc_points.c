@@ -38,6 +38,7 @@ ecc_point *ltc_ecc_new_point(void)
       XFREE(p);
       return NULL;
    }
+   p->infinity=1;
    return p;
 }
 

@@ -66,6 +66,11 @@ int ecc_verify_hash(const unsigned char *sig,  unsigned long siglen,
       return CRYPT_PK_INVALID_TYPE;
    }
 
+   if (key->pubkey.infinity) {
+      return CRYPT_INVALID_ARG;
+   }
+
+
    /* allocate ints */
    if ((err = mp_init_multi(&r, &s, &v, &w, &u1, &u2, &p, &e, &m, NULL)) != CRYPT_OK) {
       return CRYPT_MEM;
@@ -115,10 +120,12 @@ int ecc_verify_hash(const unsigned char *sig,  unsigned long siglen,
    if ((err = mp_read_radix(mG->x, (char *)key->dp->Gx, 16)) != CRYPT_OK)                               { goto error; }
    if ((err = mp_read_radix(mG->y, (char *)key->dp->Gy, 16)) != CRYPT_OK)                               { goto error; }
    if ((err = mp_set(mG->z, 1)) != CRYPT_OK)                                                            { goto error; }
+   mG->infinity = 0;
 
    if ((err = mp_copy(key->pubkey.x, mQ->x)) != CRYPT_OK)                                               { goto error; }
    if ((err = mp_copy(key->pubkey.y, mQ->y)) != CRYPT_OK)                                               { goto error; }
    if ((err = mp_copy(key->pubkey.z, mQ->z)) != CRYPT_OK)                                               { goto error; }
+   mQ->infinity = key->pubkey.infinity;
 
    /* compute u1*mG + u2*mQ = mG */
    if (ltc_mp.ecc_mul2add == NULL) {

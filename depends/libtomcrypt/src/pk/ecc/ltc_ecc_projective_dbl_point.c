@@ -41,6 +41,17 @@ int ltc_ecc_projective_dbl_point(ecc_point *P, ecc_point *R, void *modulus, void
    LTC_ARGCHK(modulus != NULL);
    LTC_ARGCHK(mp      != NULL);
 
+   /* Return point-at-infinity if input is point at infinity, or
+      y-coordinate is 0 */   
+   if(P->infinity
+      || (ltc_mp.compare_d(P->y, 0) == LTC_MP_EQ)) {
+     R->infinity=1;
+     ltc_mp.set_int(R->x, 0);
+     ltc_mp.set_int(R->y, 0);
+     ltc_mp.set_int(R->z, 1);
+     return CRYPT_OK;
+   }
+
    if ((err = mp_init_multi(&t1, &t2, NULL)) != CRYPT_OK) {
       return err;
    }
@@ -134,6 +145,9 @@ int ltc_ecc_projective_dbl_point(ecc_point *P, ecc_point *R, void *modulus, void
    if (mp_cmp_d(R->y, 0) == LTC_MP_LT) {
       if ((err = mp_add(R->y, modulus, R->y)) != CRYPT_OK)                        { goto done; }
    }
+
+   R->infinity = 0;
+
  
    err = CRYPT_OK;
 done:

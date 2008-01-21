@@ -39,6 +39,14 @@ int ltc_ecc_map(ecc_point *P, void *modulus, void *mp)
    LTC_ARGCHK(modulus != NULL);
    LTC_ARGCHK(mp      != NULL);
 
+   if(P->infinity){
+     if((err = ltc_mp.set_int(P->x, 0)) != CRYPT_OK) { return err; }
+     if((err = ltc_mp.set_int(P->y, 0)) != CRYPT_OK) { return err; }
+     if((err = ltc_mp.set_int(P->z, 0)) != CRYPT_OK) { return err; }
+     P->infinity = 1;
+     return CRYPT_OK;
+   }
+
    if ((err = mp_init_multi(&t1, &t2, NULL)) != CRYPT_OK) {
       return CRYPT_MEM;
    }

@@ -49,6 +49,21 @@ int ltc_ecc_mulmod(void *k, ecc_point *G, ecc_point *R, void *modulus, int map)
    LTC_ARGCHK(R       != NULL);
    LTC_ARGCHK(modulus != NULL);
 
+   if(ltc_mp.compare_d(k,0) == LTC_MP_LT)
+     {
+       return CRYPT_INVALID_ARG;
+     }
+
+   /* If G is the identity, then R is identity no matter what k is */
+   if(G->infinity)
+     {
+       if((err = ltc_mp.set_int(R->x, 0)) != CRYPT_OK) { return err; }
+       if((err = ltc_mp.set_int(R->y, 0)) != CRYPT_OK) { return err; }
+       if((err = ltc_mp.set_int(R->z, 0)) != CRYPT_OK) { return err; }
+       R->infinity = 1;
+       return CRYPT_OK;
+     }
+
    /* init montgomery reduction */
    if ((err = mp_montgomery_setup(modulus, &mp)) != CRYPT_OK) {
       return err;
@@ -85,11 +100,25 @@ int ltc_ecc_mulmod(void *k, ecc_point *G, ecc_point *R, void *modulus, int map)
       if ((err = mp_copy(G->x, tG->x)) != CRYPT_OK)                                  { goto done; }
       if ((err = mp_copy(G->y, tG->y)) != CRYPT_OK)                                  { goto done; }
       if ((err = mp_copy(G->z, tG->z)) != CRYPT_OK)                                  { goto done; }
+      tG->infinity = G->infinity;
    } else {      
       if ((err = mp_mulmod(G->x, mu, modulus, tG->x)) != CRYPT_OK)                   { goto done; }
       if ((err = mp_mulmod(G->y, mu, modulus, tG->y)) != CRYPT_OK)                   { goto done; }
       if ((err = mp_mulmod(G->z, mu, modulus, tG->z)) != CRYPT_OK)                   { goto done; }
+      tG->infinity = G->infinity;
    }
+   mp_clear(mu);
+   mu = NULL;
+
+   /* Set R to be the identity, to properly handle the case where
+      (delayed until now, in case G==R) */
+
+   if((err = ltc_mp.set_int(R->x, 0)) != CRYPT_OK) { goto done; }
+   if((err = ltc_mp.set_int(R->y, 0)) != CRYPT_OK) { goto done; }
+   if((err = ltc_mp.set_int(R->z, 0)) != CRYPT_OK) { goto done; }
+   R->infinity = 1;
+
+
    
    /* calc the M tab, which holds kG for k==8..15 */
    /* M[0] == 8G */
@@ -148,6 +177,7 @@ int ltc_ecc_mulmod(void *k, ecc_point *G, ecc_point *R, void *modulus, int map)
           if ((err = mp_copy(M[bitbuf-8]->x, R->x)) != CRYPT_OK)                     { goto done; }
           if ((err = mp_copy(M[bitbuf-8]->y, R->y)) != CRYPT_OK)                     { goto done; }
           if ((err = mp_copy(M[bitbuf-8]->z, R->z)) != CRYPT_OK)                     { goto done; }
+	  R->infinity = M[bitbuf-8]->infinity;
           first = 0;
        } else {
          /* normal window */
@@ -182,6 +212,7 @@ int ltc_ecc_mulmod(void *k, ecc_point *G, ecc_point *R, void *modulus, int map)
             if ((err = mp_copy(tG->x, R->x)) != CRYPT_OK)                           { goto done; }
             if ((err = mp_copy(tG->y, R->y)) != CRYPT_OK)                           { goto done; }
             if ((err = mp_copy(tG->z, R->z)) != CRYPT_OK)                           { goto done; }
+	    R->infinity = tG->infinity;
             first = 0;
          } else {
             /* then add */

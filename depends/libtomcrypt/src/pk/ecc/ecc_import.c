@@ -153,9 +153,12 @@ int ecc_import_ex(const unsigned char *in, unsigned long inlen, ecc_key *key, co
    }
    /* set z */
    if ((err = mp_set(key->pubkey.z, 1)) != CRYPT_OK) { goto done; }
+
+   key->pubkey.infinity = 0;
+
    
    /* is it a point on the curve?  */
-   if ((err = is_point(key)) != CRYPT_OK) {
+   if ((err = ecc_validate_key(key)) != CRYPT_OK) {
       goto done;
    }
 

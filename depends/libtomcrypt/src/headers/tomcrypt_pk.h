@@ -171,13 +171,18 @@ typedef struct {
   
    /** The x co-ordinate of the base point on the curve (hex) */
    char *Gx;
- 
+
    /** The y co-ordinate of the base point on the curve (hex) */
    char *Gy;
 } ltc_ecc_set_type;
 
 /** A point on a ECC curve, stored in Jacbobian format such that (x,y,z) => (x/z^2, y/z^3, 1) when interpretted as affine */
 typedef struct {
+
+  /** Is this the point at infinity? **/
+
+    int infinity;
+  
     /** The x co-ordinate */
     void *x;
 
@@ -216,6 +221,8 @@ int  ecc_get_size(ecc_key *key);
 int  ecc_make_key(prng_state *prng, int wprng, int keysize, ecc_key *key);
 int  ecc_make_key_ex(prng_state *prng, int wprng, ecc_key *key, const ltc_ecc_set_type *dp);
 void ecc_free(ecc_key *key);
+
+int ecc_validate_key(ecc_key *key);
 
 int  ecc_export(unsigned char *out, unsigned long *outlen, int type, ecc_key *key);
 int  ecc_import(const unsigned char *in, unsigned long inlen, ecc_key *key);

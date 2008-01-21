@@ -36,6 +36,7 @@ int ltc_ecc_projective_add_point(ecc_point *P, ecc_point *Q, ecc_point *R, void 
 {
    void  *t1, *t2, *x, *y, *z;
    int    err;
+   ecc_point *P_affine, *Q_affine;
 
    LTC_ARGCHK(P       != NULL);
    LTC_ARGCHK(Q       != NULL);
@@ -43,19 +44,69 @@ int ltc_ecc_projective_add_point(ecc_point *P, ecc_point *Q, ecc_point *R, void 
    LTC_ARGCHK(modulus != NULL);
    LTC_ARGCHK(mp      != NULL);
 
+   if(P->infinity){
+     R->infinity = Q->infinity;
+     if((err = ltc_mp.copy(Q->x, R->x)) != CRYPT_OK) {return err;}
+     if((err = ltc_mp.copy(Q->y, R->y)) != CRYPT_OK) {return err;}
+     if((err = ltc_mp.copy(Q->z, R->z)) != CRYPT_OK) {return err;}
+     return CRYPT_OK;
+   }
+
+   if(Q->infinity){
+     R->infinity = P->infinity;
+     if((err = ltc_mp.copy(P->x, R->x)) != CRYPT_OK) {return err;}
+     if((err = ltc_mp.copy(P->y, R->y)) != CRYPT_OK) {return err;}
+     if((err = ltc_mp.copy(P->z, R->z)) != CRYPT_OK) {return err;}
+     return CRYPT_OK;
+   }
+
    if ((err = mp_init_multi(&t1, &t2, &x, &y, &z, NULL)) != CRYPT_OK) {
       return err;
    }
-   
-   /* should we dbl instead? */
-   if ((err = mp_sub(modulus, Q->y, t1)) != CRYPT_OK)                          { goto done; }
 
-   if ( (mp_cmp(P->x, Q->x) == LTC_MP_EQ) && 
-        (Q->z != NULL && mp_cmp(P->z, Q->z) == LTC_MP_EQ) &&
-        (mp_cmp(P->y, Q->y) == LTC_MP_EQ || mp_cmp(P->y, t1) == LTC_MP_EQ)) {
-        mp_clear_multi(z, y, x, t2, t1, NULL);
+   
+   /* Testing for two corner cases: P and Q are the same, 
+      and P+Q is the point-at-infinity */
+   P_affine = ltc_ecc_new_point();
+   P_affine->infinity = P->infinity;
+   if((err = ltc_mp.copy(P->x, P_affine->x)) != CRYPT_OK) {goto done;}
+   if((err = ltc_mp.copy(P->y, P_affine->y)) != CRYPT_OK) {goto done;}
+   if((err = ltc_mp.copy(P->z, P_affine->z)) != CRYPT_OK) {goto done;}
+   if((err = ltc_ecc_map(P_affine, modulus, mp)) != CRYPT_OK) { goto done;}
+
+   Q_affine = ltc_ecc_new_point();
+   Q_affine->infinity = Q->infinity;
+   if((err = ltc_mp.copy(Q->x, Q_affine->x)) != CRYPT_OK) {goto done;}
+   if((err = ltc_mp.copy(Q->y, Q_affine->y)) != CRYPT_OK) {goto done;}
+   if((err = ltc_mp.copy(Q->z, Q_affine->z)) != CRYPT_OK) {goto done;}
+   if((err = ltc_ecc_map(Q_affine, modulus, mp)) != CRYPT_OK) { goto done;}
+
+
+
+   // Test: are P and Q the same point?
+
+   if ( (mp_cmp(P_affine->x, Q_affine->x) == LTC_MP_EQ) && 
+        (mp_cmp(P_affine->y, Q_affine->y) == LTC_MP_EQ) ){
+        mp_clear_multi(t1, t2, x, y, z, NULL);
         return ltc_ecc_projective_dbl_point(P, R, modulus, mp);
    }
+
+   // Test: is P + Q the point at infinity? 
+
+   if ((err = mp_sub(modulus, Q_affine->y, t1)) != CRYPT_OK) { goto done; }
+   if ( (mp_cmp(P_affine->x, Q_affine->x) == LTC_MP_EQ) && 
+        (mp_cmp(P_affine->y, t1) == LTC_MP_EQ) ){
+        mp_clear_multi(t1, t2, x, y, z, NULL);
+	//printf("Vertically aligned points detected! Return point-at-infinity.\n");
+	R->infinity = 1;
+	ltc_mp.set_int(R->x, 0);
+	ltc_mp.set_int(R->y, 0);
+	ltc_mp.set_int(R->z, 0);
+	return CRYPT_OK;
+   }
+
+
+   // Neither corner-case applies. Proceed with general addition
 
    if ((err = mp_copy(P->x, x)) != CRYPT_OK)                                   { goto done; }
    if ((err = mp_copy(P->y, y)) != CRYPT_OK)                                   { goto done; }
@@ -181,6 +232,7 @@ int ltc_ecc_projective_add_point(ecc_point *P, ecc_point *Q, ecc_point *R, void 
    if ((err = mp_copy(x, R->x)) != CRYPT_OK)                                   { goto done; }
    if ((err = mp_copy(y, R->y)) != CRYPT_OK)                                   { goto done; }
    if ((err = mp_copy(z, R->z)) != CRYPT_OK)                                   { goto done; }
+   R->infinity = 0;
 
    err = CRYPT_OK;
 done:

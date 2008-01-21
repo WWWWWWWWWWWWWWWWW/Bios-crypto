@@ -90,6 +90,12 @@ int ecc_ansi_x963_import_ex(const unsigned char *in, unsigned long inlen, ecc_ke
    }
    key->type = PK_PUBLIC;
 
+   key->pubkey.infinity = 0;
+   if ((err = ecc_validate_key(key)) != CRYPT_OK) {
+      goto error;
+   }
+   
+
    /* we're done */
    return CRYPT_OK;
 error:

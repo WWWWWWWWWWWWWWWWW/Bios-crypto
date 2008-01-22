@@ -278,12 +278,13 @@ int random_bn(prng_state *prng, int wprng,
 
 */
 
-
+#if 0
 void rsa_keygen_print_bn(char* name, void* bn, int radix){
   char buf[2000];
   ltc_mp.write_radix(bn, buf, radix);
   printf("%s is %s\n", name, buf);
 }
+#endif
 
 
 /** 

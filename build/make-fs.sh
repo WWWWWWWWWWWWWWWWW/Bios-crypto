@@ -8,14 +8,14 @@
 
 [ $# != 1 ] && echo Usage: $0 osname && exit 1
 
-infile=$1
-buildname=`basename $infile .img`
+infile="$1"
+buildname=`basename "$infile" .img`
 hashname=sha256
 # hashname=rmd160
 outfile=fs.zip
 
-echo "data: " `basename ${infile}` >data.img
-./hashfs $hashname $infile >>data.img
+echo "data: " `basename "${infile}"` >data.img
+./hashfs $hashname "$infile" >>data.img
 echo $buildname >version.txt
 
 ./sig01 sha256 fs data.img >data.sig

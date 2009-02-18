@@ -14,7 +14,7 @@ days=$3
 if [ $# -ge 4 ]; then
   outfile=$4
 else
-  outfile=/dev/fd/0
+  outfile=/dev/stdout
 fi
 
 expire=`./futureday.py $days`

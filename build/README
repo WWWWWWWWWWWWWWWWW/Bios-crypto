@@ -69,3 +69,14 @@ Verify a binary signature file:
 
   The signature file name is signed_file_name.hashname.sig
   The verification key is key_file_name.public
+
+Make a signature delegation from a "master" key to a local key:
+
+  Usage:    ./make-delegation.sh serial-number [days|abs expiry] signingkey targetkey [outfile]
+  Example:  ./make-delegation.sh SHF706002A7 10 masterkey serverkey deleg-SHF706002A7.sig
+
+Make a signature delegation based on an existing delegation:
+
+  Usage:    ./make-delegation.sh --chain deleg.sig serial-number [days|abs expiry] signingkey targetkey  [outfile]
+  Example:  ./make-delegation.sh --chain reg-deleg-SHF706002A7.sig SHF706002A7 10 regionkey serverkey server-deleg-SHF706002A7.sig
+

@@ -10,12 +10,19 @@
 #  - The expiry can be in 'days from now' or as an abs timestamp in the format
 #    required by the signatures.
 
-[ $# -lt 3 ] && echo Usage: $0 [--fullkey] serial-number [days|expire] masterkey  [outfile] && exit 1
+[ $# -lt 3 ] && echo Usage: $0 [--fullkey] [--chain sigfile] serial-number [days|expire] masterkey  [outfile] && exit 1
 
+# Handle opts
 fullkey=""
 if [ "$1" == "--fullkey" ];then
     fullkey=" --fullkey "
     shift
+fi
+chainfile=""
+if [ "$1" == "--chain" ];then
+    chainfile=$2
+    fullkey=" --fullkey "
+    shift;shift;
 fi
 
 sn=$1
@@ -41,5 +48,10 @@ if [[ ${#expire} != 16 || "${expire:8:1}" != "T" || "${expire:15:1}" != "Z" ]]; 
     fi
 fi
 
-
-echo -n $sn:$expire:$tkeyhex | ./sig01 $fullkey --v2 $expire sha256 $mkey >$outfile
+if [ "$chainfile" == "" ]; then
+    echo -n $sn:$expire:$tkeyhex | ./sig01 $fullkey --v2 $expire sha256 $mkey >$outfile
+else
+    # - strip the trailing newline from the sigfile we chain on
+    # - strip the leading 'sig02: ' from the addition
+    ( head -c -1 "$chainfile" ; (echo -n $sn:$expire:$tkeyhex | ./sig01 $fullkey --v2 $expire sha256 $mkey | tail -c +7 ) ) >$outfile
+fi

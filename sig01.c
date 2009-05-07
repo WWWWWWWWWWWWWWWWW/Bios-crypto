@@ -19,6 +19,7 @@ int main(int argc, char **argv)
    rsa_key rsakey;
    char          fname[256];
    char          *hashname;
+   char          expiry[256];
    unsigned char buf[4096], rsabuf[2048], md[MAXBLOCKSIZE], sig[512];
    unsigned long buflen, rsalen, mdlen, siglen;
    FILE          *infile;
@@ -28,7 +29,7 @@ int main(int argc, char **argv)
    int           argoffset   = 0;
 
    if (argc < 3) { 
-     fprintf(stderr, "Usage: %s [--v2] [--fullkey] hashname key_file_name [signed_file_name]\n", argv[0]);
+     fprintf(stderr, "Usage: %s [--fullkey] [--v2 expiry] hashname key_file_name [signed_file_name]\n", argv[0]);
      return EXIT_FAILURE;
    }
 
@@ -42,7 +43,9 @@ int main(int argc, char **argv)
    for ( i=1; i < argc; i++) {
      if (strcmp(argv[i], OPT_V2)==0) {
        opt_v2 = 1;
-       argoffset++;
+       strncpy(expiry, argv[i+1], 256);
+       i++;
+       argoffset=argoffset+2;
        continue;
      }
      if (strcmp(argv[i], OPT_FULLKEY)==0) {
@@ -103,6 +106,11 @@ int main(int argc, char **argv)
        fprintf(stdout, "%02x", buf[i]);
 
    fprintf(stdout, " ");
+
+   if (opt_v2==1) {
+     fprintf(stdout, expiry);
+     fprintf(stdout, " ");
+   }
 
    for (i = 0; i < siglen; i++)
        fprintf(stdout, "%02x", sig[i]);

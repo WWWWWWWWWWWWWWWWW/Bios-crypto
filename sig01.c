@@ -1,4 +1,6 @@
 #define TFM_DESC
+#define OPT_V2 "--v2"
+#define OPT_FULLKEY "--fullkey"
 #include "tomcrypt.h"
 
 #define DO(x) do { run_cmd((x), __LINE__, __FILE__, #x); } while (0);
@@ -21,9 +23,12 @@ int main(int argc, char **argv)
    unsigned long buflen, rsalen, mdlen, siglen;
    FILE          *infile;
    int i;
+   int           opt_v2      = 0;
+   int           opt_fullkey = 0;
+   int           argoffset   = 0;
 
    if (argc < 3) { 
-     fprintf(stderr, "Usage: %s hashname key_file_name [signed_file_name]\n", argv[0]);
+     fprintf(stderr, "Usage: %s [--v2] [--fullkey] hashname key_file_name [signed_file_name]\n", argv[0]);
      return EXIT_FAILURE;
    }
 
@@ -34,18 +39,33 @@ int main(int argc, char **argv)
    LTC_ARGCHK(register_prng(&sprng_desc) != -1);
    ltc_mp = tfm_desc;
 
-   hashname = argv[1];
+   for ( i=1; i < argc; i++) {
+     if (strcmp(argv[i], OPT_V2)==0) {
+       opt_v2 = 1;
+       argoffset++;
+       continue;
+     }
+     if (strcmp(argv[i], OPT_FULLKEY)==0) {
+       opt_fullkey = 1;
+       argoffset++;
+       continue;
+     }
+     /* done! get out softly */
+     i=argc;
+   }
+
+   hashname = argv[1+argoffset];
 
    /* get hashes of file */
    mdlen = sizeof(md);
-   if (argc > 3) {
-     DO(hash_file(find_hash(argv[1]), argv[3], md, &mdlen));
+   if ( argc - argoffset > 3) {
+     DO(hash_file(find_hash(argv[1+argoffset]), argv[3+argoffset], md, &mdlen));
    } else {
-     DO(hash_filehandle(find_hash(argv[1]), stdin, md, &mdlen));
+     DO(hash_filehandle(find_hash(argv[1+argoffset]), stdin, md, &mdlen));
    }
 
    /* read keyblob and import key from it */
-   strncpy(fname, argv[2], 256);
+   strncpy(fname, argv[2+argoffset], 256);
    strncat(fname, ".private", 256);
    infile = fopen(fname, "rb");
    LTC_ARGCHK(infile != NULL);
@@ -60,17 +80,26 @@ int main(int argc, char **argv)
    DO(rsa_sign_hash(md, mdlen, sig, &siglen, NULL, find_prng("sprng"), find_hash(hashname), 8, &rsakey));
 
    /* open output file */
-   fprintf(stdout, "sig01: %s ", hashname);
-   
+   if (opt_v2==1) {
+     fprintf(stdout, "sig02: %s ", hashname);
+   } else {
+     fprintf(stdout, "sig01: %s ", hashname);
+   }
+
    /* read keyblob and import key from it */
-   strncpy(fname, argv[2], 256);
+   strncpy(fname, argv[2+argoffset], 256);
    strncat(fname, ".public", 256);
    infile = fopen(fname, "rb");
    LTC_ARGCHK(infile != NULL);
    buflen = fread(buf, 1, sizeof(buf), infile);
    fclose(infile);
 
-   for (i = buflen-32; i < buflen; i++)
+   if (opt_fullkey==1) {
+     i = 0;
+   } else {
+     i = buflen-32;
+   }
+   for ( ; i < buflen; i++)
        fprintf(stdout, "%02x", buf[i]);
 
    fprintf(stdout, " ");

@@ -10,8 +10,6 @@
 #  - The expiry can be in 'days from now' or as an abs timestamp in the format
 #    required by the signatures.
 
-[ $# -lt 3 ] && echo Usage: $0 [--fullkey] [--chain sigfile] serial-number [days|expire] signingkey targetkey [outfile] && exit 1
-
 # Ensure we call the binaries that are in the same
 # directory as this shell script
 MYPATH=$(readlink -f $0)
@@ -37,6 +35,8 @@ while [ $# != 0 ] && [ ${1:0:1} == '-' ]; do
     esac
     shift
 done
+
+[ $# -lt 4 ] && echo Usage: $0 [--fullkey] [--chain sigfile] serial-number [days|expire] signingkey targetkey [outfile] && exit 1
 
 sn=$1
 expire=$2

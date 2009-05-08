@@ -5,12 +5,27 @@
 # Example:
 # make-devkey.sh SHF706002A7 8BF9AC40-26F8-4BCC-A699-BE51FD366419
 
-[ $# -lt 2 ] && echo Usage: $0 serial-number uuid [outfile] && exit 1
-
 # Ensure we call the binaries that are in the same
 # directory as this shell script
 MYPATH=$(readlink -f $0)
 LIBEXEC=$(dirname $MYPATH)
+
+signingkey="developer"
+
+while [ $# != 0 ] && [ ${1:0:1} == '-' ]; do
+    case "$1" in
+	--signingkey)
+	    signingkey=$2
+	    shift;
+	    ;;
+	*)
+	    echo "Unknown param $1" >> /dev/stderr
+	    exit 1;
+    esac
+    shift
+done
+
+[ $# -lt 2 ] && echo Usage: $0 [--signingkey keyname] serial-number uuid [outfile] && exit 1
 
 sn=$1
 uu=$2
@@ -20,4 +35,4 @@ else
   outfile=/dev/stdout
 fi
 
-echo dev01: $sn A 00000000T000000Z `echo -n $sn:$uu:A:00000000T000000Z | $LIBEXEC/sig01 sha256 developer` >$outfile
+echo dev01: $sn A 00000000T000000Z `echo -n $sn:$uu:A:00000000T000000Z | $LIBEXEC/sig01 sha256 $signingkey` >$outfile

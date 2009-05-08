@@ -5,8 +5,6 @@
 # Example:
 # make-lease.sh SHF706002A7 8BF9AC40-26F8-4BCC-A699-BE51FD366419 1 [outfile]
 
-[ $# -lt 3 ] && echo Usage: $0 [--v2] [--chain delegfile] [--signingkey keyname] serial-number uuid [days|expire] [outfile] && exit 1
-
 # Ensure we call the binaries that are in the same
 # directory as this shell script
 MYPATH=$(readlink -f $0)
@@ -42,6 +40,8 @@ while [ $# != 0 ] && [ ${1:0:1} == '-' ]; do
     esac
     shift
 done
+
+[ $# -lt 3 ] && echo Usage: $0 [--v2] [--chain delegfile] [--signingkey keyname] serial-number uuid [days|expire] [outfile] && exit 1
 
 sn=$1
 uu=$2

@@ -24,6 +24,7 @@ while [ $# != 0 ] && [ ${1:0:1} == '-' ]; do
 	--chain)
 	    chainfile=$2
 	    fullkey=" --fullkey "
+	    v2=" --v2 "
 	    shift;
 	    ;;
 	--signingkey)
@@ -55,18 +56,23 @@ if [[ ${#expire} != 16 || "${expire:8:1}" != "T" || "${expire:15:1}" != "Z" ]]; 
     fi
 fi
 
-if [ "$chainfile" == "" ]; then
-    if [ "$v2" == "" ]; then
-	( echo -n "act01: $sn K $expire "; 
-	    echo -n $sn:$uu:K:$expire | ./sig01 $fullkey sha256 $signingkey ) >$outfile
-    else 
+if [ "$v2" == "" ]; then
+    ( echo -n "act01: $sn K $expire "; 
+	echo -n $sn:$uu:K:$expire | ./sig01 $fullkey sha256 $signingkey ) >$outfile
+else
+    payload="$sn:$expire:$sn:$uu:K:$expire"
+    if [ "$chainfile" == "" ]; then
 	# non-chained v2
 	( echo -n "act01: $sn K $expire "; 
-	    echo -n $sn:$uu:K:$expire | ./sig01 --v2 $expire $fullkey sha256 $signingkey ) >$outfile
+	    echo -n $payload \
+		| ./sig01 --v2 $expire $fullkey sha256 $signingkey ) >$outfile
+    
+    else
+        # v2, chained
+	( echo -n "act01: $sn K $expire ";
+	    head -c -1 "$chainfile" ;
+	    echo -n $payload \
+		| ./sig01 --v2 $expire $fullkey sha256 $signingkey \
+		| tail -c +7 ) >$outfile
     fi
-else
-    # v2, chained
-    ( echo -n "act01: $sn K $expire ";
-	head -c -1 "$chainfile" ;
-	echo -n $sn:$uu:K:$expire | ./sig01 --v2 $expire $fullkey sha256 $signingkey | tail -c +7 ) >$outfile
 fi

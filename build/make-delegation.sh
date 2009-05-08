@@ -14,16 +14,24 @@
 
 # Handle opts
 fullkey=""
-if [ "$1" == "--fullkey" ];then
-    fullkey=" --fullkey "
-    shift
-fi
 chainfile=""
-if [ "$1" == "--chain" ];then
-    chainfile=$2
-    fullkey=" --fullkey "
-    shift;shift;
-fi
+
+while [ $# != 0 ] && [ ${1:0:1} == '-' ]; do
+    case "$1" in
+	--fullkey)
+	    fullkey=" --fullkey ";
+	    ;;
+	--chain)
+	    chainfile=$2
+	    fullkey=" --fullkey "
+	    shift;
+	    ;;
+	*)
+	    echo "Unknown param $1" >> /dev/stderr
+	    exit 1;
+    esac
+    shift
+done
 
 sn=$1
 expire=$2

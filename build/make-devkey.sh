@@ -25,7 +25,9 @@ while [ $# != 0 ] && [ ${1:0:1} == '-' ]; do
     shift
 done
 
-[ $# -lt 2 ] && echo Usage: $0 [--signingkey keyname] serial-number uuid [outfile] && exit 1
+[ $# -lt 2 ] \
+    && echo "Usage: $0 [--signingkey keyname] serial-number uuid [outfile]" >> /dev/stderr \
+    && exit 1
 
 sn=$1
 uu=$2

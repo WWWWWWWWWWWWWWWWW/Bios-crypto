@@ -6,7 +6,9 @@
 # sign-os  os  vmlinuz  runos.zip
 # sign-os  os  initrd   runrd.zip
 
-[ $# != 3 ] && echo Usage: $0 keyname infile outfile.zip && exit 1
+[ $# != 3 ] \
+    && echo "Usage: $0 keyname infile outfile.zip" >> /dev/stderr \
+    && exit 1
 
 keyname=$1
 infile=$2

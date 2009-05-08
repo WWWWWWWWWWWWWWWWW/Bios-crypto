@@ -36,7 +36,9 @@ while [ $# != 0 ] && [ ${1:0:1} == '-' ]; do
     shift
 done
 
-[ $# -lt 4 ] && echo Usage: $0 [--fullkey] [--chain sigfile] serial-number [days|expire] signingkey targetkey [outfile] && exit 1
+[ $# -lt 4 ] \
+    && echo "Usage: $0 [--fullkey] [--chain sigfile] serial-number [days|expire] signingkey targetkey [outfile]" \
+    && exit 1
 
 sn=$1
 expire=$2

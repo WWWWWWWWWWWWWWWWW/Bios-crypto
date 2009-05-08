@@ -5,7 +5,9 @@
 # Examples:
 # sign-fw  fw  q2c25.rom bootfw.zip
 
-[ $# != 3 ] && echo Usage: $0 keyname infile outfile.zip && exit 1
+[ $# != 3 ] \
+    && echo "Usage: $0 keyname infile outfile.zip" >> /dev/stderr \
+    && exit 1
 
 # Ensure we call the binaries that are in the same
 # directory as this shell script

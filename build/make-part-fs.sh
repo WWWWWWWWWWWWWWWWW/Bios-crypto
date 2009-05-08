@@ -5,7 +5,9 @@
 # The output files are dirname.sha , dirname.img, version.txt
 # The build directory name should contain the version number
 
-[ $# != 1 ] && echo Usage: $0 build-directory && exit 1
+[ $# != 1 ] \
+    && echo "Usage: $0 build-directory" >> /dev/stderr \
+    && exit 1
 
 # Ensure we call the binaries that are in the same
 # directory as this shell script

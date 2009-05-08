@@ -26,7 +26,9 @@ while [ $# != 0 ] && [ ${1:0:1} == '-' ]; do
     shift
 done
 
-[ $# != 1 ] && echo Usage: $0 [--signingkey keyname] osname && exit 1
+[ $# != 1 ] \
+    && echo "Usage: $0 [--signingkey keyname] osname" >> /dev/stderr \
+    && exit 1
 
 infile="$1"
 buildname=`basename "$infile" .img`

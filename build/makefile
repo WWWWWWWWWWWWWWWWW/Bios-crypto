@@ -1,4 +1,5 @@
-LIBDIRS=-L/usr/lib/gcc/i486-linux-gnu/4.1/ -L/usr/lib/gcc/i486-linux-gnu/4.1.2/
+LIBDIRS=-L/usr/lib/gcc/i486-linux-gnu/4.1/ -L/usr/lib/gcc/i486-linux-gnu/4.1.2/ -L/usr/lib/gcc/i386-redhat-linux/4.3.0/ 
+
 
 CFLAGS += -Os -I../depends/libtomcrypt/src/headers -I../depends/tomsfastmath/src/headers
 
@@ -126,3 +127,24 @@ clean:
 	rm -f *.o *.a *.img ../depends/*.a cli_tool bios_side sign verify makekey bios_hash bios_verify
 	cd ../depends/libtomcrypt ; make clean
 	cd ../depends/tomsfastmath ; make clean
+
+
+DEST=/usr/libexec/olpc-crypto
+
+install:
+	install -d ${DEST}
+	for p in *.py ; do \
+	   install "$$p" "${DEST}/$$p" ; \
+	done
+
+	for p in *.sh ; do \
+	   barename=$${p%.sh}; \
+	   install "$$p" "${DEST}/$$barename" ; \
+	   ln -fs "${DEST}/$$barename" "/usr/bin/oc-$$barename" ; \
+	done
+
+
+	for p in $(CLI) ; do \
+	   install "$$p" "${DEST}/$$p" ; \
+	   ln -fs "${DEST}/$$p" "/usr/bin/oc-$$p" ; \
+	done

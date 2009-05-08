@@ -128,23 +128,23 @@ clean:
 	cd ../depends/libtomcrypt ; make clean
 	cd ../depends/tomsfastmath ; make clean
 
-
-DEST=/usr/libexec/olpc-crypto
-
+DESTDIR=/
+LIBEXEC=/usr/libexec/olpc-crypto
+BINDIR=/usr/bin
 install:
-	install -d ${DEST}
+	test -d "${DESTDIR}${LIBEXEC}" || install -d "${DESTDIR}${LIBEXEC}"
+	test -d "${DESTDIR}${BINDIR}"  || install -d "${DESTDIR}${BINDIR}"
 	for p in *.py ; do \
-	   install "$$p" "${DEST}/$$p" ; \
+	   install "$$p" "${DESTDIR}${LIBEXEC}/$$p" ; \
 	done
 
 	for p in *.sh ; do \
 	   barename=$${p%.sh}; \
-	   install "$$p" "${DEST}/$$barename" ; \
-	   ln -fs "${DEST}/$$barename" "/usr/bin/oc-$$barename" ; \
+	   install "$$p" "${DESTDIR}${LIBEXEC}/$$barename" ; \
+	   ln -fs "${DLIBEXEC}/$$barename" "${DESTDIR}${BINDIR}/oc-$$barename"; \
 	done
 
-
 	for p in $(CLI) ; do \
-	   install "$$p" "${DEST}/$$p" ; \
-	   ln -fs "${DEST}/$$p" "/usr/bin/oc-$$p" ; \
+	   install "$$p" "${DESTDIR}${LIBEXEC}/$$p" ; \
+	   ln -fs "${DESTDIR}${LIBEXEC}/$$p" "${DESTDIR}${BINDIR}/oc-$$p"; \
 	done

@@ -9,7 +9,7 @@ PKGNAME = olpc-bios-crypto
 VERSION =$(shell git describe | sed 's/^v//' | sed 's/-/./g')
 RELEASE = 1
 COMMITID = $(shell git rev-parse HEAD)
-ARCH = noarch
+ARCH = i386
 
 # NOTE: Release is hardcoded in the spec file to 1
 NV = $(PKGNAME)-$(VERSION)

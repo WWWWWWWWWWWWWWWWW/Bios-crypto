@@ -10,7 +10,7 @@ URL:            http://wiki.laptop.org/go/Firmware_security
 Source0:        http://dev.laptop.org/~douglas/SOURCES/%{name}-%{version}.tar.bz2
 BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
-BuildArch:      noarch
+BuildArch:      i386
 BuildRequires:  make
 BuildRequires:  gcc
 #BuildRequires:  pyrex

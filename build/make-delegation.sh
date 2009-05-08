@@ -1,7 +1,7 @@
 #!/bin/sh
 
 # Make a delegation file from a master key to a server's pubkey
-# Usage: make-delegation.sh [--fullkey] serial-number uuid expire masterkey serverkey
+# Usage: make-delegation.sh [--fullkey] serial-number uuid expire signingkey targetkey
 # Example:
 # make-delegation.sh SHF706002A7 1 masterkey serverkey [outfile]
 # Notes:
@@ -10,7 +10,7 @@
 #  - The expiry can be in 'days from now' or as an abs timestamp in the format
 #    required by the signatures.
 
-[ $# -lt 3 ] && echo Usage: $0 [--fullkey] [--chain sigfile] serial-number [days|expire] masterkey  [outfile] && exit 1
+[ $# -lt 3 ] && echo Usage: $0 [--fullkey] [--chain sigfile] serial-number [days|expire] signingkey targetkey [outfile] && exit 1
 
 # Handle opts
 fullkey=""
@@ -57,9 +57,11 @@ if [[ ${#expire} != 16 || "${expire:8:1}" != "T" || "${expire:15:1}" != "Z" ]]; 
 fi
 
 if [ "$chainfile" == "" ]; then
-    echo -n $sn:$expire:$tkeyhex | ./sig01 $fullkey --v2 $expire sha256 $mkey >$outfile
+    # "key01" has a trailing newline
+    # - our backticks earlier ate it...
+    echo $sn:$expire:$tkeyhex | ./sig01 $fullkey --v2 $expire sha256 $mkey >$outfile
 else
     # - strip the trailing newline from the sigfile we chain on
     # - strip the leading 'sig02: ' from the addition
-    ( head -c -1 "$chainfile" ; (echo -n $sn:$expire:$tkeyhex | ./sig01 $fullkey --v2 $expire sha256 $mkey | tail -c +7 ) ) >$outfile
+    ( head -c -1 "$chainfile" ; (echo $sn:$expire:$tkeyhex | ./sig01 $fullkey --v2 $expire sha256 $mkey | tail -c +7 ) ) >$outfile
 fi

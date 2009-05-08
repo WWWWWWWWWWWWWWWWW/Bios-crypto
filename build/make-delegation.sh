@@ -12,6 +12,11 @@
 
 [ $# -lt 3 ] && echo Usage: $0 [--fullkey] [--chain sigfile] serial-number [days|expire] signingkey targetkey [outfile] && exit 1
 
+# Ensure we call the binaries that are in the same
+# directory as this shell script
+MYPATH=$(readlink -f $0)
+LIBEXEC=$(dirname $MYPATH)
+
 # Handle opts
 fullkey=""
 chainfile=""
@@ -44,12 +49,12 @@ else
   outfile=/dev/stdout
 fi
 
-mkeyhex=`./key01 $mkey.public`
-tkeyhex=`./key01 $tkey.public`
+mkeyhex=`$LIBEXEC/key01 $mkey.public`
+tkeyhex=`$LIBEXEC/key01 $tkey.public`
 
 
 if [[ ${#expire} != 16 || "${expire:8:1}" != "T" || "${expire:15:1}" != "Z" ]]; then
-    expire=`./futureday.py $expire`
+    expire=`$LIBEXEC/futureday.py $expire`
     if [ $? != 0 ]; then
 	echo "unrecognised date format" >> /dev/stderr
 	exit 1
@@ -59,9 +64,9 @@ fi
 if [ "$chainfile" == "" ]; then
     # "key01" has a trailing newline
     # - our backticks earlier ate it...
-    echo $sn:$expire:$tkeyhex | ./sig01 $fullkey --v2 $expire sha256 $mkey >$outfile
+    echo $sn:$expire:$tkeyhex | $LIBEXEC/sig01 $fullkey --v2 $expire sha256 $mkey >$outfile
 else
     # - strip the trailing newline from the sigfile we chain on
     # - strip the leading 'sig02: ' from the addition
-    ( head -c -1 "$chainfile" ; (echo $sn:$expire:$tkeyhex | ./sig01 $fullkey --v2 $expire sha256 $mkey | tail -c +7 ) ) >$outfile
+    ( head -c -1 "$chainfile" ; (echo $sn:$expire:$tkeyhex | $LIBEXEC/sig01 $fullkey --v2 $expire sha256 $mkey | tail -c +7 ) ) >$outfile
 fi

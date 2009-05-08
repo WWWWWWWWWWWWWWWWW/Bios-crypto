@@ -1,0 +1,87 @@
+Name:           @PKGNAME@
+Version:        @VERSION@
+Release:        @RELEASE@%{?dist}
+
+Summary:        OLPC Firmware Crypto
+Group:          Core
+License:        GPLv2
+Packager:       Martin Langhoff <martin@laptop.org>
+URL:            http://wiki.laptop.org/go/Firmware_security
+Source0:        http://dev.laptop.org/~douglas/SOURCES/%{name}-%{version}.tar.bz2
+BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
+
+BuildArch:      noarch
+BuildRequires:  make
+BuildRequires:  gcc
+#BuildRequires:  pyrex
+
+Requires:       python
+Requires:       mtd-utils
+Requires:       bash
+
+%description
+Crypto tools for OLPC Firmware. Based on libtomcrypt and libfastmath.
+
+This version of the package is jury-rigged to work on the XS. A proper
+distro-quality package would depend on up-to-date libtomcrypt,
+libfastmath, etc.
+
+%define debug_package %{nil}
+
+%prep
+
+%setup -q
+
+%build
+
+echo rpm: About to build in $RPM_BUILD_ROOT
+make DESTDIR=$RPM_BUILD_ROOT all
+
+%install
+#rm -rf $RPM_BUILD_ROOT
+echo rpm: About to install in $RPM_BUILD_ROOT
+pwd
+make DESTDIR=$RPM_BUILD_ROOT install-rpm
+
+%files
+%doc cli.README
+%doc build/README
+#%doc COPYING
+%dir /usr/libexec/olpc-bios-crypto
+%dir /usr/bin
+/usr/bin/obc-hashfs
+/usr/bin/obc-key01
+/usr/bin/obc-make-delegation
+/usr/bin/obc-make-devkey
+/usr/bin/obc-make-fs
+/usr/bin/obc-make-lease
+/usr/bin/obc-make-part-fs
+/usr/bin/obc-makekey
+/usr/bin/obc-sig01
+/usr/bin/obc-sign
+/usr/bin/obc-sign-fw
+/usr/bin/obc-sign-os
+/usr/bin/obc-verify
+/usr/libexec/olpc-bios-crypto/futureday.py
+/usr/libexec/olpc-bios-crypto/futureday.pyc
+/usr/libexec/olpc-bios-crypto/futureday.pyo
+/usr/libexec/olpc-bios-crypto/hashfs
+/usr/libexec/olpc-bios-crypto/key01
+/usr/libexec/olpc-bios-crypto/make-delegation
+/usr/libexec/olpc-bios-crypto/make-devkey
+/usr/libexec/olpc-bios-crypto/make-fs
+/usr/libexec/olpc-bios-crypto/make-lease
+/usr/libexec/olpc-bios-crypto/make-part-fs
+/usr/libexec/olpc-bios-crypto/makekey
+/usr/libexec/olpc-bios-crypto/sig01
+/usr/libexec/olpc-bios-crypto/sign
+/usr/libexec/olpc-bios-crypto/sign-fw
+/usr/libexec/olpc-bios-crypto/sign-os
+/usr/libexec/olpc-bios-crypto/verify
+
+
+%changelog
+* Fri May 8 2009 Martin Langhoff <martin@laptop.org> 0.1-1
+  - This is a git-maintaned package - See the changelog at
+  http://dev.laptop.org/git/bios-crypto/
+(END)

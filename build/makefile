@@ -129,7 +129,7 @@ clean:
 	cd ../depends/tomsfastmath ; make clean
 
 DESTDIR=/
-LIBEXEC=/usr/libexec/olpc-crypto
+LIBEXEC=/usr/libexec/olpc-bios-crypto
 BINDIR=/usr/bin
 install:
 	test -d "${DESTDIR}${LIBEXEC}" || install -d "${DESTDIR}${LIBEXEC}"
@@ -141,10 +141,30 @@ install:
 	for p in *.sh ; do \
 	   barename=$${p%.sh}; \
 	   install "$$p" "${DESTDIR}${LIBEXEC}/$$barename" ; \
-	   ln -fs "${DLIBEXEC}/$$barename" "${DESTDIR}${BINDIR}/oc-$$barename"; \
+	   ln -fs "${DESTDIR}${LIBEXEC}/$$barename" "${DESTDIR}${BINDIR}/obc-$$barename"; \
 	done
 
 	for p in $(CLI) ; do \
 	   install "$$p" "${DESTDIR}${LIBEXEC}/$$p" ; \
-	   ln -fs "${DESTDIR}${LIBEXEC}/$$p" "${DESTDIR}${BINDIR}/oc-$$p"; \
+	   ln -fs "${DESTDIR}${LIBEXEC}/$$p" "${DESTDIR}${BINDIR}/obc-$$p"; \
+	done
+
+# just like install, but the symlinks 
+# point to their "final" location
+install-rpm:
+	test -d "${DESTDIR}${LIBEXEC}" || install -d "${DESTDIR}${LIBEXEC}"
+	test -d "${DESTDIR}${BINDIR}"  || install -d "${DESTDIR}${BINDIR}"
+	for p in *.py ; do \
+	   install "$$p" "${DESTDIR}${LIBEXEC}/$$p" ; \
+	done
+
+	for p in *.sh ; do \
+	   barename=$${p%.sh}; \
+	   install "$$p" "${DESTDIR}${LIBEXEC}/$$barename" ; \
+	   ln -fs "${LIBEXEC}/$$barename" "${DESTDIR}${BINDIR}/obc-$$barename"; \
+	done
+
+	for p in $(CLI) ; do \
+	   install "$$p" "${DESTDIR}${LIBEXEC}/$$p" ; \
+	   ln -fs "${LIBEXEC}/$$p" "${DESTDIR}${BINDIR}/obc-$$p"; \
 	done

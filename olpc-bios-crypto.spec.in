@@ -52,6 +52,7 @@ make DESTDIR=$RPM_BUILD_ROOT install-rpm
 /usr/bin/obc-hashfs
 /usr/bin/obc-key01
 /usr/bin/obc-make-delegation
+/usr/bin/obc-make-timestamp
 /usr/bin/obc-make-devkey
 /usr/bin/obc-make-fs
 /usr/bin/obc-make-lease
@@ -68,6 +69,7 @@ make DESTDIR=$RPM_BUILD_ROOT install-rpm
 /usr/libexec/olpc-bios-crypto/hashfs
 /usr/libexec/olpc-bios-crypto/key01
 /usr/libexec/olpc-bios-crypto/make-delegation
+/usr/libexec/olpc-bios-crypto/make-timestamp
 /usr/libexec/olpc-bios-crypto/make-devkey
 /usr/libexec/olpc-bios-crypto/make-fs
 /usr/libexec/olpc-bios-crypto/make-lease

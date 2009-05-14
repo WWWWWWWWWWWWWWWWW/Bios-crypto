@@ -14,14 +14,14 @@ from subprocess import Popen, PIPE
 from optparse import OptionParser
 
 def main():
-    usagestr = '%prog [--csv /path/to/file.csv] [--outdir /tmp] [--serverkeys=/path/to/serverkeys/] [--cvsdialect=excel|excel-tab] <expiry> <signingkey>'
+    usagestr = '%prog [--csv /path/to/file.csv] [--outdir /tmp] [--serverkeys=/path/to/serverkeys/] <expiry> <signingkey>'
     parser = OptionParser(usage=usagestr)
     parser.add_option('--csv',
                       dest='csv',
                       default='/var/lib/olpc-bios-crypto/servers-xos.csv')
     parser.add_option('--outdir',
                       dest='outdir',
-                      default='/var/lib/olpc-bios-crypto/server-leases')
+                      default='/var/lib/olpc-bios-crypto/server-lease-delegations')
     parser.add_option('--serverkeys',
                       dest='serverkeys',
                       default='/var/lib/olpc-bios-crypto/server-keys')

@@ -42,13 +42,20 @@ make DESTDIR=$RPM_BUILD_ROOT all
 echo rpm: About to install in $RPM_BUILD_ROOT
 pwd
 make DESTDIR=$RPM_BUILD_ROOT install-rpm
+mkdir -p $RPM_BUILD_ROOT/var/lib/olpc-bios-crypto
+mkdir -p $RPM_BUILD_ROOT/var/lib/olpc-bios-crypto/server-keys
+mkdir -p $RPM_BUILD_ROOT/var/lib/olpc-bios-crypto/server-lease-delegations
+
 
 %files
 %doc cli.README
 %doc build/README
 #%doc COPYING
 %dir /usr/libexec/olpc-bios-crypto
-%dir /usr/bin
+#%dir /usr/bin
+%dir /var/lib/olpc-bios-crypto
+%dir /var/lib/olpc-bios-crypto/server-keys
+%dir /var/lib/olpc-bios-crypto/server-lease-delegations
 /usr/bin/obc-hashfs
 /usr/bin/obc-key01
 /usr/bin/obc-make-delegation

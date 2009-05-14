@@ -159,7 +159,7 @@ install-rpm:
 	for p in *.py ; do \
            barename=$${p%.py}; \
 	   install "$$p" "${DESTDIR}${LIBEXEC}/$$p" ; \
-           ln -fs "$${LIBEXEC}/$$p" "${DESTDIR}${BINDIR}/obc-$$barename"; \
+           ln -fs "${LIBEXEC}/$$p" "${DESTDIR}${BINDIR}/obc-$$barename"; \
 	done
 
 	for p in *.sh ; do \

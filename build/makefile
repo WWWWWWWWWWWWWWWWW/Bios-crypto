@@ -135,13 +135,15 @@ install:
 	test -d "${DESTDIR}${LIBEXEC}" || install -d "${DESTDIR}${LIBEXEC}"
 	test -d "${DESTDIR}${BINDIR}"  || install -d "${DESTDIR}${BINDIR}"
 	for p in *.py ; do \
+           barename=$${p%.py}; \
 	   install "$$p" "${DESTDIR}${LIBEXEC}/$$p" ; \
+           ln -fs "${DESTDIR}${LIBEXEC}/$$p" "${DESTDIR}${BINDIR}/obc-$$barename"; \
 	done
 
 	for p in *.sh ; do \
 	   barename=$${p%.sh}; \
-	   install "$$p" "${DESTDIR}${LIBEXEC}/$$barename" ; \
-	   ln -fs "${DESTDIR}${LIBEXEC}/$$barename" "${DESTDIR}${BINDIR}/obc-$$barename"; \
+	   install "$$p" "${DESTDIR}${LIBEXEC}/$$p" ; \
+	   ln -fs "${DESTDIR}${LIBEXEC}/$$p" "${DESTDIR}${BINDIR}/obc-$$barename"; \
 	done
 
 	for p in $(CLI) ; do \
@@ -155,13 +157,15 @@ install-rpm:
 	test -d "${DESTDIR}${LIBEXEC}" || install -d "${DESTDIR}${LIBEXEC}"
 	test -d "${DESTDIR}${BINDIR}"  || install -d "${DESTDIR}${BINDIR}"
 	for p in *.py ; do \
+           barename=$${p%.py}; \
 	   install "$$p" "${DESTDIR}${LIBEXEC}/$$p" ; \
+           ln -fs "$${LIBEXEC}/$$p" "${DESTDIR}${BINDIR}/obc-$$barename"; \
 	done
 
 	for p in *.sh ; do \
 	   barename=$${p%.sh}; \
-	   install "$$p" "${DESTDIR}${LIBEXEC}/$$barename" ; \
-	   ln -fs "${LIBEXEC}/$$barename" "${DESTDIR}${BINDIR}/obc-$$barename"; \
+	   install "$$p" "${DESTDIR}${LIBEXEC}/$$p" ; \
+	   ln -fs "${LIBEXEC}/$$p" "${DESTDIR}${BINDIR}/obc-$$barename"; \
 	done
 
 	for p in $(CLI) ; do \

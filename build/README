@@ -30,6 +30,34 @@ Sign an OS release (using "fs" key):
   Usage:    obc-make-fs.sh  infile   outfile.zip
   Example:  obc-make-fs.sh os767.img   fs.zip
 
+Tools for handling delegated leases:
+
+  Note - the tools for delegated leaseas default to
+  canonical locations of files - 
+
+  /var/lib/olpc-bios-crypto/server-keys - directory holding the public keys for the servers
+  /var/lib/olpc-bios-crypto/server-lease-delegations - directory holding the delegation files for the servers
+
+  /var/lib/olpc-bios-crypto/servers.csv CSV data file, each row contains server name
+  /var/lib/olpc-bios-crypto/servers-xos.csv CSV data file, each row contains server name, XO serial number, XO UUID
+
+  The server names must be short ASCII strings, matching the 'servername'
+  set for each server DNS configuration.
+
+Make keys for a number of XSs:
+
+  Usage:    obc-make-server-keys  [--csv /path/to/file.csv] [--outdir /tmp]
+  Example:  obc-make-server-keys --csv=/var/lib/olpc-bios-crypto/servers.csv \
+                                 --outdir=/var/lib/olpc-bios-crypto/server-keys
+
+Make delegation signatures for a number of XSs
+
+  Usage:    obc-make-server-delegations [--csv /path/to/file.csv] [--outdir /tmp] <expiry> <signingkey>
+  Example:  obc-make-server-delegations --csv=/var/lib/olpc-bios-crypto/servers-xos.csv  \
+                                        --serverkeys=/var/lib/olpc-bios-crypto/server-keys  \
+                                        --outdir=/var/lib/olpc-bios-crypto/server-lease-delegations \
+                                        365 lease
+
 Lower level tools:
 
 Calculate a future date in the stipulated format:
@@ -84,3 +112,4 @@ Make a lease with a delegated signature -
 
   Usage:    obc-make-lease.sh --signingkey <keyname> --chain <chainfile> <sn>  <uuid>  <days>  [outfile]
   Example:  obc-make-lease.sh --signingkey server --chain server-deleg-SHF706002A7.sig SHF706002A7 8BF9AC40-26F8-4BCC-A699-BE51FD366419 1 lease.sig
+

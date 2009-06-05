@@ -32,17 +32,21 @@ Sign an OS release (using "fs" key):
 
 Tools for handling delegated leases:
 
-  Note - the tools for delegated leaseas default to
+  Note - the tools for delegated leases default to
   canonical locations of files - 
 
   /var/lib/olpc-bios-crypto/server-keys - directory holding the public keys for the servers
-  /var/lib/olpc-bios-crypto/server-lease-delegations - directory holding the delegation files for the servers
+  /var/lib/olpc-bios-crypto/server-act-delegations - directory holding the 'act' delegation files for the servers
+  /var/lib/olpc-bios-crypto/server-oats-delegations - directory holding the 'oats' delegation files for the servers
 
   /var/lib/olpc-bios-crypto/servers.csv CSV data file, each row contains server name
   /var/lib/olpc-bios-crypto/servers-xos.csv CSV data file, each row contains server name, XO serial number, XO UUID
 
   The server names must be short ASCII strings, matching the 'servername'
   set for each server DNS configuration.
+
+  For effective delegation to the XS you need to generate both lease ('act') and
+  'oats' delegations.
 
 Make keys for a number of XSs:
 
@@ -52,10 +56,12 @@ Make keys for a number of XSs:
 
 Make delegation signatures for a number of XSs
 
-  Usage:    obc-make-server-delegations [--csv /path/to/file.csv] [--outdir /tmp] <expiry> <signingkey>
-  Example:  obc-make-server-delegations --csv=/var/lib/olpc-bios-crypto/servers-xos.csv  \
+  Note: delegations for activation you _must_ pass the --act parameter.
+
+  Usage:    obc-make-server-delegations [--act] [--csv /path/to/file.csv] [--outdir /tmp] <expiry> <signingkey>
+  Example:  obc-make-server-delegations --act --csv=/var/lib/olpc-bios-crypto/servers-xos.csv  \
                                         --serverkeys=/var/lib/olpc-bios-crypto/server-keys  \
-                                        --outdir=/var/lib/olpc-bios-crypto/server-lease-delegations \
+                                        --outdir=/var/lib/olpc-bios-crypto/server-act-delegations \
                                         365 lease
 
 Lower level tools:

@@ -16,12 +16,13 @@ from optparse import OptionParser
 def main():
     usagestr = '%prog [--csv /path/to/file.csv] [--outdir /tmp] [--serverkeys=/path/to/serverkeys/] <expiry> <signingkey>'
     parser = OptionParser(usage=usagestr)
+    parser.add_option('--act', dest='activation', action='store_true', default=False)
     parser.add_option('--csv',
                       dest='csv',
                       default='/var/lib/olpc-bios-crypto/servers-xos.csv')
     parser.add_option('--outdir',
                       dest='outdir',
-                      default='/var/lib/olpc-bios-crypto/server-lease-delegations')
+                      default=False)
     parser.add_option('--serverkeys',
                       dest='serverkeys',
                       default='/var/lib/olpc-bios-crypto/server-keys')
@@ -29,6 +30,12 @@ def main():
                       dest='csvdialect',
                       default='excel')
     (opts, args) = parser.parse_args()
+
+    if opts.outdir == False:
+        if opts.activation:
+            opts.outdir = '/var/lib/olpc-bios-crypto/server-act-delegations'
+        else:
+            opts.outdir = '/var/lib/olpc-bios-crypto/server-oats-delegations'
 
     if len(args) != 2:
         sys.stderr.write('Usage: '+usagestr+"\n")
@@ -83,7 +90,7 @@ def main():
             tmpfiles[fname] = tempfile.mkstemp()
         tmpfh = tmpfiles[fname][0]
 
-        print "Creating /keykey %s " % (fname)
+        print "Writing delegation to %s in %s " % (sn, fname)
         p = Popen([basedir+'/make-delegation.sh', sn, expiry, key, os.path.join(opts.serverkeys,svrname) ], stdout=PIPE)
         buf = ''
         while p.returncode == None:
@@ -92,10 +99,15 @@ def main():
             sys.stderr.write("Error calling make-delegation\n")
             exit(1)
 
-        # write a preamble that shows what sn/uuid
-        # we're delegating
-        os.write(tmpfiles[fname][0],
-                 "del01: %s %s " % (sn, uuid))
+        if opts.activation:
+            # write a del01 preamble that shows sn/uuid
+            # -- suitable for act delegation
+            os.write(tmpfiles[fname][0],
+                     "del01: %s %s " % (sn, uuid))
+        else:
+            # write a del02 preamble that shows sn
+            os.write(tmpfiles[fname][0],
+                     "del02: %s " % sn)
 
         # and then the delecation itself:
         os.write(tmpfh, buf)

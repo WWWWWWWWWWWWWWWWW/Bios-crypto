@@ -7,12 +7,20 @@ Make a lease:
 
   If outfile is omitted, output goes to stdout
 
+  There is a companion command obc-make-lease-from-csv.sh which
+  expects a plain CSV file with no quotes or extraneous characters
+  with lines composed of SN,UUID
+
 Make a developer key:
 
   Usage:    obc-make-devkey.sh sn uuid [outfile]
   Example:  obc-make-devkey.sh SHF706002A7 8BF9AC40-26F8-4BCC-A699-BE51FD366419 develop.sig
 
   If outfile is omitted, output goes to stdout
+
+  There is a companion command obc-make-devkey-from-csv.sh which
+  expects a plain CSV file with no quotes or extraneous characters
+  with lines composed of SN,UUID
 
 Sign a kernel or initrd image file:
 
@@ -118,4 +126,3 @@ Make a lease with a delegated signature -
 
   Usage:    obc-make-lease.sh --signingkey <keyname> --chain <chainfile> <sn>  <uuid>  <days>  [outfile]
   Example:  obc-make-lease.sh --signingkey server --chain server-deleg-SHF706002A7.sig SHF706002A7 8BF9AC40-26F8-4BCC-A699-BE51FD366419 1 lease.sig
-

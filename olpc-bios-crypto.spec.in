@@ -56,47 +56,8 @@ mkdir -p $RPM_BUILD_ROOT/var/lib/olpc-bios-crypto/server-lease-delegations
 %dir /var/lib/olpc-bios-crypto
 %dir /var/lib/olpc-bios-crypto/server-keys
 %dir /var/lib/olpc-bios-crypto/server-lease-delegations
-/usr/bin/obc-hashfs
-/usr/bin/obc-key01
-/usr/bin/obc-make-delegation
-/usr/bin/obc-make-timestamp
-/usr/bin/obc-make-devkey
-/usr/bin/obc-make-fs
-/usr/bin/obc-make-lease
-/usr/bin/obc-make-part-fs
-/usr/bin/obc-makekey
-/usr/bin/obc-sig01
-/usr/bin/obc-sign
-/usr/bin/obc-sign-fw
-/usr/bin/obc-sign-os
-/usr/bin/obc-verify
-/usr/bin/obc-futureday
-/usr/bin/obc-make-server-keys
-/usr/bin/obc-make-server-delegations
-/usr/libexec/olpc-bios-crypto/futureday.py
-/usr/libexec/olpc-bios-crypto/futureday.pyc
-/usr/libexec/olpc-bios-crypto/futureday.pyo
-/usr/libexec/olpc-bios-crypto/hashfs
-/usr/libexec/olpc-bios-crypto/key01
-/usr/libexec/olpc-bios-crypto/make-delegation.sh
-/usr/libexec/olpc-bios-crypto/make-timestamp.sh
-/usr/libexec/olpc-bios-crypto/make-devkey.sh
-/usr/libexec/olpc-bios-crypto/make-fs.sh
-/usr/libexec/olpc-bios-crypto/make-lease.sh
-/usr/libexec/olpc-bios-crypto/make-part-fs.sh
-/usr/libexec/olpc-bios-crypto/make-server-keys.py
-/usr/libexec/olpc-bios-crypto/make-server-keys.pyc
-/usr/libexec/olpc-bios-crypto/make-server-keys.pyo
-/usr/libexec/olpc-bios-crypto/make-server-delegations.py
-/usr/libexec/olpc-bios-crypto/make-server-delegations.pyc
-/usr/libexec/olpc-bios-crypto/make-server-delegations.pyo
-/usr/libexec/olpc-bios-crypto/makekey
-/usr/libexec/olpc-bios-crypto/sig01
-/usr/libexec/olpc-bios-crypto/sign
-/usr/libexec/olpc-bios-crypto/sign-fw.sh
-/usr/libexec/olpc-bios-crypto/sign-os.sh
-/usr/libexec/olpc-bios-crypto/verify
-
+/usr/bin/obc-*
+/usr/libexec/olpc-bios-crypto/
 
 %changelog
 * Fri May 8 2009 Martin Langhoff <martin@laptop.org> 0.1-1

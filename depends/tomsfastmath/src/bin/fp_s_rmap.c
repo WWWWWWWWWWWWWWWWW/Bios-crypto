@@ -10,7 +10,7 @@
 #include <tfm.h>
 
 /* chars used in radix conversions */
-const char *fp_s_rmap = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz+/";
+const char * const fp_s_rmap = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz+/";
 
 /* $Source: /cvs/libtom/tomsfastmath/src/bin/fp_s_rmap.c,v $ */
 /* $Revision: 1.1 $ */

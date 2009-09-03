@@ -57,8 +57,8 @@ if [[ ${#expire} != 16 || "${expire:8:1}" != "T" || "${expire:15:1}" != "Z" ]]; 
 fi
 
 for LINE in `cat "$FILE"`; do
-    SN=`echo "$LINE"|cut -d, -f1`
-    UUID=`echo "$LINE"|cut -d, -f2`
+    sn=`echo "$LINE"|cut -d, -f1`
+    uu=`echo "$LINE"|cut -d, -f2`
 
     if [ "$v2" == "" ]; then
 	( echo -n "act01: $sn K $expire "; 

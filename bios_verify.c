@@ -42,11 +42,21 @@ int verify_data(
    int hashid;
 
    heap_start(heap_mem, HEAP_SIZE);
+
+   if (strcmp(hashname,"des") == 0) {
+       symmetric_key skey;
+       DO(des_setup(keydata, keydatalen, 0, &skey),0x400000);
+       DO(des_ecb_encrypt(filedata, sigdata, &skey),0x500000);
+       return res;
+   }
+
    register_hash(&sha256_desc);
 //   register_hash(&sha512_desc);
 //   register_hash(&whirlpool_desc);
    register_hash(&rmd160_desc);
+   register_hash(&md4_desc);
    ltc_mp = tfm_desc;
+
    hashid = find_hash(hashname);
    if ((res = hash_is_valid(hashid)) != CRYPT_OK)
       return res;

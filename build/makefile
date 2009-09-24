@@ -7,7 +7,7 @@ LIBCFLAGS += -Os -I../../depends/libtomcrypt/src/headers -I../../depends/tomsfas
 
 VPATH = ..
 
-CLI = makekey sign verify sig01 key01 hashfs
+CLI = makekey sign verify sig01 key01 hashfs zhashfs
 
 default: bios_verify.img $(CLI)
 

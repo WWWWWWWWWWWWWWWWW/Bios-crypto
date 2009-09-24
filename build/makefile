@@ -1,4 +1,4 @@
-LIBDIRS=-L/usr/lib/gcc/i486-linux-gnu/4.1/ -L/usr/lib/gcc/i486-linux-gnu/4.1.2/
+LIBGCC=`$(CC) -print-libgcc-file-name`
 
 CFLAGS += -Os -I../depends/libtomcrypt/src/headers -I../depends/tomsfastmath/src/headers
 
@@ -20,13 +20,13 @@ cli: $(CLI)
 # bios_verify is the crypto module that is linked into the boot firmware.
 
 bios_verify.elf: bios_verify.o stack_alloc.o bios_string.o ../depends/libtomcrypt.a ../depends/libtfm.a
-	$(LD) -Ttext 0xc0000 -Tbss 0xd0000 --defsym _start=verify_data bios_verify.o stack_alloc.o bios_string.o ../depends/libtomcrypt.a ../depends/libtfm.a $(LIBDIRS) -lgcc -o $@
+	$(LD) -Ttext 0xc0000 -Tbss 0xd0000 --defsym _start=verify_data bios_verify.o stack_alloc.o bios_string.o ../depends/libtomcrypt.a ../depends/libtfm.a $(LIBGCC) -o $@
 
 
 # A BIOS module that does only hashing.  It was used as a test.
 
 bios_hash.elf: bios_hash.o stack_alloc.o bios_string.o ../depends/libtomcrypt.a ../depends/libtfm.a
-	$(LD) -Ttext 0xa0000 -Tbss 0xa8000 --defsym _start=bios_hash bios_hash.o stack_alloc.o bios_string.o ../depends/libtomcrypt.a ../depends/libtfm.a $(LIBDIRS) -lgcc -o $@
+	$(LD) -Ttext 0xa0000 -Tbss 0xa8000 --defsym _start=bios_hash bios_hash.o stack_alloc.o bios_string.o ../depends/libtomcrypt.a ../depends/libtfm.a $(LIBGCC) -o $@
 
 
 # Command line tool used for testing the bios code.

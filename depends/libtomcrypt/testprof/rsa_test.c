@@ -1,6 +1,6 @@
 #include <tomcrypt_test.h>
 
-#ifdef MRSA 
+#ifdef LTC_MRSA 
 
 #define RSA_MSGSIZE 78
 
@@ -124,7 +124,7 @@ static int rsa_compat_test(void)
 
 int rsa_test(void)
 {
-   unsigned char in[1024], out[1024], tmp[1024];
+   unsigned char in[4096], out[4096], tmp[4096];
    rsa_key       key, privKey, pubKey;
    int           hash_idx, prng_idx, stat, stat2;
    unsigned long rsa_msgsize, len, len2, cnt;
@@ -137,7 +137,7 @@ int rsa_test(void)
    hash_idx = find_hash("sha1");
    prng_idx = find_prng("yarrow");
    if (hash_idx == -1 || prng_idx == -1) {
-      fprintf(stderr, "rsa_test requires SHA1 and yarrow");
+      fprintf(stderr, "rsa_test requires LTC_SHA1 and yarrow");
       return 1;
    }
    
@@ -257,7 +257,7 @@ for (cnt = 0; cnt < len; ) {
       }
    }
 
-   /* encrypt the key PKCS #1 v1.5 (payload from 1 to 117 bytes) */
+   /* encrypt the key LTC_PKCS #1 v1.5 (payload from 1 to 117 bytes) */
    for (rsa_msgsize = 1; rsa_msgsize <= 117; rsa_msgsize++) {
       len  = sizeof(out);
       len2 = rsa_msgsize;
@@ -349,7 +349,7 @@ for (cnt = 0; cnt < len; ) {
       return 1;
    }
    
-   /* sign a message with PKCS #1 v1.5 */
+   /* sign a message with LTC_PKCS #1 v1.5 */
    len = sizeof(out);
    DO(rsa_sign_hash_ex(in, 20, out, &len, LTC_PKCS_1_V1_5, &yarrow_prng, prng_idx, hash_idx, 8, &privKey));
    DO(rsa_verify_hash_ex(out, len, in, 20, LTC_PKCS_1_V1_5, hash_idx, 8, &stat, &pubKey));
@@ -383,5 +383,5 @@ int rsa_test(void)
 #endif
 
 /* $Source: /cvs/libtom/libtomcrypt/testprof/rsa_test.c,v $ */
-/* $Revision: 1.18 $ */
-/* $Date: 2006/11/21 00:10:18 $ */
+/* $Revision: 1.20 $ */
+/* $Date: 2007/05/12 14:32:35 $ */

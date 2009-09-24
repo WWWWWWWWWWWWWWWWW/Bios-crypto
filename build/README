@@ -25,6 +25,11 @@ Sign a firmware file:
   Usage:    ./sign-fw keyname infile outfile.zip
   Example:  ./sign-fw  fw  q2c25.rom  bootfw.zip
 
+Sign an OS release (using "fs" key):
+
+  Usage:    ./make-fs.sh  infile   outfile.zip
+  Example:  ./make-fs.sh os767.img   fs.zip
+
 Lower level tools:
 
 Calculate a future date in the stipulated format:

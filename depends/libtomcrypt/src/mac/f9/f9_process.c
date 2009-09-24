@@ -6,7 +6,7 @@
  * The library is free for all purposes without any express
  * guarantee it works.
  *
- * Tom St Denis, tomstdenis@gmail.com, http://libtomcrypt.com
+ * Tom St Denis, tomstdenis@gmail.com, http://libtom.org
  */
 #include "tomcrypt.h"
 
@@ -18,7 +18,7 @@
 #ifdef LTC_F9_MODE
 
 /** Process data through f9-MAC
-  @param f9     The f9-MAC state
+  @param f9       The f9-MAC state
   @param in       Input data to process
   @param inlen    Length of input in octets
   Return CRYPT_OK on success
@@ -73,6 +73,6 @@ int f9_process(f9_state *f9, const unsigned char *in, unsigned long inlen)
 #endif
 
 /* $Source: /cvs/libtom/libtomcrypt/src/mac/f9/f9_process.c,v $ */
-/* $Revision: 1.2 $ */
-/* $Date: 2006/11/08 21:50:13 $ */
+/* $Revision: 1.4 $ */
+/* $Date: 2006/12/28 01:27:23 $ */
 

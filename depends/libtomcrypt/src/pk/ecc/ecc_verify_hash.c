@@ -6,7 +6,7 @@
  * The library is free for all purposes without any express
  * guarantee it works.
  *
- * Tom St Denis, tomstdenis@gmail.com, http://libtomcrypt.com
+ * Tom St Denis, tomstdenis@gmail.com, http://libtom.org
  */
 
 /* Implements ECC over Z/pZ for curve y^2 = x^3 - 3x + b
@@ -21,7 +21,7 @@
   ECC Crypto, Tom St Denis
 */  
 
-#ifdef MECC
+#ifdef LTC_MECC
 
 /* verify 
  *
@@ -65,6 +65,11 @@ int ecc_verify_hash(const unsigned char *sig,  unsigned long siglen,
    if (ltc_ecc_is_valid_idx(key->idx) != 1) {
       return CRYPT_PK_INVALID_TYPE;
    }
+
+   if (key->pubkey.infinity) {
+      return CRYPT_INVALID_ARG;
+   }
+
 
    /* allocate ints */
    if ((err = mp_init_multi(&r, &s, &v, &w, &u1, &u2, &p, &e, &m, NULL)) != CRYPT_OK) {
@@ -115,10 +120,12 @@ int ecc_verify_hash(const unsigned char *sig,  unsigned long siglen,
    if ((err = mp_read_radix(mG->x, (char *)key->dp->Gx, 16)) != CRYPT_OK)                               { goto error; }
    if ((err = mp_read_radix(mG->y, (char *)key->dp->Gy, 16)) != CRYPT_OK)                               { goto error; }
    if ((err = mp_set(mG->z, 1)) != CRYPT_OK)                                                            { goto error; }
+   mG->infinity = 0;
 
    if ((err = mp_copy(key->pubkey.x, mQ->x)) != CRYPT_OK)                                               { goto error; }
    if ((err = mp_copy(key->pubkey.y, mQ->y)) != CRYPT_OK)                                               { goto error; }
    if ((err = mp_copy(key->pubkey.z, mQ->z)) != CRYPT_OK)                                               { goto error; }
+   mQ->infinity = key->pubkey.infinity;
 
    /* compute u1*mG + u2*mQ = mG */
    if (ltc_mp.ecc_mul2add == NULL) {
@@ -160,6 +167,6 @@ error:
 
 #endif
 /* $Source: /cvs/libtom/libtomcrypt/src/pk/ecc/ecc_verify_hash.c,v $ */
-/* $Revision: 1.12 $ */
-/* $Date: 2006/12/04 05:07:59 $ */
+/* $Revision: 1.14 $ */
+/* $Date: 2007/05/12 14:32:35 $ */
 

@@ -39,7 +39,7 @@ mulmod
 #include <time.h>
 #include <tommath.h>
 #define CRYPT
-#include "../tfm.h"
+#include "../src/headers/tfm.h"
 
 FILE *rng;
 
@@ -320,5 +320,5 @@ int main(void)
 }
 
 /* $Source: /cvs/libtom/tomsfastmath/mtest/mtest.c,v $ */
-/* $Revision: 1.6 $ */
-/* $Date: 2005/08/27 03:04:56 $ */
+/* $Revision: 1.7 $ */
+/* $Date: 2007/01/12 19:39:06 $ */

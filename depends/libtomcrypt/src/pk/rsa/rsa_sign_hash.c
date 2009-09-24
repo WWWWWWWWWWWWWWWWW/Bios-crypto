@@ -6,19 +6,19 @@
  * The library is free for all purposes without any express
  * guarantee it works.
  *
- * Tom St Denis, tomstdenis@gmail.com, http://libtomcrypt.com
+ * Tom St Denis, tomstdenis@gmail.com, http://libtom.org
  */
 #include "tomcrypt.h"
 
 /**
   @file rsa_sign_hash.c
-  RSA PKCS #1 v1.5 and v2 PSS sign hash, Tom St Denis and Andreas Lange
+  RSA LTC_PKCS #1 v1.5 and v2 PSS sign hash, Tom St Denis and Andreas Lange
 */
 
-#ifdef MRSA
+#ifdef LTC_MRSA
 
 /**
-  PKCS #1 pad then sign
+  LTC_PKCS #1 pad then sign
   @param in        The hash to sign
   @param inlen     The length of the hash to sign (octets)
   @param out       [out] The signature
@@ -79,7 +79,7 @@ int rsa_sign_hash_ex(const unsigned char *in,       unsigned long  inlen,
        return err;
     }
   } else {
-    /* PKCS #1 v1.5 pad the hash */
+    /* LTC_PKCS #1 v1.5 pad the hash */
     unsigned char *tmpin;
     ltc_asn1_list digestinfo[2], siginfo[2];
 
@@ -127,8 +127,8 @@ int rsa_sign_hash_ex(const unsigned char *in,       unsigned long  inlen,
   return ltc_mp.rsa_me(out, x, out, outlen, PK_PRIVATE, key);
 }
 
-#endif /* MRSA */
+#endif /* LTC_MRSA */
 
 /* $Source: /cvs/libtom/libtomcrypt/src/pk/rsa/rsa_sign_hash.c,v $ */
-/* $Revision: 1.9 $ */
-/* $Date: 2006/11/09 23:15:39 $ */
+/* $Revision: 1.11 $ */
+/* $Date: 2007/05/12 14:32:35 $ */

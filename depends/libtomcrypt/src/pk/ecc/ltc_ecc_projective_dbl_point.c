@@ -6,7 +6,7 @@
  * The library is free for all purposes without any express
  * guarantee it works.
  *
- * Tom St Denis, tomstdenis@gmail.com, http://libtomcrypt.com
+ * Tom St Denis, tomstdenis@gmail.com, http://libtom.org
  */
 
 /* Implements ECC over Z/pZ for curve y^2 = x^3 - 3x + b
@@ -21,7 +21,7 @@
   ECC Crypto, Tom St Denis
 */  
 
-#if defined(MECC) && (!defined(MECC_ACCEL) || defined(LTM_DESC))
+#if defined(LTC_MECC) && (!defined(LTC_MECC_ACCEL) || defined(LTM_LTC_DESC))
 
 /**
    Double an ECC point
@@ -40,6 +40,17 @@ int ltc_ecc_projective_dbl_point(ecc_point *P, ecc_point *R, void *modulus, void
    LTC_ARGCHK(R       != NULL);
    LTC_ARGCHK(modulus != NULL);
    LTC_ARGCHK(mp      != NULL);
+
+   /* Return point-at-infinity if input is point at infinity, or
+      y-coordinate is 0 */   
+   if(P->infinity
+      || (ltc_mp.compare_d(P->y, 0) == LTC_MP_EQ)) {
+     R->infinity=1;
+     ltc_mp.set_int(R->x, 0);
+     ltc_mp.set_int(R->y, 0);
+     ltc_mp.set_int(R->z, 1);
+     return CRYPT_OK;
+   }
 
    if ((err = mp_init_multi(&t1, &t2, NULL)) != CRYPT_OK) {
       return err;
@@ -134,6 +145,9 @@ int ltc_ecc_projective_dbl_point(ecc_point *P, ecc_point *R, void *modulus, void
    if (mp_cmp_d(R->y, 0) == LTC_MP_LT) {
       if ((err = mp_add(R->y, modulus, R->y)) != CRYPT_OK)                        { goto done; }
    }
+
+   R->infinity = 0;
+
  
    err = CRYPT_OK;
 done:
@@ -142,6 +156,6 @@ done:
 }
 #endif
 /* $Source: /cvs/libtom/libtomcrypt/src/pk/ecc/ltc_ecc_projective_dbl_point.c,v $ */
-/* $Revision: 1.8 $ */
-/* $Date: 2006/12/04 05:07:59 $ */
+/* $Revision: 1.11 $ */
+/* $Date: 2007/05/12 14:32:35 $ */
 

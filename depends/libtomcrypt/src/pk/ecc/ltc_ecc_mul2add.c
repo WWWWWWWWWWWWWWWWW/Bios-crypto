@@ -6,7 +6,7 @@
  * The library is free for all purposes without any express
  * guarantee it works.
  *
- * Tom St Denis, tomstdenis@gmail.com, http://libtomcrypt.com
+ * Tom St Denis, tomstdenis@gmail.com, http://libtom.org
  */
 
 /* Implements ECC over Z/pZ for curve y^2 = x^3 - 3x + b
@@ -21,7 +21,7 @@
   ECC Crypto, Shamir's Trick, Tom St Denis
 */  
 
-#ifdef MECC
+#ifdef LTC_MECC
 
 #ifdef LTC_ECC_SHAMIR
 
@@ -108,10 +108,12 @@ int ltc_ecc_mul2add(ecc_point *A, void *kA,
   if ((err = mp_mulmod(A->x, mu, modulus, precomp[1]->x)) != CRYPT_OK)                                         { goto ERR_MU; }
   if ((err = mp_mulmod(A->y, mu, modulus, precomp[1]->y)) != CRYPT_OK)                                         { goto ERR_MU; }
   if ((err = mp_mulmod(A->z, mu, modulus, precomp[1]->z)) != CRYPT_OK)                                         { goto ERR_MU; }
+  precomp[1]->infinity = A->infinity;
 
   if ((err = mp_mulmod(B->x, mu, modulus, precomp[1<<2]->x)) != CRYPT_OK)                                      { goto ERR_MU; }
   if ((err = mp_mulmod(B->y, mu, modulus, precomp[1<<2]->y)) != CRYPT_OK)                                      { goto ERR_MU; }
   if ((err = mp_mulmod(B->z, mu, modulus, precomp[1<<2]->z)) != CRYPT_OK)                                      { goto ERR_MU; }
+  precomp[1<<2]->infinity = B->infinity;
 
   /* precomp [i,0](A + B) table */
   if ((err = ltc_mp.ecc_ptdbl(precomp[1], precomp[2], modulus, mp)) != CRYPT_OK)                               { goto ERR_MU; }
@@ -169,6 +171,7 @@ int ltc_ecc_mul2add(ecc_point *A, void *kA,
            if ((err = mp_copy(precomp[nA + (nB<<2)]->x, C->x)) != CRYPT_OK)           { goto ERR_MU; }
            if ((err = mp_copy(precomp[nA + (nB<<2)]->y, C->y)) != CRYPT_OK)           { goto ERR_MU; }
            if ((err = mp_copy(precomp[nA + (nB<<2)]->z, C->z)) != CRYPT_OK)           { goto ERR_MU; }
+	   C->infinity = precomp[nA + (nB<<2)]->infinity;
         } else {
            /* if not first, add from table */
            if ((err = ltc_mp.ecc_ptadd(C, precomp[nA + (nB<<2)], C, modulus, mp)) != CRYPT_OK) { goto ERR_MU; }
@@ -203,5 +206,5 @@ ERR_T:
 #endif
 
 /* $Source: /cvs/libtom/libtomcrypt/src/pk/ecc/ltc_ecc_mul2add.c,v $ */
-/* $Revision: 1.6 $ */
-/* $Date: 2006/12/04 05:07:59 $ */
+/* $Revision: 1.8 $ */
+/* $Date: 2007/05/12 14:32:35 $ */

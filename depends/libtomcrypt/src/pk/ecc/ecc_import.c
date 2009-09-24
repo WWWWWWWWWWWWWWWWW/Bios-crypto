@@ -6,7 +6,7 @@
  * The library is free for all purposes without any express
  * guarantee it works.
  *
- * Tom St Denis, tomstdenis@gmail.com, http://libtomcrypt.com
+ * Tom St Denis, tomstdenis@gmail.com, http://libtom.org
  */
 
 /* Implements ECC over Z/pZ for curve y^2 = x^3 - 3x + b
@@ -21,7 +21,7 @@
   ECC Crypto, Tom St Denis
 */  
 
-#ifdef MECC
+#ifdef LTC_MECC
 
 static int is_point(ecc_key *key)
 {
@@ -70,6 +70,69 @@ error:
    mp_clear_multi(t2, t1, b, prime, NULL);
    return err;
 }
+
+
+
+/**
+  Validate a key according to ANSI spec
+  @param key     The key to validate
+  @return CRYPT_OK if successful
+*/
+
+int ecc_validate_key(ecc_key *key)
+{
+  int err;
+  void *prime = NULL;
+  void *order = NULL;
+  ecc_point *test_output = NULL;
+  test_output = malloc(sizeof(ecc_point));  
+
+  test_output->infinity = 0;
+  if (mp_init_multi(&(test_output->x), &(test_output->y), &(test_output->z), 
+		    &order, &prime, NULL) != CRYPT_OK) {
+    return CRYPT_MEM;
+  }
+
+
+  /* Test 1: Are the x amd y points of the public key in the field? */
+  if((err = ltc_mp.read_radix(prime, key->dp->prime, 16)) != CRYPT_OK) { goto error;}
+
+  if(ltc_mp.compare_d(key->pubkey.z, 1) == LTC_MP_EQ) {
+    if(
+       (ltc_mp.compare(key->pubkey.x, prime) != LTC_MP_LT) 
+       || (ltc_mp.compare(key->pubkey.y, prime) != LTC_MP_LT)
+       || (ltc_mp.compare_d(key->pubkey.x, 0) != LTC_MP_GT)
+       || (ltc_mp.compare_d(key->pubkey.y, 0) != LTC_MP_GT) )
+      {
+	err = CRYPT_FAIL_TESTVECTOR;
+	goto error;
+      }
+  }
+
+  /* Test 2: is the public key on the curve? */
+  if((err = is_point(key)) != CRYPT_OK) { goto error;}
+
+  /* Test 3: does nG = O? (n = order, 0 = point at infinity, G = public key) */
+  if((err = ltc_mp.read_radix(order, key->dp->order, 16)) != CRYPT_OK) { goto error;}
+  if((err = ltc_ecc_mulmod(order, &(key->pubkey), test_output, prime, 1)) != CRYPT_OK) {
+    goto error;
+  }
+
+  if(!test_output->infinity){
+    err = CRYPT_INVALID_PACKET;
+    goto error;
+  }
+  
+  err = CRYPT_OK;
+error:     
+  mp_clear_multi(prime, order, test_output->z, test_output->y, test_output->x, NULL);
+  return err;
+
+
+
+}
+
+
 
 /**
   Import an ECC key from a binary packet
@@ -153,9 +216,12 @@ int ecc_import_ex(const unsigned char *in, unsigned long inlen, ecc_key *key, co
    }
    /* set z */
    if ((err = mp_set(key->pubkey.z, 1)) != CRYPT_OK) { goto done; }
+
+   key->pubkey.infinity = 0;
+
    
    /* is it a point on the curve?  */
-   if ((err = is_point(key)) != CRYPT_OK) {
+   if ((err = ecc_validate_key(key)) != CRYPT_OK) {
       goto done;
    }
 
@@ -167,6 +233,6 @@ done:
 }
 #endif
 /* $Source: /cvs/libtom/libtomcrypt/src/pk/ecc/ecc_import.c,v $ */
-/* $Revision: 1.11 $ */
-/* $Date: 2006/12/04 02:19:48 $ */
+/* $Revision: 1.13 $ */
+/* $Date: 2007/05/12 14:32:35 $ */
 

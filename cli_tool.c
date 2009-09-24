@@ -44,7 +44,7 @@ void make_keys(char **argv)
 
    /* make keys */
    fprintf(stderr, "Making 2048-bit RSA key...\n");
-   DO(rsa_make_key(NULL, find_prng("sprng"), 2048/8, 65537, &rsakey));
+   DO(rsa_make_key(NULL, find_prng("sprng"), NULL, find_prng("sprng"), 2048/8, 65537, &rsakey));
 
 #ifdef USE_ECC
    fprintf(stderr, "Making 521-bit ECC key...\n");

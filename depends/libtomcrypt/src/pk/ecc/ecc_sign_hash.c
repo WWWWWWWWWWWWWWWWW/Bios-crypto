@@ -6,7 +6,7 @@
  * The library is free for all purposes without any express
  * guarantee it works.
  *
- * Tom St Denis, tomstdenis@gmail.com, http://libtomcrypt.com
+ * Tom St Denis, tomstdenis@gmail.com, http://libtom.org
  */
 
 /* Implements ECC over Z/pZ for curve y^2 = x^3 - 3x + b
@@ -21,7 +21,7 @@
   ECC Crypto, Tom St Denis
 */  
 
-#ifdef MECC
+#ifdef LTC_MECC
 
 /**
   Sign a message digest
@@ -56,6 +56,12 @@ int ecc_sign_hash(const unsigned char *in,  unsigned long inlen,
    if (ltc_ecc_is_valid_idx(key->idx) != 1) {
       return CRYPT_PK_INVALID_TYPE;
    }
+
+   /* Does the key contain the point at infinity? */
+   if (key->pubkey.infinity) {
+      return CRYPT_INVALID_ARG;
+   }
+
    
    if ((err = prng_is_valid(wprng)) != CRYPT_OK) {
       return err;
@@ -109,6 +115,6 @@ errnokey:
 
 #endif
 /* $Source: /cvs/libtom/libtomcrypt/src/pk/ecc/ecc_sign_hash.c,v $ */
-/* $Revision: 1.9 $ */
-/* $Date: 2006/12/04 02:50:11 $ */
+/* $Revision: 1.11 $ */
+/* $Date: 2007/05/12 14:32:35 $ */
 

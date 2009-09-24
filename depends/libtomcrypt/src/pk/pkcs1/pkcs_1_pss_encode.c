@@ -6,19 +6,19 @@
  * The library is free for all purposes without any express
  * guarantee it works.
  *
- * Tom St Denis, tomstdenis@gmail.com, http://libtomcrypt.com
+ * Tom St Denis, tomstdenis@gmail.com, http://libtom.org
  */
 #include "tomcrypt.h"
 
 /** 
   @file pkcs_1_pss_encode.c
-  PKCS #1 PSS Signature Padding, Tom St Denis 
+  LTC_PKCS #1 PSS Signature Padding, Tom St Denis 
 */
 
-#ifdef PKCS_1
+#ifdef LTC_PKCS_1
 
 /**
-   PKCS #1 v2.00 Signature Encoding
+   LTC_PKCS #1 v2.00 Signature Encoding
    @param msghash          The hash to encode
    @param msghashlen       The length of the hash (octets)
    @param saltlen          The length of the salt desired (octets)
@@ -54,6 +54,7 @@ int pkcs_1_pss_encode(const unsigned char *msghash, unsigned long msghashlen,
    }
 
    hLen        = hash_descriptor[hash_idx].hashsize;
+   modulus_bitlen--;
    modulus_len = (modulus_bitlen>>3) + (modulus_bitlen & 7 ? 1 : 0);
 
    /* check sizes */
@@ -147,7 +148,7 @@ int pkcs_1_pss_encode(const unsigned char *msghash, unsigned long msghashlen,
    out[y] = 0xBC;
 
    /* now clear the 8*modulus_len - modulus_bitlen most significant bits */
-   out[0] &= 0xFF >> ((modulus_len<<3) - (modulus_bitlen-1));
+   out[0] &= 0xFF >> ((modulus_len<<3) - modulus_bitlen);
 
    /* store output size */
    *outlen = modulus_len;
@@ -168,8 +169,8 @@ LBL_ERR:
    return err;
 }
 
-#endif /* PKCS_1 */
+#endif /* LTC_PKCS_1 */
 
 /* $Source: /cvs/libtom/libtomcrypt/src/pk/pkcs1/pkcs_1_pss_encode.c,v $ */
-/* $Revision: 1.7 $ */
-/* $Date: 2006/06/16 21:53:41 $ */
+/* $Revision: 1.9 $ */
+/* $Date: 2007/05/12 14:32:35 $ */

@@ -6,7 +6,7 @@
  * The library is free for all purposes without any express
  * guarantee it works.
  *
- * Tom St Denis, tomstdenis@gmail.com, http://libtomcrypt.com
+ * Tom St Denis, tomstdenis@gmail.com, http://libtom.org
  */
 
 /* Implements ECC over Z/pZ for curve y^2 = x^3 - 3x + b
@@ -21,7 +21,7 @@
   ECC Crypto, Tom St Denis
 */  
 
-#ifdef MECC
+#ifdef LTC_MECC
 
 /**
   Perform on the ECC system
@@ -70,6 +70,7 @@ int ecc_test(void)
        if ((err = mp_read_radix(G->x, (char *)ltc_ecc_sets[i].Gx, 16)) != CRYPT_OK)         { goto done; }
        if ((err = mp_read_radix(G->y, (char *)ltc_ecc_sets[i].Gy, 16)) != CRYPT_OK)         { goto done; }
        mp_set(G->z, 1);
+       G->infinity = 0;
 
        /* then we should have G == (order + 1)G */
        if ((err = mp_add_d(order, 1, order)) != CRYPT_OK)                                   { goto done; }
@@ -90,6 +91,6 @@ done:
 #endif
 
 /* $Source: /cvs/libtom/libtomcrypt/src/pk/ecc/ecc_test.c,v $ */
-/* $Revision: 1.10 $ */
-/* $Date: 2006/12/04 02:19:48 $ */
+/* $Revision: 1.12 $ */
+/* $Date: 2007/05/12 14:32:35 $ */
 

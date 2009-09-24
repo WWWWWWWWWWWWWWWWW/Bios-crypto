@@ -25,14 +25,14 @@ int main(int argc, char **argv)
     int		  hashid, readlen;
     int		  j;
 
-    if (argc < 4) { 
-        fprintf(stderr, "%s: hashname signed_file_name output_file_name\n", argv[0]);
+    if (argc < 3) { 
+        fprintf(stderr, "%s: hashname signed_file_name [ output_file_name ] \n", argv[0]);
         return EXIT_FAILURE;
     }
 
     LTC_ARGCHK(register_hash(&sha256_desc) != -1);
     LTC_ARGCHK(register_hash(&rmd160_desc) != -1);
-    LTC_ARGCHK(register_hash(&md5_desc) != -1);
+    LTC_ARGCHK(register_hash(&ltc_md5_desc) != -1);
     ltc_mp = tfm_desc;
 
     hashname = argv[1];
@@ -44,8 +44,12 @@ int main(int argc, char **argv)
     LTC_ARGCHK(infile != NULL);
 
     /* open output file */
-    outfile = fopen(argv[3], "wb");
-    LTC_ARGCHK(outfile != NULL);
+    if (argc == 4) {
+        outfile = fopen(argv[3], "wb");
+        LTC_ARGCHK(outfile != NULL);
+    } else {
+        outfile = stdout;
+    }
 
     (void)fseek(infile, 0L, SEEK_END);
     insize = ftell(infile);
@@ -61,7 +65,7 @@ int main(int argc, char **argv)
     else
         ++fname;
 
-    // fprintf(outfile, "data: %s\n", fname);
+//  fprintf(outfile, "data: %s\n", fname);
     fprintf(outfile, "erase-all\n");
     fprintf(outfile, "mark-pending: 0\n");
 
@@ -81,7 +85,8 @@ int main(int argc, char **argv)
     fprintf(outfile, "mark-complete: 0\n");
 
     fclose(infile);
-    fclose(outfile);
+    if (outfile != stdout)
+        fclose(outfile);
 
     return EXIT_SUCCESS;
 }

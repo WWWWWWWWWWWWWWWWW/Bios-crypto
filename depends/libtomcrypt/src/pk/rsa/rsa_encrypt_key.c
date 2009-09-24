@@ -6,19 +6,19 @@
  * The library is free for all purposes without any express
  * guarantee it works.
  *
- * Tom St Denis, tomstdenis@gmail.com, http://libtomcrypt.com
+ * Tom St Denis, tomstdenis@gmail.com, http://libtom.org
  */
 #include "tomcrypt.h"
 
 /**
   @file rsa_encrypt_key.c
-  RSA PKCS #1 encryption, Tom St Denis and Andreas Lange
+  RSA LTC_PKCS #1 encryption, Tom St Denis and Andreas Lange
 */
 
-#ifdef MRSA
+#ifdef LTC_MRSA
 
 /**
-    (PKCS #1 v2.0) OAEP pad then encrypt
+    (LTC_PKCS #1 v2.0) OAEP pad then encrypt
     @param in          The plaintext
     @param inlen       The length of the plaintext (octets)
     @param out         [out] The ciphertext
@@ -82,7 +82,7 @@ int rsa_encrypt_key_ex(const unsigned char *in,     unsigned long inlen,
        return err;
     }
   } else {
-    /* PKCS #1 v1.5 pad the key */
+    /* LTC_PKCS #1 v1.5 pad the key */
     x = *outlen;
     if ((err = pkcs_1_v1_5_encode(in, inlen, LTC_PKCS_1_EME,
                                   modulus_bitlen, prng, prng_idx,
@@ -91,12 +91,12 @@ int rsa_encrypt_key_ex(const unsigned char *in,     unsigned long inlen,
     }
   }
 
-  /* rsa exptmod the OAEP or PKCS #1 v1.5 pad */
+  /* rsa exptmod the OAEP or LTC_PKCS #1 v1.5 pad */
   return ltc_mp.rsa_me(out, x, out, outlen, PK_PUBLIC, key);
 }
 
-#endif /* MRSA */
+#endif /* LTC_MRSA */
 
 /* $Source: /cvs/libtom/libtomcrypt/src/pk/rsa/rsa_encrypt_key.c,v $ */
-/* $Revision: 1.8 $ */
-/* $Date: 2006/11/01 09:18:22 $ */
+/* $Revision: 1.10 $ */
+/* $Date: 2007/05/12 14:32:35 $ */

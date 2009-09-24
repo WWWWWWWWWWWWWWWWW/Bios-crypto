@@ -6,7 +6,7 @@
  * The library is free for all purposes without any express
  * guarantee it works.
  *
- * Tom St Denis, tomstdenis@gmail.com, http://libtomcrypt.com
+ * Tom St Denis, tomstdenis@gmail.com, http://libtom.org
  */
 
 /* Implements ECC over Z/pZ for curve y^2 = x^3 - 3x + b
@@ -21,7 +21,7 @@
   ECC Crypto, Tom St Denis
 */  
 
-#ifdef MECC
+#ifdef LTC_MECC
 
 #ifdef LTC_ECC_TIMING_RESISTANT
 
@@ -82,6 +82,7 @@ int ltc_ecc_mulmod(void *k, ecc_point *G, ecc_point *R, void *modulus, int map)
    if ((err = mp_mulmod(G->x, mu, modulus, tG->x)) != CRYPT_OK)                      { goto done; }
    if ((err = mp_mulmod(G->y, mu, modulus, tG->y)) != CRYPT_OK)                      { goto done; }
    if ((err = mp_mulmod(G->z, mu, modulus, tG->z)) != CRYPT_OK)                      { goto done; }
+   tG->infinity = G->infinity;
    mp_clear(mu);
    mu = NULL;
    
@@ -90,6 +91,7 @@ int ltc_ecc_mulmod(void *k, ecc_point *G, ecc_point *R, void *modulus, int map)
    if ((err = mp_copy(tG->x, M[0]->x)) != CRYPT_OK)                                  { goto done; }
    if ((err = mp_copy(tG->y, M[0]->y)) != CRYPT_OK)                                  { goto done; }
    if ((err = mp_copy(tG->z, M[0]->z)) != CRYPT_OK)                                  { goto done; }
+   M[0]->infinity = tG->infinity;
    /* M[1] == 2G */
    if ((err = ltc_mp.ecc_ptdbl(tG, M[1], modulus, mp)) != CRYPT_OK)                  { goto done; }
 
@@ -140,6 +142,7 @@ int ltc_ecc_mulmod(void *k, ecc_point *G, ecc_point *R, void *modulus, int map)
    if ((err = mp_copy(M[0]->x, R->x)) != CRYPT_OK)                                   { goto done; }
    if ((err = mp_copy(M[0]->y, R->y)) != CRYPT_OK)                                   { goto done; }
    if ((err = mp_copy(M[0]->z, R->z)) != CRYPT_OK)                                   { goto done; }
+   R->infinity = M[0]->infinity;
 
    /* map R back from projective space */
    if (map) {
@@ -162,6 +165,6 @@ done:
 #endif
 #endif
 /* $Source: /cvs/libtom/libtomcrypt/src/pk/ecc/ltc_ecc_mulmod_timing.c,v $ */
-/* $Revision: 1.11 $ */
-/* $Date: 2006/12/04 22:17:46 $ */
+/* $Revision: 1.13 $ */
+/* $Date: 2007/05/12 14:32:35 $ */
 

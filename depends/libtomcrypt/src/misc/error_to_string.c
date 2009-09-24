@@ -6,7 +6,7 @@
  * The library is free for all purposes without any express
  * guarantee it works.
  *
- * Tom St Denis, tomstdenis@gmail.com, http://libtomcrypt.com
+ * Tom St Denis, tomstdenis@gmail.com, http://libtom.org
  */
 
 #include "tomcrypt.h"
@@ -52,6 +52,9 @@ static const char *err_2_str[] =
 
    "Invalid size for prime.",
 
+   "Invalid padding.",
+
+   "Hash applied to too many bits.",
 };
 
 /**
@@ -70,5 +73,5 @@ const char *error_to_string(int err)
 
 
 /* $Source: /cvs/libtom/libtomcrypt/src/misc/error_to_string.c,v $ */
-/* $Revision: 1.4 $ */
-/* $Date: 2006/03/31 14:15:35 $ */
+/* $Revision: 1.5 $ */
+/* $Date: 2006/12/28 01:27:24 $ */

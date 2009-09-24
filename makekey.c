@@ -30,7 +30,7 @@ int main(int argc, char **argv)
 
    /* make keys */
    fprintf(stderr, "Making 2048-bit RSA key...\n");
-   DO(rsa_make_key(NULL, find_prng("sprng"), 2048/8, 65537, &rsakey));
+   DO(rsa_make_key(NULL, find_prng("sprng"), NULL, find_prng("sprng"), 2048/8, 65537, &rsakey));
 
    /* make the private key */
    /* export them to their own buffers */

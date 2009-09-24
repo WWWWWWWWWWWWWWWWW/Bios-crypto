@@ -1,3 +1,19 @@
+May 12th, 2007
+v1.17 -- Cryptography Research Inc. contributed another small volley of patches, one to fix __WCHAR_DEFINED__ for BSD platforms, 
+         another to silence MSVC warnings.
+      -- Added LTC_XCBC_PURE to XCBC mode which lets you use it in three-key mode. 
+      -- [CRI] Added libtomcrypt.dsp for Visual C++ users.
+      -- [CRI] Added more functions for manipulating the ECC fixed point cache (including saving and loading)
+      -- [CRI] Modified ecc_make_key() to always produce keys smaller than base point order, for standards-compliance
+      -- Elliptic Semiconductor contributed XTS chaining mode to the cipher suite (subsequently optimized it)
+      -- Fixed xcbc_init() keylen when using single key mode.
+      -- Bruce Fortune pointed out a typo in the hmac_process() description in the manual.  Fixed.
+      -- Added variable width counter support to CTR mode
+      -- Fixed CMAC (aka OMAC) when using 64-bit block ciphers and LTC_FAST ... my bad.
+      -- Fixed bug in ecc_is_valid() that would basically always return true
+      -- renamed a lot of macros to add the LTC_ prefix [e.g. RIJNDAEL => LTC_RIJNDAEL]
+
+December 16th, 2006
 v1.16 -- Brian Gladman pointed out that a recent change to GCM broke how the IV was handled.  Currently the code complies against his test vectors
          so the code should be considered frozen now.
       -- Trevor from Cryptography Research Inc. submitted patches to convert the ECC code to be generic allowing curve parameters to be submitted
@@ -13,12 +29,15 @@ v1.16 -- Brian Gladman pointed out that a recent change to GCM broke how the IV 
       -- ltc_ecc_mulmod() could leak memory if mp_init(&mu) failed, fixed.  Would you believe that ltc_ecc_mulmod_timing() had the same
          bug?  Also fixed.  :-)
       -- Added Shamir's trick to the ECC side (defined as LTC_ECC_SHAMIR, enabled by default), gets ~1.34x to ~1.40x faster ECC verifications
-      -- Added Brian's vector #46 to the GCM code.  It caches the ctr counter error from v1.15.  Originally I was going to add all of his vectors,
+      -- Added Brian's vector #46 to the GCM code.  It catches the ctr counter error from v1.15.  Originally I was going to add all of his vectors,
          but they're not as easy to parse and I got a lot of other things to do.  Regression!
       -- Various other small fixes to the ECC code to clean up error handling (I think most of that was from the move in 1.06 to the plugins)
          All of the errors were in cleaning up from heap failures.  So they were not likely to be triggered in normal usage
          Made similar fixes to the RSA and DSA code (my bad)
       -- Cryptography Research Inc. contributed a bunch of fixes to silence warnings (with MSVC) w.r.t. assigned data to unsigned char types.
+      -- Martin Marko suggested some fixes to make the RNG build with WinCE.
+      -- Updates to the manual for print (some fixes thanks to Martin Marko)
+      
 
 November 17th, 2006
 v1.15 -- Andreas Lange found that if sha256_init DID fail in fortuna it wouldn't clean up the state correctly.  Thanks.
@@ -1547,6 +1566,6 @@ v0.02  -- Changed RC5 to only allow 12 to 24 rounds
 v0.01  -- We will call this the first version.
 
 /* $Source: /cvs/libtom/libtomcrypt/changes,v $ */
-/* $Revision: 1.272 $ */
-/* $Date: 2006/12/04 23:07:04 $ */
+/* $Revision: 1.288 $ */
+/* $Date: 2007/05/12 14:37:41 $ */
 

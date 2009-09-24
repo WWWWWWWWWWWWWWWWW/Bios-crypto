@@ -61,6 +61,9 @@ key01: key01.o ../depends/libtomcrypt.a ../depends/libtfm.a
 hashfs: hashfs.o ../depends/libtomcrypt.a ../depends/libtfm.a
 	$(CC) $(CFLAGS) hashfs.o ../depends/libtomcrypt.a ../depends/libtfm.a -o $@ 
 
+zhashfs: zhashfs.o ../depends/libtomcrypt.a ../depends/libtfm.a
+	$(CC) $(CFLAGS) zhashfs.o ../depends/libtomcrypt.a ../depends/libtfm.a -lz -o $@ 
+
 
 # python binding for verify functionality.
 %.o: %.pyx
@@ -79,6 +82,9 @@ pysign.o: pysign.h
 
 hashfs.o: hashfs.c
 	$(CC) -c $(CFLAGS) -DARGTYPE=1 $< -o $@
+
+zhashfs.o: zhashfs.c
+	$(CC) -c $(CFLAGS) -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64 -DARGTYPE=1 $< -o $@
 
 makekey.o: makekey.c
 	$(CC) -c $(CFLAGS) -DARGTYPE=1 $< -o $@

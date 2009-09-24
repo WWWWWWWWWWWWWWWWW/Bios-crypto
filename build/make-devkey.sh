@@ -15,4 +15,4 @@ else
   outfile=/dev/fd/0
 fi
 
-echo dev01: $sn A `echo -n $sn:$uu:A:00000000T000000Z | ./sig01 sha256 developer` >$outfile
+echo dev01: $sn A 00000000T000000Z `echo -n $sn:$uu:A:00000000T000000Z | ./sig01 sha256 developer` >$outfile

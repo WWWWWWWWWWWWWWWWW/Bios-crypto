@@ -14,10 +14,14 @@ hashname=sha256
 # hashname=rmd160
 outfile=fs.zip
 
-./hashfs $hashname $infile data.img
+
+echo "data: " `basename $infile` >data.img
+./hashfs $hashname $infile data.tmp
+cat data.tmp >>data.img
+
 echo $buildname >version.txt
 
 ./sig01 sha256 fs data.img >data.sig
 rm -f $outfile
 zip -n .sig:.img:.txt $outfile data.sig version.txt data.img
-rm -f data.sig data.img version.txt
+rm -f data.tmp data.sig data.img version.txt

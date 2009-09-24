@@ -61,7 +61,7 @@ int main(int argc, char **argv)
     else
         ++fname;
 
-    fprintf(outfile, "data: %s\n", fname);
+    // fprintf(outfile, "data: %s\n", fname);
     fprintf(outfile, "erase-all\n");
     fprintf(outfile, "mark-pending: 0\n");
 

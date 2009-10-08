@@ -7,7 +7,7 @@ LIBCFLAGS += -Os -I../../depends/libtomcrypt/src/headers -I../../depends/tomsfas
 
 VPATH = ..
 
-CLI = makekey sign verify sig01 key01 hashfs zhashfs
+CLI = makekey sign verify sig01 key01 hashfs zhashfs zdextract
 
 default: bios_verify.img $(CLI)
 
@@ -67,6 +67,9 @@ hashfs: hashfs.o ../depends/libtomcrypt.a ../depends/libtfm.a
 zhashfs: zhashfs.o ../depends/libtomcrypt.a ../depends/libtfm.a
 	$(CC) $(CFLAGS) zhashfs.o ../depends/libtomcrypt.a ../depends/libtfm.a -lz -o $@ 
 
+zdextract: zdextract.o
+	$(CC) $(CFLAGS) zdextract.o -lz -o $@ 
+
 
 # python binding for verify functionality.
 %.o: %.pyx
@@ -83,25 +86,10 @@ pysign.o: pysign.h
 # behavior for this program.  The default value - ARGTYPE=0 - results in LTC_ARGTYPE()
 # calling crypt_argchk(), which is not defined in the smaller (non-_cli) libraries.
 
-hashfs.o: hashfs.c
-	$(CC) -c $(CFLAGS) -DARGTYPE=1 $< -o $@
-
 zhashfs.o: zhashfs.c
 	$(CC) -c $(CFLAGS) -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64 -DARGTYPE=1 $< -o $@
 
-makekey.o: makekey.c
-	$(CC) -c $(CFLAGS) -DARGTYPE=1 $< -o $@
-
-sign.o: sign.c
-	$(CC) -c $(CFLAGS) -DARGTYPE=1 $< -o $@
-
-verify.o: verify.c
-	$(CC) -c $(CFLAGS) -DARGTYPE=1 $< -o $@
-
-sig01.o: sig01.c
-	$(CC) -c $(CFLAGS) -DARGTYPE=1 $< -o $@
-
-key01.o: key01.c
+%.o: %.c
 	$(CC) -c $(CFLAGS) -DARGTYPE=1 $< -o $@
 
 # The non-_cli versions of the libraries are used by the firmware crypto code and

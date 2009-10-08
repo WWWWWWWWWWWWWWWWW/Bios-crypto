@@ -1,3 +1,12 @@
+// Converts .zd files to raw binary - either the entire file
+// or specific blocks.
+// 
+// Usage: zdextract [ blockno ..] <file.zd >file.img
+//
+// With no arguments, extracts the entire file, otherwise
+// extracts the specified block numbers, which must be in
+// ascending order.  blockno can be in decimal, octal,
+// or hex, using C number syntax.
 
 #include <stdio.h>
 #include <stdlib.h>

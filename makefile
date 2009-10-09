@@ -9,12 +9,12 @@ PKGNAME = olpc-bios-crypto
 VERSION =$(shell git describe | sed 's/^v//' | sed 's/-/./g')
 RELEASE = 1
 COMMITID = $(shell git rev-parse HEAD)
-ARCH = i386
+ARCH = i586
 
 # NOTE: Release is hardcoded in the spec file to 1
 NV = $(PKGNAME)-$(VERSION)
 NVR = $(NV)-$(RELEASE)
-DISTVER=xs9
+DISTVER=xs11
 
 # rpm target directory
 BUILDDIR = $(PWD)/build-rpm
@@ -75,11 +75,11 @@ $(RPM): SRPM
 
 publish: SOURCES SRPM
 	rsync -e ssh --progress  $(RPM) \
-	    xs-dev.laptop.org:/xsrepos/testing/olpc/9/i386/
+	    xs-dev.laptop.org:/xsrepos/testing/olpc/11/i586/
 	rsync -e ssh --progress $(SRPM) \
-	    xs-dev.laptop.org:/xsrepos/testing/olpc/9/source/SRPMS/
+	    xs-dev.laptop.org:/xsrepos/testing/olpc/11/source/SRPMS/
 	rsync -e ssh --progress $(TARBALL) \
-	    xs-dev.laptop.org:/xsrepos/testing/olpc/9/source/SOURCES/
-	ssh xs-dev.laptop.org sudo createrepo /xsrepos/testing/olpc/9/i386
+	    xs-dev.laptop.org:/xsrepos/testing/olpc/11/source/SOURCES/
+	ssh xs-dev.laptop.org sudo createrepo /xsrepos/testing/olpc/1/i586
 
 .PHONY: olpc-bios-crypto.spec.in install

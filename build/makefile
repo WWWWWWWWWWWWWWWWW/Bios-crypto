@@ -1,4 +1,4 @@
-LIBDIRS=-L/usr/lib/gcc/i486-linux-gnu/4.1/ -L/usr/lib/gcc/i486-linux-gnu/4.1.2/ -L/usr/lib/gcc/i386-redhat-linux/4.3.0/ 
+LIBDIRS=-L/usr/lib/gcc/i486-linux-gnu/4.1/ -L/usr/lib/gcc/i486-linux-gnu/4.1.2/ -L/usr/lib/gcc/i386-redhat-linux/4.3.0/ -L/usr/lib/gcc/i586-redhat-linux/4.4.1/
 
 
 CFLAGS += -Os -I../depends/libtomcrypt/src/headers -I../depends/tomsfastmath/src/headers

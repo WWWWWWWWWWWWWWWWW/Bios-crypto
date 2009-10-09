@@ -10,9 +10,8 @@ URL:            http://wiki.laptop.org/go/Firmware_security
 Source0:        http://dev.laptop.org/~douglas/SOURCES/%{name}-%{version}.tar.bz2
 BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
-BuildArch:      i386
-BuildRequires:  make
-BuildRequires:  gcc
+BuildArch:      i586
+BuildRequires:  libgcc
 #BuildRequires:  pyrex
 
 Requires:       python
@@ -35,7 +34,7 @@ libfastmath, etc.
 %build
 
 echo rpm: About to build in $RPM_BUILD_ROOT
-make DESTDIR=$RPM_BUILD_ROOT all
+make DESTDIR=$RPM_BUILD_ROOT all 
 
 %install
 #rm -rf $RPM_BUILD_ROOT

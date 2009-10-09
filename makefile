@@ -80,6 +80,6 @@ publish: SOURCES SRPM
 	    xs-dev.laptop.org:/xsrepos/testing/olpc/11/source/SRPMS/
 	rsync -e ssh --progress $(TARBALL) \
 	    xs-dev.laptop.org:/xsrepos/testing/olpc/11/source/SOURCES/
-	ssh xs-dev.laptop.org sudo createrepo /xsrepos/testing/olpc/1/i586
+	ssh xs-dev.laptop.org sudo createrepo /xsrepos/testing/olpc/11/i586
 
 .PHONY: olpc-bios-crypto.spec.in install

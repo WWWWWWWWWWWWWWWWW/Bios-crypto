@@ -1,9 +1,9 @@
 LIBGCC=`$(CC) -print-libgcc-file-name`
 
-CFLAGS += -Os -I../depends/libtomcrypt/src/headers -I../depends/tomsfastmath/src/headers
+CFLAGS += -Os -I../depends/libtomcrypt/src/headers -I../depends/tomsfastmath/src/headers -fno-stack-protector
 
 # Libraries are built deeper in the tree, so we need ../.. instead of ..
-LIBCFLAGS += -Os -I../../depends/libtomcrypt/src/headers -I../../depends/tomsfastmath/src/headers
+LIBCFLAGS += -Os -I../../depends/libtomcrypt/src/headers -I../../depends/tomsfastmath/src/headers -fno-stack-protector
 
 VPATH = ..
 

@@ -1,0 +1,18 @@
+The artifact that we release from this repository is build/bios_verify.img
+
+Procedure (replace N with the new release number):
+
+% git clone git+ssh://dev.laptop.org/git/bios_crypto bios_crypto-0.N
+% cd bios_crypto-0.N/build
+% make
+
+Copy bios_verify.img to your OFW build directory as verify.img, make and test.
+
+% git tag -m "<Description of release purpose>" v0.N HEAD
+% git push --tags
+
+% mv bios_verify.img bios_verify-0.N.img
+% md5sum -b bios_verify-0.N.img >bios_verify-0.N.img.md5
+% scp bios_verify-0.N.img bios_verify-0.N.img.md5 dev.laptop.org:/var/www/firmware/crypto
+
+Change OFW : versions.fth : CRYPTO_VERSION to refer to 0.N

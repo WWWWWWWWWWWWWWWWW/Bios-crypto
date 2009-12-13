@@ -35,8 +35,13 @@ Sign a firmware file:
 
 Sign an OS release (using "fs" key):
 
+XO-1:
   Usage:    obc-make-fs.sh  infile   outfile.zip
   Example:  obc-make-fs.sh os767.img   fs.zip
+
+XO-1.5: (output is fs.zip)
+  Usage:    sign-zsp.sh   keyname    infile
+  Example:  sign-zsp.sh    fs      os99.zsp
 
 Tools for handling delegated leases:
 

@@ -77,7 +77,7 @@ int main(int argc, char **argv)
 
     /* open zdata file */
     zfile = fopen(argv[5], "wb");
-    LTC_ARGCHK(outfile != NULL);
+    LTC_ARGCHK(zfile != NULL);
 
     if (eblocks == -1) {
         (void)fseek(infile, 0L, SEEK_END);
@@ -89,9 +89,9 @@ int main(int argc, char **argv)
     }
 
     /* Remove possible path prefix */
-    fname = strrchr(argv[3], '/');
+    fname = strrchr(argv[5], '/');
     if (fname == NULL)
-        fname = argv[3];
+        fname = argv[5];
     else
         ++fname;
 

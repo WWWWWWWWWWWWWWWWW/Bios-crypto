@@ -14,7 +14,7 @@ signingkey=$1
 infile=$2
 outfile=fs.zip
 
-echo "data: `cat $2`" > data.img
+cp $2 data.img
 $LIBEXEC/sig01 sha256 $signingkey data.img > data.sig
 rm -f $outfile
 zip -n .sig:.img $outfile data.sig data.img

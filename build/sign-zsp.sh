@@ -14,9 +14,13 @@ signingkey=$1
 infile=$2
 outfile=fs.zip
 
+# scripts on OLPC's signing laptop expect fs.zip to contain a version.txt
+buildname=$(basename $infile .zsp)
+echo $buildname >version.txt
+
 cp $2 data.img
 $LIBEXEC/sig01 sha256 $signingkey data.img > data.sig
 rm -f $outfile
-zip -n .sig:.img $outfile data.sig data.img
-rm -f data.sig data.img
+zip -n .sig:.img:.txt $outfile data.sig data.img version.txt
+rm -f data.sig data.img version.txt
 

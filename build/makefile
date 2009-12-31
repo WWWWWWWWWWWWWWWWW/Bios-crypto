@@ -12,6 +12,7 @@ CLI = makekey sign verify sig01 key01 hashfs zhashfs zdextract
 default: bios_verify.img $(CLI)
 
 cli: $(CLI)
+cli_shared: $(patsubst %,shared/%,$(CLI))
 
 %.img: %.elf
 	objcopy -O binary $< $@
@@ -70,6 +71,11 @@ zhashfs: zhashfs.o ../depends/libtomcrypt.a ../depends/libtfm.a
 zdextract: zdextract.o
 	$(CC) $(CFLAGS) zdextract.o -lz -o $@ 
 
+shared:
+	mkdir -p shared
+
+shared/%: %.o shared shlib/libtomcrypt_olpc.so shlib/libtfm_olpc.so
+	$(CC) $(CFLAGS) -shared $< -Lshlib -o $@ -ltomcrypt_olpc -ltfm_olpc
 
 # python binding for verify functionality.
 %.o: %.pyx
@@ -102,7 +108,22 @@ zhashfs.o: zhashfs.c
 ../depends/libtfm.a:
 	cd ../depends/tomsfastmath ; IGNORE_SPEED=1 CFLAGS="${LIBCFLAGS} -DTFM_ALREADY_SET -DTFM_NO_ASM" make ; cp libtfm.a .. ; make clean
 
+shlib:
+	mkdir -p shlib
 
+shlib/libtomcrypt_olpc.so: shlib
+	LIBNAME=libtomcrypt_olpc.la IGNORE_SPEED=1 CFLAGS="${LIBCFLAGS} -DLTC_NO_TEST -I../tomsfastmath/ -DLTC_SMALL_CODE -DARGTYPE=3 -DTFM_DESC" make -C ../depends/libtomcrypt -f makefile.shared
+	cp -a ../depends/libtomcrypt/.libs/libtomcrypt_olpc.so.0.0.117 shlib
+	make -C ../depends/libtomcrypt clean
+	ln -snf libtomcrypt_olpc.so.0.0.117 $@.0
+	ln -snf libtomcrypt_olpc.so.0.0.117 $@
+
+shlib/libtfm_olpc.so: shlib
+	LIBNAME=libtfm_olpc.la IGNORE_SPEED=1 CFLAGS="${LIBCFLAGS} -DTFM_ALREADY_SET -DTFM_NO_ASM" make -C ../depends/tomsfastmath -f makefile.shared
+	cp -a ../depends/tomsfastmath/.libs/libtfm_olpc.so.0.0.12 shlib
+	make -C ../depends/tomsfastmath clean
+	ln -snf libtfm_olpc.so.0.0.12 $@.0
+	ln -snf libtfm_olpc.so.0.0.12 $@
 
 cli_tool: cli_tool.o ../depends/libtomcrypt_cli.a ../depends/libtfm_cli.a
 	$(CC) $(CFLAGS) cli_tool.o ../depends/libtomcrypt_cli.a ../depends/libtfm_cli.a -o $@ 
@@ -120,48 +141,40 @@ clean:
 	rm -f *.o *.a *.img ../depends/*.a cli_tool bios_side sign verify makekey bios_hash bios_verify
 	cd ../depends/libtomcrypt ; make clean
 	cd ../depends/tomsfastmath ; make clean
+	rm -rf shared shlib
 
 DESTDIR=/
 LIBEXEC=/usr/libexec/olpc-bios-crypto
+LIBDIR=/usr/lib
 BINDIR=/usr/bin
+INCDIR=/usr/include
 install:
-	test -d "${DESTDIR}${LIBEXEC}" || install -d "${DESTDIR}${LIBEXEC}"
-	test -d "${DESTDIR}${BINDIR}"  || install -d "${DESTDIR}${BINDIR}"
+	install -d "${DESTDIR}${LIBEXEC}"
+	install -d "${DESTDIR}${BINDIR}"
+	install -d "${DESTDIR}${LIBDIR}"
 	for p in *.py ; do \
            barename=$${p%.py}; \
 	   install "$$p" "${DESTDIR}${LIBEXEC}/$$p" ; \
-           ln -fs "${DESTDIR}${LIBEXEC}/$$p" "${DESTDIR}${BINDIR}/obc-$$barename"; \
+           ln -fs "../libexec/$$p" "${DESTDIR}${BINDIR}/obc-$$barename"; \
 	done
 
 	for p in *.sh ; do \
 	   barename=$${p%.sh}; \
 	   install "$$p" "${DESTDIR}${LIBEXEC}/$$p" ; \
-	   ln -fs "${DESTDIR}${LIBEXEC}/$$p" "${DESTDIR}${BINDIR}/obc-$$barename"; \
+	   ln -fs "../libexec/$$p" "${DESTDIR}${BINDIR}/obc-$$barename"; \
 	done
 
-	for p in $(CLI) ; do \
-	   install "$$p" "${DESTDIR}${LIBEXEC}/$$p" ; \
-	   ln -fs "${DESTDIR}${LIBEXEC}/$$p" "${DESTDIR}${BINDIR}/obc-$$p"; \
+	install shlib/* "${DESTDIR}${LIBDIR}"
+
+	for p in shared/* ; do \
+	   bname=$$(basename "$$p") ; \
+	   install "$$p" "${DESTDIR}${LIBEXEC}" ; \
+	   ln -fs "../libexec/$$bname" "${DESTDIR}${BINDIR}/obc-$$bname"; \
 	done
 
-# just like install, but the symlinks 
-# point to their "final" location
-install-rpm:
-	test -d "${DESTDIR}${LIBEXEC}" || install -d "${DESTDIR}${LIBEXEC}"
-	test -d "${DESTDIR}${BINDIR}"  || install -d "${DESTDIR}${BINDIR}"
-	for p in *.py ; do \
-           barename=$${p%.py}; \
-	   install "$$p" "${DESTDIR}${LIBEXEC}/$$p" ; \
-           ln -fs "${LIBEXEC}/$$p" "${DESTDIR}${BINDIR}/obc-$$barename"; \
-	done
+	install -d "${DESTDIR}${INCDIR}"/tommath_olpc
+	install ../depends/tomsfastmath/src/headers/* "${DESTDIR}${INCDIR}"/tommath_olpc
 
-	for p in *.sh ; do \
-	   barename=$${p%.sh}; \
-	   install "$$p" "${DESTDIR}${LIBEXEC}/$$p" ; \
-	   ln -fs "${LIBEXEC}/$$p" "${DESTDIR}${BINDIR}/obc-$$barename"; \
-	done
+	install -d "${DESTDIR}${INCDIR}"/tomcrypt_olpc
+	install ../depends/libtomcrypt/src/headers/* "${DESTDIR}${INCDIR}"/tomcrypt_olpc
 
-	for p in $(CLI) ; do \
-	   install "$$p" "${DESTDIR}${LIBEXEC}/$$p" ; \
-	   ln -fs "${LIBEXEC}/$$p" "${DESTDIR}${BINDIR}/obc-$$p"; \
-	done

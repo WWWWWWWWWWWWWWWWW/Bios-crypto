@@ -2,61 +2,87 @@ Name:           @PKGNAME@
 Version:        @VERSION@
 Release:        @RELEASE@%{?dist}
 
-Summary:        OLPC Firmware Crypto
-Group:          Core
-License:        GPLv2
-Packager:       Martin Langhoff <martin@laptop.org>
+Summary:        OLPC firmware security utilities and libraries
+Group:          System Environment/Base
+License:        GPLv2+ and Public Domain
 URL:            http://wiki.laptop.org/go/Firmware_security
 Source0:        http://dev.laptop.org/~douglas/SOURCES/%{name}-%{version}.tar.bz2
 BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
-BuildArch:      i586
-BuildRequires:  libgcc
-#BuildRequires:  pyrex
-
-Requires:       python
 Requires:       mtd-utils
-Requires:       bash
+
 
 %description
-Crypto tools for OLPC Firmware. Based on libtomcrypt and libfastmath.
+Core OLPC crypto libraries.
 
-This version of the package is jury-rigged to work on the XS. A proper
-distro-quality package would depend on up-to-date libtomcrypt,
-libfastmath, etc.
 
-%define debug_package %{nil}
+%package utils
+Group: Development/System
+Summary: OLPC firmware security utilities
+Requires: olpc-bios-crypto = %{version}-%{release}
+
+%description utils
+Utilities for working with OLPC's security system. Tools are provided for
+signing OS images, generating leases, etc.
+
+
+%package devel
+Group: Development/System
+Summary: OLPC firmware utilities development materials
+Requires: olpc-bios-crypto = %{version}-%{release}
+
+
+%description devel
+Development materials for olpc-bios-crypto.
+
 
 %prep
-
 %setup -q
 
-%build
 
-echo rpm: About to build in $RPM_BUILD_ROOT
-make DESTDIR=$RPM_BUILD_ROOT all 
+%build
+make -C build cli_shared
+
 
 %install
-#rm -rf $RPM_BUILD_ROOT
-echo rpm: About to install in $RPM_BUILD_ROOT
-pwd
-make DESTDIR=$RPM_BUILD_ROOT install-rpm
+rm -rf $RPM_BUILD_ROOT
+make install DESTDIR=$RPM_BUILD_ROOT
 mkdir -p $RPM_BUILD_ROOT/var/lib/olpc-bios-crypto
 mkdir -p $RPM_BUILD_ROOT/var/lib/olpc-bios-crypto/server-keys
 mkdir -p $RPM_BUILD_ROOT/var/lib/olpc-bios-crypto/server-lease-delegations
 
 
+%post -p /sbin/ldconfig
+
+
+%postun -p /sbin/ldconfig
+
+
+%clean
+rm -rf $RPM_BUILD_ROOT
+
+
 %files
-%doc cli.README
-%doc build/README
+%defattr(-,root,root,-)
 #%doc COPYING
-%dir /usr/libexec/olpc-bios-crypto
-#%dir /usr/bin
+%{_libdir}/*.so.*
+
+
+%files utils
+%defattr(-,root,root,-)
+%doc build/README
 %dir /var/lib/olpc-bios-crypto
 %dir /var/lib/olpc-bios-crypto/server-keys
 %dir /var/lib/olpc-bios-crypto/server-lease-delegations
-/usr/bin/obc-*
-/usr/libexec/olpc-bios-crypto/
+%{_bindir}/obc-*
+%{_libexecdir}/olpc-bios-crypto/
+
+
+%files devel
+%defattr(-,root,root,-)
+%{_includedir}/*
+%{_libdir}/*.so
+
 
 %changelog
 * Fri May 8 2009 Martin Langhoff <martin@laptop.org> 0.1-1

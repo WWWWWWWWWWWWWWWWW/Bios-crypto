@@ -1,5 +1,7 @@
 // Handle partitions
 
+#include <stdio.h>
+
 #define TFM_DESC
 #include "tomcrypt.h"
 #include "zlib.h"
@@ -61,7 +63,6 @@ int main(int argc, char **argv)
     LTC_ARGCHK(register_hash(&sha256_desc) != -1);
     LTC_ARGCHK(register_hash(&rmd160_desc) != -1);
     LTC_ARGCHK(register_hash(&ltc_md5_desc) != -1);
-    ltc_mp = tfm_desc;
 
     hashname = argv[2];
     hashid = find_hash(hashname);
@@ -96,10 +97,10 @@ int main(int argc, char **argv)
         ++fname;
 
     fprintf(outfile, "data: %s\n", fname);
-    fprintf(outfile, "zblocks: %x %x\n", zblocksize, eblocks);
-    fprintf(zfile,   "zblocks: %x %x\n", zblocksize, eblocks);
+    fprintf(outfile, "zblocks: %lx %lx\n", zblocksize, eblocks);
+    fprintf(zfile,   "zblocks: %lx %lx\n", zblocksize, eblocks);
 
-    fprintf(stdout, "Total blocks: %d\n", eblocks);
+    fprintf(stdout, "Total blocks: %ld\n", eblocks);
 
     /* make a hash of the file */
     for (i=0; i < eblocks; i++) {
@@ -130,22 +131,22 @@ int main(int argc, char **argv)
 
             zlen = zbufsize;
             if ((zresult = compress(zbuf, &zlen, buf, zblocksize)) != Z_OK) {
-                fprintf(stderr, "Compress failure at block 0x%x - %d\n", i, zresult);
+                fprintf(stderr, "Compress failure at block 0x%lx - %d\n", i, zresult);
             }
 
-            fprintf(outfile, "zblock: %x %x %s ", i, zlen, hashname);
+            fprintf(outfile, "zblock: %lx %lx %s ", i, zlen, hashname);
             for(j=0; j<mdlen; j++)
                 fprintf(outfile,"%02x",md[j]);
             fprintf(outfile, "\n");
 
-            fprintf(zfile, "zblock: %x %x %s ", i, zlen, hashname);
+            fprintf(zfile, "zblock: %lx %lx %s ", i, zlen, hashname);
             for(j=0; j<mdlen; j++)
                 fprintf(zfile,"%02x",md[j]);
             fprintf(zfile, "\n");
             fwrite(zbuf, sizeof(char), zlen, zfile);
             fprintf(zfile, "\n");
         }
-        fprintf(stdout, "\r%d", i);  fflush(stdout);
+        fprintf(stdout, "\r%ld", i);  fflush(stdout);
     }
     fprintf(outfile, "zblocks-end:\n");
     fprintf(zfile,   "zblocks-end:\n");
@@ -153,5 +154,6 @@ int main(int argc, char **argv)
     fclose(infile);
     fclose(outfile);
 
+    putchar('\n');
     return EXIT_SUCCESS;
 }

@@ -62,7 +62,7 @@ def main():
                          % opts.csv)
         exit(1)
 
-    basedir = os.path.dirname(sys.argv[0])
+    basedir = os.path.dirname(os.path.realpath(sys.argv[0]))
 
     tmpfiles = {}
 

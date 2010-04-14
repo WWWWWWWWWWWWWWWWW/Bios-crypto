@@ -23,7 +23,7 @@ def main():
                       default='excel')
     (opts, keynames) = parser.parse_args()
 
-    basedir = os.path.dirname(sys.argv[0])
+    basedir = os.path.dirname(os.path.realpath(sys.argv[0]))
 
     if not os.path.isdir(opts.outdir):
         sys.stderr.write("Outdir %s does not exist\n"

@@ -14,7 +14,7 @@ from subprocess import Popen, PIPE
 from optparse import OptionParser
 
 def main():
-    usagestr = '%prog [--csv /path/to/file.csv] [--outdir /tmp] [--serverkeys=/path/to/serverkeys/] <expiry> <signingkey>'
+    usagestr = '%prog [--act] [--csv /path/to/file.csv] [--outdir /tmp] [--serverkeys=/path/to/serverkeys/] <expiry> <signingkey>'
     parser = OptionParser(usage=usagestr)
     parser.add_option('--act', dest='activation', action='store_true', default=False)
     parser.add_option('--csv',
@@ -87,7 +87,7 @@ def main():
 
 
         if not fname in tmpfiles:
-            tmpfiles[fname] = tempfile.mkstemp()
+            tmpfiles[fname] = tempfile.mkstemp(dir=opts.outdir)
         tmpfh = tmpfiles[fname][0]
 
         print "Writing delegation to %s in %s " % (sn, fname)

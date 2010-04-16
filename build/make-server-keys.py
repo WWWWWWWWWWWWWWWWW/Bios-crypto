@@ -36,8 +36,16 @@ def main():
     for row in r:
         svrname = row[0]
         keyfile = os.path.join(opts.outdir, svrname)
-        print "Creating key %s{.private,.public} " % (keyfile)
-        check_call([basedir+'/makekey', keyfile])
-
+        public_keyfile = keyfile + ".public"
+        private_keyfile = keyfile + ".private"
+        print keyfile, public_keyfile,private_keyfile
+        if (not os.path.exists(private_keyfile)):
+            if (not os.path.exists(public_keyfile)):                
+                print "Creating key %s{.private,.public} " % (keyfile)
+                check_call([basedir+'/makekey', keyfile])
+            else:
+                print "Skipping",svrname,"public key file exists"
+        else:
+            print "Skipping",svrname,"private key file exists"
 
 if __name__ == '__main__': main ()

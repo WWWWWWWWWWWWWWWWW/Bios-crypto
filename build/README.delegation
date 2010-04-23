@@ -1,0 +1,86 @@
+Tools for handling delegations
+
+Make delegations for a particular school server:
+
+The core tool in this collection is make-server-delegations.py.
+It takes CSV input for a collection of laptops, one laptop per line, in format:
+	SN,UUID
+
+You must also provide an expiration for the delegation, a master key to
+generate the delegations with, and the public key of the server of which
+you are delegating to.
+
+If generating delegations for activation leases, you must pass the --activation
+parameter.
+
+Example:
+	make-server-delegations.py --activation 30 /home/myuser/master_keys/lease /var/lib/olpc-bios-crypto/server-keys/escuela123
+
+Output goes to standard output - you probably want to redirect it to a file
+of your choosing.
+
+
+Make delegations for a series of school servers:
+
+In general, you'll be making delegations for a group of school servers.
+You basically need to call the make-server-delegations script in a loop,
+for each delegation type, for each school.
+
+bios-crypto provides you with some example scripts to do this, which you
+will probably need to adapt a little for your own circumstances.
+
+The canonical format accepted by these example scripts is one-file-per-school
+listing the laptops in that school. This is the same format as accepted by
+make-server-delegations.
+
+The files should be called "xo.csv" and place in a directory tree, where
+the name of the directory containing xo.csv has the same name as the public
+key for that server.
+
+For example, you might have files as follows.
+	/var/lib/olpc-bios-crypto/server-keys/escuela421.public
+	/var/lib/olpc-bios-crypto/server-keys/escuela8621.public
+	/var/lib/olpc-bios-crypto/server-keys/escuela210.public
+	./delegations/escuela421/xo.csv
+	./delegations/escuela8621/xo.csv
+	./delegations/escuela210/xo.csv
+
+The file format of xo.csv is the same as the format for make-server-delegations.
+
+You can then run make-delegations-from-tree.sh as follows: (e.g.)
+
+	make-delegations-from-tree.sh -a ./delegations 30 /home/myuser/master_keys/lease /var/lib/olpc-bios-crypto/server-keys d-lease.sig
+
+-a is required if you are making delegations for activation leases, and should
+not be used otherwise.
+
+In the above example, the resultant files will be placed at:
+
+	./delegations/escuela421/d-lease.sig
+	./delegations/escuela8621/d-lease.sig
+	./delegations/escuela210/d-lease.sig
+
+
+
+Another possibility is to provide laptop information in a single CSV file,
+one laptop per line, with format:
+	school,SN,UUID
+
+The "school" field should correspond to the name of a public server key
+available on the system.
+
+You can then use the laptops-csv-separate-by-school script to form the
+directory layout described above (with the xo.csv files). e.g.
+
+	./laptops-csv-separate-by-school.sh input.csv ./delegations
+
+Once you have a directory in this form, you can pass it to make-delegations-from-tree.sh to make the actual delegations.
+
+
+Make keys for a number of XSs:
+
+  Usage:    obc-make-server-keys  [--csv /path/to/file.csv] [--outdir /tmp]
+  Example:  obc-make-server-keys --csv=/var/lib/olpc-bios-crypto/servers.csv \
+                                 --outdir=/var/lib/olpc-bios-crypto/server-keys
+
+

@@ -69,7 +69,7 @@ def main():
         print "del01: ", sn, uuid,
 
         # and then the delecation itself:
-        print buf
+        print buf,
     
     exit(0)
 

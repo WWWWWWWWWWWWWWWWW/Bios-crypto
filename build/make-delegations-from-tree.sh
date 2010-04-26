@@ -13,16 +13,6 @@ fi
 MYPATH=$(readlink -f $0)
 LIBEXEC=$(dirname $MYPATH)
 
-ACTIVATION=""
-while getopts a OPTION
-do
-	case $OPTION in
-		a)
-		ACTIVATION="--activation";;
-		
-	esac
-done
-shift $(($OPTIND - 1))
 DELEG_DIR=$1
 EXPIRATION=$2
 MASTERKEY=$3
@@ -36,7 +26,7 @@ do
 	if [ -f ${SERVERKEYS_DIR}/${SCHOOL_NAME}.public ];
 	then
 		echo "Making delegations for ${SCHOOL_NAME}"
-		${LIBEXEC}/make-server-delegations.py ${ACTIVATION} ${FILE} ${EXPIRATION} ${MASTERKEY} ${SERVERKEYS_DIR}/${SCHOOL_NAME} > ${SCHOOL_DIR}/${OUT_FILE_NAME}
+		${LIBEXEC}/make-server-delegations.py ${FILE} ${EXPIRATION} ${MASTERKEY} ${SERVERKEYS_DIR}/${SCHOOL_NAME} > ${SCHOOL_DIR}/${OUT_FILE_NAME}
 	else
 		echo "Not making delegations for ${SCHOOL_NAME}; no server key available"
 	fi

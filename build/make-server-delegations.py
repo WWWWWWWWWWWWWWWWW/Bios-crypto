@@ -21,7 +21,6 @@ def main():
     basedir = os.path.dirname(os.path.realpath(sys.argv[0]))
     usagestr = '%prog [--options] <inputfile> <expiry> <masterkey> <serverkey>'
     parser = OptionParser(usage=usagestr)
-    parser.add_option('--activation', dest='activation', action='store_true', default=False)
     (opts, args) = parser.parse_args()
 
     if len(args) != 4:
@@ -66,13 +65,8 @@ def main():
             sys.stderr.write("Error calling make-delegation\n")
             exit(1)
 
-        if opts.activation:
-            # write a del01 preamble that shows sn/uuid
-            # -- suitable for act delegation
-            print "del01: ", sn, uuid,
-        else:
-            # write a del02 preamble that shows sn
-            print "del02: ", sn,
+        # write a del01 preamble that shows sn/uuid
+        print "del01: ", sn, uuid,
 
         # and then the delecation itself:
         print buf

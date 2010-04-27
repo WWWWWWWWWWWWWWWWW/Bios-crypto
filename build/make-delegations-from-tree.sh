@@ -1,4 +1,5 @@
-#/bin/bash
+#!/bin/bash
+#
 # Write delegations for a group of schools, with a specific master key.
 #
 # -o DAYS enables optimize mode: Automatically generate and use a  .lastrun

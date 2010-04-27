@@ -1,18 +1,18 @@
-LIBDIRS=-L/usr/lib/gcc/i486-linux-gnu/4.1/ -L/usr/lib/gcc/i486-linux-gnu/4.1.2/ -L/usr/lib/gcc/i386-redhat-linux/4.3.0/ 
+LIBGCC=`$(CC) -print-libgcc-file-name`
 
-
-CFLAGS += -Os -I../depends/libtomcrypt/src/headers -I../depends/tomsfastmath/src/headers
+CFLAGS += -Os -I../depends/libtomcrypt/src/headers -I../depends/tomsfastmath/src/headers -fno-stack-protector
 
 # Libraries are built deeper in the tree, so we need ../.. instead of ..
-LIBCFLAGS += -Os -I../../depends/libtomcrypt/src/headers -I../../depends/tomsfastmath/src/headers
+LIBCFLAGS += -Os -I../../depends/libtomcrypt/src/headers -I../../depends/tomsfastmath/src/headers -fno-stack-protector
 
 VPATH = ..
 
-CLI = makekey sign verify sig01 key01 hashfs
+CLI = makekey sign verify sig01 key01 hashfs zhashfs zdextract
 
 default: bios_verify.img $(CLI)
 
 cli: $(CLI)
+cli_shared: $(patsubst %,shared/%,$(CLI))
 
 %.img: %.elf
 	objcopy -O binary $< $@
@@ -21,13 +21,13 @@ cli: $(CLI)
 # bios_verify is the crypto module that is linked into the boot firmware.
 
 bios_verify.elf: bios_verify.o stack_alloc.o bios_string.o ../depends/libtomcrypt.a ../depends/libtfm.a
-	$(LD) -Ttext 0xc0000 -Tbss 0xd0000 --defsym _start=verify_data bios_verify.o stack_alloc.o bios_string.o ../depends/libtomcrypt.a ../depends/libtfm.a $(LIBDIRS) -lgcc -o $@
+	$(LD) -Ttext 0xc0000 -Tbss 0xd0000 --defsym _start=verify_data bios_verify.o stack_alloc.o bios_string.o ../depends/libtomcrypt.a ../depends/libtfm.a $(LIBGCC) -o $@
 
 
 # A BIOS module that does only hashing.  It was used as a test.
 
 bios_hash.elf: bios_hash.o stack_alloc.o bios_string.o ../depends/libtomcrypt.a ../depends/libtfm.a
-	$(LD) -Ttext 0xa0000 -Tbss 0xa8000 --defsym _start=bios_hash bios_hash.o stack_alloc.o bios_string.o ../depends/libtomcrypt.a ../depends/libtfm.a $(LIBDIRS) -lgcc -o $@
+	$(LD) -Ttext 0xa0000 -Tbss 0xa8000 --defsym _start=bios_hash bios_hash.o stack_alloc.o bios_string.o ../depends/libtomcrypt.a ../depends/libtfm.a $(LIBGCC) -o $@
 
 
 # Command line tool used for testing the bios code.
@@ -65,6 +65,17 @@ key01: key01.o ../depends/libtomcrypt.a ../depends/libtfm.a
 hashfs: hashfs.o ../depends/libtomcrypt.a ../depends/libtfm.a
 	$(CC) $(CFLAGS) hashfs.o ../depends/libtomcrypt.a ../depends/libtfm.a -o $@ 
 
+zhashfs: zhashfs.o ../depends/libtomcrypt.a ../depends/libtfm.a
+	$(CC) $(CFLAGS) zhashfs.o ../depends/libtomcrypt.a ../depends/libtfm.a -lz -o $@ 
+
+zdextract: zdextract.o
+	$(CC) $(CFLAGS) zdextract.o -lz -o $@ 
+
+shared:
+	mkdir -p shared
+
+shared/%: %.o shared shlib/libtomcrypt_olpc.so shlib/libtfm_olpc.so
+	$(CC) $(CFLAGS) -shared $< -Lshlib -o $@ -ltomcrypt_olpc -ltfm_olpc
 
 # python binding for verify functionality.
 %.o: %.pyx
@@ -81,22 +92,10 @@ pysign.o: pysign.h
 # behavior for this program.  The default value - ARGTYPE=0 - results in LTC_ARGTYPE()
 # calling crypt_argchk(), which is not defined in the smaller (non-_cli) libraries.
 
-hashfs.o: hashfs.c
-	$(CC) -c $(CFLAGS) -DARGTYPE=1 $< -o $@
+zhashfs.o: zhashfs.c
+	$(CC) -c $(CFLAGS) -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64 -DARGTYPE=1 $< -o $@
 
-makekey.o: makekey.c
-	$(CC) -c $(CFLAGS) -DARGTYPE=1 $< -o $@
-
-sign.o: sign.c
-	$(CC) -c $(CFLAGS) -DARGTYPE=1 $< -o $@
-
-verify.o: verify.c
-	$(CC) -c $(CFLAGS) -DARGTYPE=1 $< -o $@
-
-sig01.o: sig01.c
-	$(CC) -c $(CFLAGS) -DARGTYPE=1 $< -o $@
-
-key01.o: key01.c
+%.o: %.c
 	$(CC) -c $(CFLAGS) -DARGTYPE=1 $< -o $@
 
 # The non-_cli versions of the libraries are used by the firmware crypto code and
@@ -109,7 +108,22 @@ key01.o: key01.c
 ../depends/libtfm.a:
 	cd ../depends/tomsfastmath ; IGNORE_SPEED=1 CFLAGS="${LIBCFLAGS} -DTFM_ALREADY_SET -DTFM_NO_ASM" make ; cp libtfm.a .. ; make clean
 
+shlib:
+	mkdir -p shlib
 
+shlib/libtomcrypt_olpc.so: shlib
+	LIBNAME=libtomcrypt_olpc.la IGNORE_SPEED=1 CFLAGS="${LIBCFLAGS} -DLTC_NO_TEST -I../tomsfastmath/ -DLTC_SMALL_CODE -DARGTYPE=3 -DTFM_DESC" make -C ../depends/libtomcrypt -f makefile.shared
+	cp -a ../depends/libtomcrypt/.libs/libtomcrypt_olpc.so.0.0.117 shlib
+	make -C ../depends/libtomcrypt clean
+	ln -snf libtomcrypt_olpc.so.0.0.117 $@.0
+	ln -snf libtomcrypt_olpc.so.0.0.117 $@
+
+shlib/libtfm_olpc.so: shlib
+	LIBNAME=libtfm_olpc.la IGNORE_SPEED=1 CFLAGS="${LIBCFLAGS} -DTFM_ALREADY_SET -DTFM_NO_ASM" make -C ../depends/tomsfastmath -f makefile.shared
+	cp -a ../depends/tomsfastmath/.libs/libtfm_olpc.so.0.0.12 shlib
+	make -C ../depends/tomsfastmath clean
+	ln -snf libtfm_olpc.so.0.0.12 $@.0
+	ln -snf libtfm_olpc.so.0.0.12 $@
 
 cli_tool: cli_tool.o ../depends/libtomcrypt_cli.a ../depends/libtfm_cli.a
 	$(CC) $(CFLAGS) cli_tool.o ../depends/libtomcrypt_cli.a ../depends/libtfm_cli.a -o $@ 
@@ -127,48 +141,40 @@ clean:
 	rm -f *.o *.a *.img ../depends/*.a cli_tool bios_side sign verify makekey bios_hash bios_verify
 	cd ../depends/libtomcrypt ; make clean
 	cd ../depends/tomsfastmath ; make clean
+	rm -rf shared shlib
 
 DESTDIR=/
 LIBEXEC=/usr/libexec/olpc-bios-crypto
+LIBDIR=/usr/lib
 BINDIR=/usr/bin
+INCDIR=/usr/include
 install:
-	test -d "${DESTDIR}${LIBEXEC}" || install -d "${DESTDIR}${LIBEXEC}"
-	test -d "${DESTDIR}${BINDIR}"  || install -d "${DESTDIR}${BINDIR}"
+	install -d "${DESTDIR}${LIBEXEC}"
+	install -d "${DESTDIR}${BINDIR}"
+	install -d "${DESTDIR}${LIBDIR}"
 	for p in *.py ; do \
            barename=$${p%.py}; \
 	   install "$$p" "${DESTDIR}${LIBEXEC}/$$p" ; \
-           ln -fs "${DESTDIR}${LIBEXEC}/$$p" "${DESTDIR}${BINDIR}/obc-$$barename"; \
+           ln -fs "../libexec/$$p" "${DESTDIR}${BINDIR}/obc-$$barename"; \
 	done
 
 	for p in *.sh ; do \
 	   barename=$${p%.sh}; \
 	   install "$$p" "${DESTDIR}${LIBEXEC}/$$p" ; \
-	   ln -fs "${DESTDIR}${LIBEXEC}/$$p" "${DESTDIR}${BINDIR}/obc-$$barename"; \
+	   ln -fs "../libexec/$$p" "${DESTDIR}${BINDIR}/obc-$$barename"; \
 	done
 
-	for p in $(CLI) ; do \
-	   install "$$p" "${DESTDIR}${LIBEXEC}/$$p" ; \
-	   ln -fs "${DESTDIR}${LIBEXEC}/$$p" "${DESTDIR}${BINDIR}/obc-$$p"; \
+	install shlib/* "${DESTDIR}${LIBDIR}"
+
+	for p in shared/* ; do \
+	   bname=$$(basename "$$p") ; \
+	   install "$$p" "${DESTDIR}${LIBEXEC}" ; \
+	   ln -fs "../libexec/$$bname" "${DESTDIR}${BINDIR}/obc-$$bname"; \
 	done
 
-# just like install, but the symlinks 
-# point to their "final" location
-install-rpm:
-	test -d "${DESTDIR}${LIBEXEC}" || install -d "${DESTDIR}${LIBEXEC}"
-	test -d "${DESTDIR}${BINDIR}"  || install -d "${DESTDIR}${BINDIR}"
-	for p in *.py ; do \
-           barename=$${p%.py}; \
-	   install "$$p" "${DESTDIR}${LIBEXEC}/$$p" ; \
-           ln -fs "${LIBEXEC}/$$p" "${DESTDIR}${BINDIR}/obc-$$barename"; \
-	done
+	install -d "${DESTDIR}${INCDIR}"/tommath_olpc
+	install ../depends/tomsfastmath/src/headers/* "${DESTDIR}${INCDIR}"/tommath_olpc
 
-	for p in *.sh ; do \
-	   barename=$${p%.sh}; \
-	   install "$$p" "${DESTDIR}${LIBEXEC}/$$p" ; \
-	   ln -fs "${LIBEXEC}/$$p" "${DESTDIR}${BINDIR}/obc-$$barename"; \
-	done
+	install -d "${DESTDIR}${INCDIR}"/tomcrypt_olpc
+	install ../depends/libtomcrypt/src/headers/* "${DESTDIR}${INCDIR}"/tomcrypt_olpc
 
-	for p in $(CLI) ; do \
-	   install "$$p" "${DESTDIR}${LIBEXEC}/$$p" ; \
-	   ln -fs "${LIBEXEC}/$$p" "${DESTDIR}${BINDIR}/obc-$$p"; \
-	done

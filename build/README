@@ -35,42 +35,13 @@ Sign a firmware file:
 
 Sign an OS release (using "fs" key):
 
+XO-1:
   Usage:    obc-make-fs.sh  infile   outfile.zip
   Example:  obc-make-fs.sh os767.img   fs.zip
 
-Tools for handling delegated leases:
-
-  Note - the tools for delegated leases default to
-  canonical locations of files - 
-
-  /var/lib/olpc-bios-crypto/server-keys - directory holding the public keys for the servers
-  /var/lib/olpc-bios-crypto/server-act-delegations - directory holding the 'act' delegation files for the servers
-  /var/lib/olpc-bios-crypto/server-oats-delegations - directory holding the 'oats' delegation files for the servers
-
-  /var/lib/olpc-bios-crypto/servers.csv CSV data file, each row contains server name
-  /var/lib/olpc-bios-crypto/servers-xos.csv CSV data file, each row contains server name, XO serial number, XO UUID
-
-  The server names must be short ASCII strings, matching the 'servername'
-  set for each server DNS configuration.
-
-  For effective delegation to the XS you need to generate both lease ('act') and
-  'oats' delegations.
-
-Make keys for a number of XSs:
-
-  Usage:    obc-make-server-keys  [--csv /path/to/file.csv] [--outdir /tmp]
-  Example:  obc-make-server-keys --csv=/var/lib/olpc-bios-crypto/servers.csv \
-                                 --outdir=/var/lib/olpc-bios-crypto/server-keys
-
-Make delegation signatures for a number of XSs
-
-  Note: delegations for activation you _must_ pass the --act parameter.
-
-  Usage:    obc-make-server-delegations [--act] [--csv /path/to/file.csv] [--outdir /tmp] <expiry> <signingkey>
-  Example:  obc-make-server-delegations --act --csv=/var/lib/olpc-bios-crypto/servers-xos.csv  \
-                                        --serverkeys=/var/lib/olpc-bios-crypto/server-keys  \
-                                        --outdir=/var/lib/olpc-bios-crypto/server-act-delegations \
-                                        365 lease
+XO-1.5: (output is fs.zip)
+  Usage:    sign-zsp.sh   keyname    infile
+  Example:  sign-zsp.sh    fs      os99.zsp
 
 Lower level tools:
 

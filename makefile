@@ -14,6 +14,8 @@ ARCH = i586
 # NOTE: Release is hardcoded in the spec file to 1
 NV = $(PKGNAME)-$(VERSION)
 NVR = $(NV)-$(RELEASE)
+UTILNVR = $(N)-utils-$(V)-$(RELEASE)
+DEVNVR = $(N)-devel-$(V)-$(RELEASE)
 DISTVER=xs11
 
 # rpm target directory
@@ -21,6 +23,8 @@ BUILDDIR = $(PWD)/build-rpm
 TARBALL    = $(BUILDDIR)/SOURCES/$(NV).tar.bz2
 SRPM       = $(BUILDDIR)/SRPMS/$(NVR).$(DISTVER).src.rpm
 RPM        = $(BUILDDIR)/RPMS/$(ARCH)/$(NVR).$(DISTVER).$(ARCH).rpm
+UTILRPM    = $(BUILDDIR)/RPMS/$(ARCH)/$(UTILNVR).$(DISTVER).$(ARCH).rpm
+DEVRPM     = $(BUILDDIR)/RPMS/$(ARCH)/$(DEVNVR).$(DISTVER).$(ARCH).rpm
 
 all:
 	echo Building in the "'build'" subdirectory
@@ -71,10 +75,11 @@ $(RPM): SRPM
 	$(RPMBUILD) --rebuild $(SRPM)
 	rm -fr $(BUILDDIR)/BUILD/$(NV)
 	# Tolerate rpmlint errors
-	rpmlint $(RPM) || echo "rpmlint errored out but we love you anyway"
+	rpmlint $(RPM) $(UTILRPM) $(DEVRPM) || echo "rpmlint errored out but we love you anyway"
+
 
 publish: SOURCES SRPM
-	rsync -e ssh --progress  $(RPM) \
+	rsync -e ssh --progress  $(RPM) $(UTILRPM) $(DEVRPM) \
 	    xs-dev.laptop.org:/xsrepos/testing/olpc/11/i586/
 	rsync -e ssh --progress $(SRPM) \
 	    xs-dev.laptop.org:/xsrepos/testing/olpc/11/source/SRPMS/

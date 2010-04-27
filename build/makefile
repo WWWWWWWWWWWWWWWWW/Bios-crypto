@@ -138,7 +138,7 @@ cli_tool: cli_tool.o ../depends/libtomcrypt_cli.a ../depends/libtfm_cli.a
 	cd ../depends/tomsfastmath ; CFLAGS="${LIBCFLAGS}" make ; cp libtfm.a ../libtfm_cli.a ; make clean
 
 clean:
-	rm -f *.o *.a *.img ../depends/*.a cli_tool bios_side sign verify makekey bios_hash bios_verify
+	rm -f *.o *.a *.img ../depends/*.a cli_tool bios_side sign verify makekey bios_hash bios_verify key01 zdextract zhashfs
 	cd ../depends/libtomcrypt ; make clean
 	cd ../depends/tomsfastmath ; make clean
 	rm -rf shared shlib

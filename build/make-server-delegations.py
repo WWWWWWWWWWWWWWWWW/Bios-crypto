@@ -14,7 +14,7 @@ from subprocess import Popen, PIPE
 from optparse import OptionParser
 
 def main():
-    usagestr = '%prog [--act] [--csv /path/to/file.csv] [--outdir /tmp] [--serverkeys=/path/to/serverkeys/] <expiry> <signingkey>'
+    usagestr = '%prog [--act] [--csv /path/to/file.csv] [--outdir /tmp] [--serverkeys=/path/to/serverkeys/] --tolerant <expiry> <signingkey>'
     parser = OptionParser(usage=usagestr)
     parser.add_option('--act', dest='activation', action='store_true', default=False)
     parser.add_option('--csv',
@@ -29,6 +29,10 @@ def main():
     parser.add_option('--csvdialect',
                       dest='csvdialect',
                       default='excel')
+    parser.add_option('--tolerant',
+                      dest='tolerant',
+                      default=False,
+                      action='store_true')
     (opts, args) = parser.parse_args()
 
     if opts.outdir == False:
@@ -72,11 +76,15 @@ def main():
         svrname = row[0]
         sn      = row[1]
         uuid    = row[2]
-        
-        if not os.path.exists(os.path.join(opts.serverkeys, svrname+'.public')):
+       
+        serverkey_file = os.path.join(opts.serverkeys,svrname+'.public') 
+        if not os.path.exists(serverkey_file):
             sys.stderr.write("Server key file %s does not exist\n"
-                         % opts.csv)
-            exit(1)
+                         % serverkey_file)
+            if (not opts.tolerant):  
+                exit(1)
+            else:
+                continue
 
         if not os.path.exists(opts.outdir):
             sys.stderr.write("Outdir %s does not exist\n"

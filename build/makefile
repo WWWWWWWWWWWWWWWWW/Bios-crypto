@@ -168,14 +168,19 @@ install:
 	   ln -fs "../libexec/olpc-bios-crypto/$$p" "${DESTDIR}${BINDIR}/obc-$$barename"; \
 	done
 
-	install shlib/* "${DESTDIR}${LIBDIR}"
+	#install shlib/* "${DESTDIR}${LIBDIR}"
+	#for p in `ls shared/*` ; do \
+	#   bname=$$(basename "$$p") ; \
+	#   install "$$p" "${DESTDIR}${LIBEXEC}" ; \
+	#   ln -fs "../libexec/olpc-bios-crypto/$$bname" "${DESTDIR}${BINDIR}/obc-$$bname"; \
+	#done
 
-	for p in `ls shared/*` ; do \
-	   bname=$$(basename "$$p") ; \
-	   install "$$p" "${DESTDIR}${LIBEXEC}" ; \
-	   ln -fs "../libexec/olpc-bios-crypto/$$bname" "${DESTDIR}${BINDIR}/obc-$$bname"; \
+	# Static binaries
+	for p in $(CLI) ; do \
+	   install "$$p" "${DESTDIR}${LIBEXEC}/$$p" ; \
+	   ln -fs "../libexec/olpc-bios-crypto/$$p" "${DESTDIR}${BINDIR}/obc-$$p"; \
 	done
-
+	
 	install -d "${DESTDIR}${INCDIR}"/tommath_olpc
 	install ../depends/tomsfastmath/src/headers/* "${DESTDIR}${INCDIR}"/tommath_olpc
 

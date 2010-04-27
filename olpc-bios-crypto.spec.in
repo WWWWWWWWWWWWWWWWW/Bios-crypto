@@ -30,8 +30,7 @@ Development materials for olpc-bios-crypto.
 
 
 %build
-make -C build cli_shared
-
+make -C build cli shlib/libtomcrypt_olpc.so shlib/libtfm_olpc.so
 
 %install
 rm -rf $RPM_BUILD_ROOT
@@ -54,7 +53,7 @@ rm -rf $RPM_BUILD_ROOT
 %files
 %defattr(-,root,root,-)
 #%doc COPYING
-%{_libdir}/*.so.*
+#%{_libdir}/*.so.*
 %defattr(-,root,root,-)
 %doc build/README
 %dir /var/lib/olpc-bios-crypto
@@ -67,7 +66,7 @@ rm -rf $RPM_BUILD_ROOT
 %files devel
 %defattr(-,root,root,-)
 %{_includedir}/*
-%{_libdir}/*.so
+#%{_libdir}/*.so
 
 
 %changelog

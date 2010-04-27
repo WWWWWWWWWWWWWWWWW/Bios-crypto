@@ -75,11 +75,11 @@ $(RPM): SRPM
 	$(RPMBUILD) --rebuild $(SRPM)
 	rm -fr $(BUILDDIR)/BUILD/$(NV)
 	# Tolerate rpmlint errors
-	rpmlint $(RPM) $(UTILRPM) $(DEVRPM) || echo "rpmlint errored out but we love you anyway"
+	rpmlint $(RPM) || echo "rpmlint errored out but we love you anyway"
 
 
 publish: SOURCES SRPM
-	rsync -e ssh --progress  $(RPM) $(UTILRPM) $(DEVRPM) \
+	rsync -e ssh --progress  $(RPM) \
 	    xs-dev.laptop.org:/xsrepos/testing/olpc/11/i586/
 	rsync -e ssh --progress $(SRPM) \
 	    xs-dev.laptop.org:/xsrepos/testing/olpc/11/source/SRPMS/

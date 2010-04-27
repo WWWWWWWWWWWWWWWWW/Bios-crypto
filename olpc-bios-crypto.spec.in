@@ -16,14 +16,14 @@ Requires:       mtd-utils
 Core OLPC crypto libraries.
 
 
-%package utils
-Group: Development/System
-Summary: OLPC firmware security utilities
-Requires: olpc-bios-crypto = %{version}-%{release}
+# %package utils
+# Group: Development/System
+# Summary: OLPC firmware security utilities
+# Requires: olpc-bios-crypto = %{version}-%{release}
 
-%description utils
-Utilities for working with OLPC's security system. Tools are provided for
-signing OS images, generating leases, etc.
+# %description utils
+# Utilities for working with OLPC's security system. Tools are provided for
+# signing OS images, generating leases, etc.
 
 
 %package devel
@@ -35,14 +35,12 @@ Requires: olpc-bios-crypto = %{version}-%{release}
 %description devel
 Development materials for olpc-bios-crypto.
 
-
 %prep
 %setup -q
 
 
 %build
-make -C build cli_shared
-
+make -C build cli shlib/libtomcrypt_olpc.so shlib/libtfm_olpc.so
 
 %install
 rm -rf $RPM_BUILD_ROOT
@@ -65,10 +63,10 @@ rm -rf $RPM_BUILD_ROOT
 %files
 %defattr(-,root,root,-)
 #%doc COPYING
-%{_libdir}/*.so.*
+#%{_libdir}/*.so.*
 
 
-%files utils
+#%files utils
 %defattr(-,root,root,-)
 %doc build/README
 %dir /var/lib/olpc-bios-crypto
@@ -77,11 +75,10 @@ rm -rf $RPM_BUILD_ROOT
 %{_bindir}/obc-*
 %{_libexecdir}/olpc-bios-crypto/
 
-
 %files devel
 %defattr(-,root,root,-)
 %{_includedir}/*
-%{_libdir}/*.so
+#%{_libdir}/*.so
 
 
 %changelog

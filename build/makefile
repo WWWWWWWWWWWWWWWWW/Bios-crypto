@@ -152,24 +152,28 @@ install:
 	install -d "${DESTDIR}${LIBEXEC}"
 	install -d "${DESTDIR}${BINDIR}"
 	install -d "${DESTDIR}${LIBDIR}"
-	for p in *.py ; do \
+
+	# using an explicit `ls *` avoids ending up with
+	# a symlink called "*" if the glob doesn't match
+	# anything
+	for p in `ls *.py`; do \
            barename=$${p%.py}; \
 	   install "$$p" "${DESTDIR}${LIBEXEC}/$$p" ; \
-           ln -fs "../libexec/$$p" "${DESTDIR}${BINDIR}/obc-$$barename"; \
+           ln -fs "../libexec/olpc-bios-crypto/$$p" "${DESTDIR}${BINDIR}/obc-$$barename"; \
 	done
 
-	for p in *.sh ; do \
+	for p in `ls *.sh`; do \
 	   barename=$${p%.sh}; \
 	   install "$$p" "${DESTDIR}${LIBEXEC}/$$p" ; \
-	   ln -fs "../libexec/$$p" "${DESTDIR}${BINDIR}/obc-$$barename"; \
+	   ln -fs "../libexec/olpc-bios-crypto/$$p" "${DESTDIR}${BINDIR}/obc-$$barename"; \
 	done
 
 	install shlib/* "${DESTDIR}${LIBDIR}"
 
-	for p in shared/* ; do \
+	for p in `ls shared/*` ; do \
 	   bname=$$(basename "$$p") ; \
 	   install "$$p" "${DESTDIR}${LIBEXEC}" ; \
-	   ln -fs "../libexec/$$bname" "${DESTDIR}${BINDIR}/obc-$$bname"; \
+	   ln -fs "../libexec/olpc-bios-crypto/$$bname" "${DESTDIR}${BINDIR}/obc-$$bname"; \
 	done
 
 	install -d "${DESTDIR}${INCDIR}"/tommath_olpc

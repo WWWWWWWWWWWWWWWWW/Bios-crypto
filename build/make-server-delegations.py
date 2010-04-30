@@ -66,7 +66,7 @@ def main():
             exit(1)
 
         # write a del01 preamble that shows sn/uuid
-        print "del01: ", sn, uuid,
+        print "del01:", sn, uuid,
 
         # and then the delecation itself:
         print buf,

@@ -7,7 +7,7 @@
 
 # Ensure we call the binaries that are in the same
 # directory as this shell script
-MYPATH=$(readlink -f $0)
+MYPATH=$(command -v $0 | xargs readlink -f )
 LIBEXEC=$(dirname $MYPATH)
 
 # Handle opts

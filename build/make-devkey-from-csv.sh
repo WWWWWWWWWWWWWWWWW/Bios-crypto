@@ -32,7 +32,7 @@ done
 FILE=$1
 
 for LINE in `cat "$FILE"`; do
-    SN=`echo "$LINE"|cut -d, -f1`
-    UUID=`echo "$LINE"|cut -d, -f2`
+    SN=`echo -n   "$LINE"| sed 's/\r//; s/ //g; s/"//g;' | cut -d, -f1`
+    UUID=`echo -n "$LINE"| sed 's/\r//; s/ //g; s/"//g;' | cut -d, -f2`
     "$LIBEXEC"/make-devkey.sh --signingkey $signingkey $SN $UUID
 done

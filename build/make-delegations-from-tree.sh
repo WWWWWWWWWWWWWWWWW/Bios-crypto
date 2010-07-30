@@ -32,7 +32,7 @@ then
 	exit 1
 fi
 
-MYPATH=$(readlink -f $0)
+MYPATH=$(command -v $0 | xargs readlink -f )
 LIBEXEC=$(dirname $MYPATH)
 
 DELEG_DIR=$1

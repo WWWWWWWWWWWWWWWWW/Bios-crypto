@@ -1,9 +1,9 @@
 LIBGCC=`$(CC) -print-libgcc-file-name`
 
-CFLAGS += -Os -I../depends/libtomcrypt/src/headers -I../depends/tomsfastmath/src/headers -fno-stack-protector
+CFLAGS += -Os -I../depends/libtomcrypt/src/headers -I../depends/tomsfastmath/src/headers  -I/usr/include/tomcrypt -I/usr/include/tomsfastmath -fno-stack-protector
 
 # Libraries are built deeper in the tree, so we need ../.. instead of ..
-LIBCFLAGS += -Os -I../../depends/libtomcrypt/src/headers -I../../depends/tomsfastmath/src/headers -fno-stack-protector
+LIBCFLAGS += -Os -I../depends/libtomcrypt/src/headers -I../depends/tomsfastmath/src/headers -I/usr/include/tomcrypt -I/usr/include/tomsfastmath -fno-stack-protector
 
 VPATH = ..
 
@@ -71,12 +71,6 @@ zhashfs: zhashfs.o ../depends/libtomcrypt.a ../depends/libtfm.a
 zdextract: zdextract.o
 	$(CC) $(CFLAGS) zdextract.o -lz -o $@ 
 
-shared:
-	mkdir -p shared
-
-shared/%: %.o shared shlib/libtomcrypt_olpc.so shlib/libtfm_olpc.so
-	$(CC) $(CFLAGS) -shared $< -Lshlib -o $@ -ltomcrypt_olpc -ltfm_olpc
-
 # python binding for verify functionality.
 %.o: %.pyx
 	pyrexc -o $*.c $<
@@ -101,29 +95,27 @@ zhashfs.o: zhashfs.c
 # The non-_cli versions of the libraries are used by the firmware crypto code and
 # by command line tools that need to be small.
 
+# shell conditionals - watch out for tabs, spaces and backslashes
 ../depends/libtomcrypt.a:
-	cd ../depends/libtomcrypt ; IGNORE_SPEED=1 CFLAGS="${LIBCFLAGS} -DLTC_NO_TEST -I../tomsfastmath/ -DLTC_SMALL_CODE -DARGTYPE=3 -DTFM_DESC" make ; \
-	cp libtomcrypt.a .. ; make clean
+	if [ -e /usr/lib/libtomcrypt.a ]; then \
+	mkdir -p ../depends ; \
+	    ln -s /usr/lib/libtomcrypt.a ../depends/libtomcrypt.a; \
+	else \
+	    cd ../depends/libtomcrypt ;\
+	    IGNORE_SPEED=1 CFLAGS="${LIBCFLAGS} -DLTC_NO_EST -I../tomsfastmath/ -DLTC_SMALL_CODE -DARGTYPE=3 -DTFM_DESC" make ; \
+	    cp libtomcrypt.a .. ; make clean;\
+	fi
 
+# shell conditionals - watch out for tabs, spaces and backslashes
 ../depends/libtfm.a:
-	cd ../depends/tomsfastmath ; IGNORE_SPEED=1 CFLAGS="${LIBCFLAGS} -DTFM_ALREADY_SET -DTFM_NO_ASM" make ; cp libtfm.a .. ; make clean
-
-shlib:
-	mkdir -p shlib
-
-shlib/libtomcrypt_olpc.so: shlib
-	LIBNAME=libtomcrypt_olpc.la IGNORE_SPEED=1 CFLAGS="${LIBCFLAGS} -DLTC_NO_TEST -I../tomsfastmath/ -DLTC_SMALL_CODE -DARGTYPE=3 -DTFM_DESC" make -C ../depends/libtomcrypt -f makefile.shared
-	cp -a ../depends/libtomcrypt/.libs/libtomcrypt_olpc.so.0.0.117 shlib
-	make -C ../depends/libtomcrypt clean
-	ln -snf libtomcrypt_olpc.so.0.0.117 $@.0
-	ln -snf libtomcrypt_olpc.so.0.0.117 $@
-
-shlib/libtfm_olpc.so: shlib
-	LIBNAME=libtfm_olpc.la IGNORE_SPEED=1 CFLAGS="${LIBCFLAGS} -DTFM_ALREADY_SET -DTFM_NO_ASM" make -C ../depends/tomsfastmath -f makefile.shared
-	cp -a ../depends/tomsfastmath/.libs/libtfm_olpc.so.0.0.12 shlib
-	make -C ../depends/tomsfastmath clean
-	ln -snf libtfm_olpc.so.0.0.12 $@.0
-	ln -snf libtfm_olpc.so.0.0.12 $@
+	if [ -e /usr/lib/libtfm.a ]; then \
+           mkdir -p ../depends ; \
+           ln -s /usr/lib/libtfm.a ../depends/libtfm.a; \
+        else \
+           cd ../depends/tomsfastmath ; \
+           IGNORE_SPEED=1 CFLAGS="${LIBCFLAGS} -DTFM_ALREADY_SET -DTFM_NO_ASM" make ;\
+           cp libtfm.a .. ; make clean ; \
+       fi
 
 cli_tool: cli_tool.o ../depends/libtomcrypt_cli.a ../depends/libtfm_cli.a
 	$(CC) $(CFLAGS) cli_tool.o ../depends/libtomcrypt_cli.a ../depends/libtfm_cli.a -o $@ 
@@ -131,17 +123,8 @@ cli_tool: cli_tool.o ../depends/libtomcrypt_cli.a ../depends/libtfm_cli.a
 # The _cli versions of the libraries are used by cli_tool.  They have more
 # extensive argument checking, and are much larger than the non-_cli versions.
 
-../depends/libtomcrypt_cli.a:
-	cd ../depends/libtomcrypt ; CFLAGS="-DTFM_DESC ${LIBCFLAGS} -I../tomsfastmath/ " make ; cp libtomcrypt.a ../libtomcrypt_cli.a ; make clean
-
-../depends/libtfm_cli.a:
-	cd ../depends/tomsfastmath ; CFLAGS="${LIBCFLAGS}" make ; cp libtfm.a ../libtfm_cli.a ; make clean
-
 clean:
-	rm -f *.o *.a *.img ../depends/*.a cli_tool bios_side sign verify makekey bios_hash bios_verify key01 zdextract zhashfs
-	cd ../depends/libtomcrypt ; make clean
-	cd ../depends/tomsfastmath ; make clean
-	rm -rf shared shlib
+	rm -f *.o *.a *.img cli_tool bios_side sign verify makekey bios_hash bios_verify key01 zdextract zhashfs
 
 DESTDIR=/
 LIBEXEC=/usr/libexec/olpc-bios-crypto
@@ -180,10 +163,7 @@ install:
 	   install "$$p" "${DESTDIR}${LIBEXEC}/$$p" ; \
 	   ln -fs "../libexec/olpc-bios-crypto/$$p" "${DESTDIR}${BINDIR}/obc-$$p"; \
 	done
-	
-	install -d "${DESTDIR}${INCDIR}"/tommath_olpc
-	install ../depends/tomsfastmath/src/headers/* "${DESTDIR}${INCDIR}"/tommath_olpc
 
-	install -d "${DESTDIR}${INCDIR}"/tomcrypt_olpc
-	install ../depends/libtomcrypt/src/headers/* "${DESTDIR}${INCDIR}"/tomcrypt_olpc
+
+
 

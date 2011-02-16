@@ -12,7 +12,6 @@ CLI = makekey sign verify sig01 key01 hashfs zhashfs zdextract
 default: bios_verify.img $(CLI)
 
 cli: $(CLI)
-cli_shared: $(patsubst %,shared/%,$(CLI))
 
 %.img: %.elf
 	objcopy -O binary $< $@
@@ -117,17 +116,11 @@ zhashfs.o: zhashfs.c
            cp libtfm.a .. ; make clean ; \
        fi
 
-cli_tool: cli_tool.o ../depends/libtomcrypt_cli.a ../depends/libtfm_cli.a
-	$(CC) $(CFLAGS) cli_tool.o ../depends/libtomcrypt_cli.a ../depends/libtfm_cli.a -o $@ 
-
-# The _cli versions of the libraries are used by cli_tool.  They have more
-# extensive argument checking, and are much larger than the non-_cli versions.
-
 clean:
-	rm -f *.o *.a *.img cli_tool bios_side sign verify makekey bios_hash bios_verify key01 zdextract zhashfs
+	rm -f *.o *.a *.img bios_side sign verify makekey bios_hash bios_verify key01 zdextract zhashfs
 
 DESTDIR=/
-LIBEXEC=/usr/libexec/olpc-bios-crypto
+LIBEXEC=/usr/libexec/bios-crypto
 LIBDIR=/usr/lib
 BINDIR=/usr/bin
 INCDIR=/usr/include
@@ -142,26 +135,26 @@ install:
 	for p in `ls *.py`; do \
            barename=$${p%.py}; \
 	   install "$$p" "${DESTDIR}${LIBEXEC}/$$p" ; \
-           ln -fs "../libexec/olpc-bios-crypto/$$p" "${DESTDIR}${BINDIR}/obc-$$barename"; \
+           ln -fs "../libexec/bios-crypto/$$p" "${DESTDIR}${BINDIR}/bc-$$barename"; \
 	done
 
 	for p in `ls *.sh`; do \
 	   barename=$${p%.sh}; \
 	   install "$$p" "${DESTDIR}${LIBEXEC}/$$p" ; \
-	   ln -fs "../libexec/olpc-bios-crypto/$$p" "${DESTDIR}${BINDIR}/obc-$$barename"; \
+	   ln -fs "../libexec/bios-crypto/$$p" "${DESTDIR}${BINDIR}/bc-$$barename"; \
 	done
 
 	#install shlib/* "${DESTDIR}${LIBDIR}"
 	#for p in `ls shared/*` ; do \
 	#   bname=$$(basename "$$p") ; \
 	#   install "$$p" "${DESTDIR}${LIBEXEC}" ; \
-	#   ln -fs "../libexec/olpc-bios-crypto/$$bname" "${DESTDIR}${BINDIR}/obc-$$bname"; \
+	#   ln -fs "../libexec/bios-crypto/$$bname" "${DESTDIR}${BINDIR}/bc-$$bname"; \
 	#done
 
 	# Static binaries
 	for p in $(CLI) ; do \
 	   install "$$p" "${DESTDIR}${LIBEXEC}/$$p" ; \
-	   ln -fs "../libexec/olpc-bios-crypto/$$p" "${DESTDIR}${BINDIR}/obc-$$p"; \
+	   ln -fs "../libexec/bios-crypto/$$p" "${DESTDIR}${BINDIR}/bc-$$p"; \
 	done
 
 

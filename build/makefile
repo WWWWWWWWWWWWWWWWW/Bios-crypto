@@ -3,7 +3,7 @@ LIBGCC=`$(CC) -print-libgcc-file-name`
 CFLAGS += -Os -I../depends/libtomcrypt/src/headers -I../depends/tomsfastmath/src/headers  -I/usr/include/tomcrypt -I/usr/include/tomsfastmath -fno-stack-protector
 
 # Libraries are built deeper in the tree, so we need ../.. instead of ..
-LIBCFLAGS += -Os -I../depends/libtomcrypt/src/headers -I../depends/tomsfastmath/src/headers -I/usr/include/tomcrypt -I/usr/include/tomsfastmath -fno-stack-protector
+LIBCFLAGS += -Os -I../../depends/libtomcrypt/src/headers -I../../depends/tomsfastmath/src/headers -I/usr/include/tomcrypt -I/usr/include/tomsfastmath -fno-stack-protector
 
 VPATH = ..
 
@@ -97,7 +97,7 @@ zhashfs.o: zhashfs.c
 # shell conditionals - watch out for tabs, spaces and backslashes
 ../depends/libtomcrypt.a:
 	if [ -e /usr/lib/libtomcrypt.a ]; then \
-	mkdir -p ../depends ; \
+	    mkdir -p ../depends ; \
 	    ln -s /usr/lib/libtomcrypt.a ../depends/libtomcrypt.a; \
 	else \
 	    cd ../depends/libtomcrypt ;\

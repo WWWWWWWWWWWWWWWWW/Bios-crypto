@@ -46,7 +46,7 @@ int main(int argc, char **argv)
                     fprintf(stderr, "Uncompress failure at block 0x%x - %d\n", eblocknum, zresult);
                 }
                 if (buflen != zblocksize) {
-                    fprintf(stderr, "Uncompress resulted in wrong size at block 0x%x - %d\n", eblocknum, eblocknum);
+                    fprintf(stderr, "Uncompress resulted in wrong size (%d) at block 0x%x\n", buflen, eblocknum);
                 }
                 if (fseek(stdout, (long)eblocknum * (long)zblocksize, SEEK_SET)) {
                     perror("fseek");

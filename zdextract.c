@@ -1,6 +1,6 @@
 // Converts .zd files to raw binary - either the entire file
 // or specific blocks.
-// 
+//
 // Usage: zdextract [ blockno ..] <file.zd >file.img
 //
 // With no arguments, extracts the entire file, otherwise
@@ -19,18 +19,18 @@ int main(int argc, char **argv)
     char line[LINE_MAX];
     unsigned char *buf;  // EBLOCKSIZE
     long          eblocks = -1;
-    int		  eblocknum;
+    int           eblocknum;
     long          buflen;
 
     int           zresult;
     uLongf        zlen;
-    long	  zblocksize, zbufsize;
+    long          zblocksize, zbufsize;
     unsigned char *zbuf;
     int           thisarg;
     int           wanted_eblock = -1;
 
     thisarg = 1;
-    if (thisarg < argc) { 
+    if (thisarg < argc) {
         wanted_eblock = strtol(argv[thisarg], 0, 0);
         thisarg++;
     }
@@ -56,12 +56,12 @@ int main(int argc, char **argv)
                     perror("fwrite");
                     exit(1);
                 }
-                    if (thisarg < argc) { 
-                        wanted_eblock = strtol(argv[thisarg], 0, 0);
-                        thisarg++;
-                    } else if (wanted_eblock != -1) {
-                        goto out;
-                    }
+                if (thisarg < argc) {
+                    wanted_eblock = strtol(argv[thisarg], 0, 0);
+                    thisarg++;
+                } else if (wanted_eblock != -1) {
+                    goto out;
+                }
             } else {
                 fseek(stdin, zlen+1, SEEK_CUR);
             }

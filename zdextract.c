@@ -40,15 +40,23 @@ int main(int argc, char **argv)
             if (wanted_eblock == -1 || eblocknum == wanted_eblock) {
                 fprintf(stderr, "\r%x", eblocknum);
                 fflush(stderr);
-                fread(zbuf, 1, zlen, stdin);
+                if (fread(zbuf, 1, zlen, stdin) != 1) {
+                    fprintf(stderr, "Short read at block 0x%x\n", eblocknum);
+                    exit(1);
+                }
                 buflen = zblocksize;
                 if ((zresult = uncompress(buf, &buflen, zbuf, zlen)) != Z_OK) {
-                    fprintf(stderr, "Uncompress failure at block 0x%x - %d\n", eblocknum, zresult);
+                    fprintf(stderr,
+                            "Uncompress failure at block 0x%x - %d\n",
+                            eblocknum, zresult);
                 }
                 if (buflen != zblocksize) {
-                    fprintf(stderr, "Uncompress resulted in wrong size (%d) at block 0x%x\n", buflen, eblocknum);
+                    fprintf(stderr,
+                            "Uncompressed buffer bad size (%d) at block 0x%x\n",
+                            buflen, eblocknum);
                 }
-                if (fseek(stdout, (long)eblocknum * (long)zblocksize, SEEK_SET)) {
+                if (fseek(stdout, (long)eblocknum * (long)zblocksize,
+                          SEEK_SET)) {
                     perror("fseek");
                     exit(1);
                 }
@@ -69,8 +77,8 @@ int main(int argc, char **argv)
         if (sscanf(line, "zblocks: %lx %lx", &zblocksize, &eblocks) == 2) {
             buf = malloc(zblocksize);
             /*
-             * For zlib compress, the destination buffer needs to be 1.001 x the
-             * src buffer size plus 12 bytes
+             * For zlib compress, the destination buffer needs to be
+             * 1.001 x the src buffer size plus 12 bytes
              */
             zbufsize = ((zblocksize * 102) / 100) + 12;
             zbuf = malloc(zbufsize);

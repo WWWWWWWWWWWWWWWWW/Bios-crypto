@@ -36,7 +36,7 @@ int main(int argc, char **argv)
     }
 
     while (fgets(line, LINE_MAX, stdin) != NULL) {
-        if (sscanf(line, "zblock: %x %x", &eblocknum, &zlen) == 2) {
+        if (sscanf(line, "zblock: %x %lx", &eblocknum, &zlen) == 2) {
             if (wanted_eblock == -1 || eblocknum == wanted_eblock) {
                 fprintf(stderr, "\r%x", eblocknum);
                 fflush(stderr);
@@ -46,9 +46,16 @@ int main(int argc, char **argv)
                     fprintf(stderr, "Uncompress failure at block 0x%x - %d\n", eblocknum, zresult);
                 }
                 if (buflen != zblocksize) {
-                    fprintf(stderr, "Uncompress resulted in wrong size at block 0x%x - %d\n", eblocknum);
+                    fprintf(stderr, "Uncompress resulted in wrong size at block 0x%x - %d\n", eblocknum, eblocknum);
                 }
-                fwrite(buf, 1, buflen, stdout);
+                if (fseek(stdout, (long)eblocknum * (long)zblocksize, SEEK_SET)) {
+                    perror("fseek");
+                    exit(1);
+                }
+                if (fwrite(buf, 1, buflen, stdout) < buflen) {
+                    perror("fwrite");
+                    exit(1);
+                }
                     if (thisarg < argc) { 
                         wanted_eblock = strtol(argv[thisarg], 0, 0);
                         thisarg++;
@@ -59,7 +66,7 @@ int main(int argc, char **argv)
                 fseek(stdin, zlen+1, SEEK_CUR);
             }
         }
-        if (sscanf(line, "zblocks: %x %x", &zblocksize, &eblocks) == 2) {
+        if (sscanf(line, "zblocks: %lx %lx", &zblocksize, &eblocks) == 2) {
             buf = malloc(zblocksize);
             /*
              * For zlib compress, the destination buffer needs to be 1.001 x the

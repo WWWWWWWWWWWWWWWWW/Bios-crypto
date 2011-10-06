@@ -109,7 +109,7 @@ int main(int argc, char **argv)
 
     LTC_ARGCHK(register_hash(&sha256_desc) != -1);
     LTC_ARGCHK(register_hash(&rmd160_desc) != -1);
-    LTC_ARGCHK(register_hash(&md5_desc) != -1);
+    LTC_ARGCHK(register_hash(&ltc_md5_desc) != -1);
 
     hashname = argv[2];
     hashid = find_hash(hashname);

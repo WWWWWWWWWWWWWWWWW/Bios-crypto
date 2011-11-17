@@ -40,7 +40,7 @@ int main(int argc, char **argv)
             if (wanted_eblock == -1 || eblocknum == wanted_eblock) {
                 fprintf(stderr, "\r%x", eblocknum);
                 fflush(stderr);
-                if (fread(zbuf, 1, zlen, stdin) != 1) {
+                if (fread(zbuf, 1, zlen, stdin) != zlen) {
                     fprintf(stderr, "Short read at block 0x%x\n", eblocknum);
                     exit(1);
                 }

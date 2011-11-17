@@ -38,7 +38,7 @@ int main(int argc, char **argv)
     while (fgets(line, LINE_MAX, stdin) != NULL) {
         if (sscanf(line, "zblock: %x %lx", &eblocknum, &zlen) == 2) {
             if (wanted_eblock == -1 || eblocknum == wanted_eblock) {
-                fprintf(stderr, "\r%x", eblocknum);
+                fprintf(stderr, "\r%.4x", eblocknum);
                 fflush(stderr);
                 if (fread(zbuf, 1, zlen, stdin) != zlen) {
                     fprintf(stderr, "Short read at block 0x%x\n", eblocknum);
@@ -52,7 +52,7 @@ int main(int argc, char **argv)
                 }
                 if (buflen != zblocksize) {
                     fprintf(stderr,
-                            "Uncompressed buffer bad size (%d) at block 0x%x\n",
+                            "Uncompressed buffer bad size (%ld) at block 0x%x\n",
                             buflen, eblocknum);
                 }
                 if (fseek(stdout, (long)eblocknum * (long)zblocksize,

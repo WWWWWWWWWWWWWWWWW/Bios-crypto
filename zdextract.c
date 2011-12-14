@@ -8,11 +8,20 @@
 // ascending order.  blockno can be in decimal, octal,
 // or hex, using C number syntax.
 
+#define _LARGEFILE_SOURCE 1
+#define _LARGEFILE64_SOURCE 1
+#define _FILE_OFFSET_BITS 64
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <limits.h>
 #include <string.h>
 #include "zlib.h"
+
+#ifdef NO_FSEEKO
+#define off_t long
+#define fseeko fseek
+#endif
 
 int main(int argc, char **argv)
 {
@@ -55,8 +64,8 @@ int main(int argc, char **argv)
                             "Uncompressed buffer bad size (%ld) at block 0x%x\n",
                             buflen, eblocknum);
                 }
-                if (fseek(stdout, (long)eblocknum * (long)zblocksize,
-                          SEEK_SET)) {
+                if (fseeko(stdout, (off_t)eblocknum * (off_t)zblocksize,
+                           SEEK_SET)) {
                     perror("fseek");
                     exit(1);
                 }

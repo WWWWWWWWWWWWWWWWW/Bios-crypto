@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # Make a rtcreset.sig file
 # Usage: make-rtcreset serial uuid currentrtc nonce newrtc leasekey
@@ -21,12 +21,14 @@ CURRENTRTC="$3"
 NONCE="$4"
 NEWRTC="$5"
 SIGNINGKEY="$6"
-outfile=rtcreset.sig
+
+# Ensure nonce is zero-padded with length 10
+NONCE="0000000000$NONCE"
+NONCE="${NONCE: -10}"
 
 echo -n ${SN}:${UUID}:${CURRENTRTC}:${NONCE}:${NEWRTC} >signed-data
 
 $LIBEXEC/sig01 sha256 ${SIGNINGKEY} signed-data >this-signature
-rm -f $outfile
-echo -n rtc01: ${SN} ${CURRENTRTC} ${NONCE} ${NEWRTC} "" | cat - this-signature >${outfile}
+echo -n rtc01: ${SN} ${CURRENTRTC} ${NONCE} ${NEWRTC} "" | cat - this-signature
 # rm -f signed-data this-signature
 

@@ -55,6 +55,8 @@ int verify_data(
 //   register_hash(&whirlpool_desc);
    register_hash(&rmd160_desc);
    register_hash(&md4_desc);
+   register_hash(&ltc_md5_desc);
+   register_hash(&sha1_desc);
    ltc_mp = tfm_desc;
 
    hashid = find_hash(hashname);

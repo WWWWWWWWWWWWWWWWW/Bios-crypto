@@ -1,9 +1,48 @@
-LIBGCC=`$(CC) -print-libgcc-file-name`
 
-CFLAGS += -Os -I../depends/libtomcrypt/src/headers -I../depends/tomsfastmath/src/headers  -I/usr/include/tomcrypt -I/usr/include/tomsfastmath -fno-stack-protector
+# -*- sh -*-
+
+ifeq (arm, $(findstring arm,$(shell uname -p)))
+  HOST_CPU := arm
+else
+  HOST_CPU := x86
+endif
+
+ifeq ($(TARGET_CPU),)
+  TARGET_CPU := $(HOST_CPU)
+endif
+
+ifeq ($(TARGET_CPU), arm)
+  ifneq ($(HOST_CPU), $(TARGET_CPU))
+    # Cross-compiler setup
+    ifeq ($(CROSS),)
+      CROSS=/usr/local/arm/arm-linux/bin
+    endif
+  endif
+  TARGET_CFLAGS := -mcpu=strongarm110 -fno-builtin
+  TARGET_LDFLAGS :=
+  EXTRA_LIBS := arm_libs.o
+else
+  TARGET_CFLAGS := -m32
+  TARGET_LDFLAGS := -m elf_i386
+endif
+
+CC    := $(CROSS)gcc
+LD    := $(CROSS)ld
+STRIP := $(CROSS)strip
+OBJCOPY := $(CROSS)objcopy
+
+
+LIBGCC:=$(shell $(CC) -print-libgcc-file-name)
+
+CFLAGS += -Os -I../depends/libtomcrypt/src/headers -I../depends/tomsfastmath/src/headers  -I/usr/include/tomcrypt -I/usr/include/tomsfastmath $(TARGET_CFLAGS)
 
 # Libraries are built deeper in the tree, so we need ../.. instead of ..
-LIBCFLAGS += -Os -I../../depends/libtomcrypt/src/headers -I../../depends/tomsfastmath/src/headers -I/usr/include/tomcrypt -I/usr/include/tomsfastmath -fno-stack-protector
+LIBCFLAGS += -Os -I../../depends/libtomcrypt/src/headers -I../../depends/tomsfastmath/src/headers -I/usr/include/tomcrypt -I/usr/include/tomsfastmath $(TARGET_CFLAGS)
+
+ifeq (y, $(shell $(CC) -xc -c -fno-stack-protector /dev/null -o /dev/null 2>/dev/null && echo y))
+  CFLAGS += -fno-stack-protector
+  LIBCFLAGS += -fno-stack-protector
+endif
 
 VPATH = ..
 
@@ -19,14 +58,14 @@ cli: $(CLI)
 
 # bios_verify is the crypto module that is linked into the boot firmware.
 
-bios_verify.elf: bios_verify.o stack_alloc.o bios_string.o ../depends/libtomcrypt.a ../depends/libtfm.a
-	$(LD) -Ttext 0xc0000 -Tbss 0xd0000 --defsym _start=verify_data bios_verify.o stack_alloc.o bios_string.o ../depends/libtomcrypt.a ../depends/libtfm.a $(LIBGCC) -o $@
+bios_verify.elf: bios_verify.o stack_alloc.o bios_string.o ../depends/libtomcrypt.a ../depends/libtfm.a arm_libs.o
+	$(LD) $(TARGET_LDFLAGS) -Ttext 0xc0000 -Tbss 0xd0000 --defsym _start=verify_data bios_verify.o stack_alloc.o bios_string.o ../depends/libtomcrypt.a ../depends/libtfm.a $(EXTRA_LIBS) $(LIBGCC) -o $@
 
 
 # A BIOS module that does only hashing.  It was used as a test.
 
 bios_hash.elf: bios_hash.o stack_alloc.o bios_string.o ../depends/libtomcrypt.a ../depends/libtfm.a
-	$(LD) -Ttext 0xa0000 -Tbss 0xa8000 --defsym _start=bios_hash bios_hash.o stack_alloc.o bios_string.o ../depends/libtomcrypt.a ../depends/libtfm.a $(LIBGCC) -o $@
+	$(LD) $(TARGET_LDFLAGS) -Ttext 0xa0000 -Tbss 0xa8000 --defsym _start=bios_hash bios_hash.o stack_alloc.o bios_string.o ../depends/libtomcrypt.a ../depends/libtfm.a $(EXTRA_LIBS) $(LIBGCC) -o $@
 
 
 # Command line tool used for testing the bios code.
@@ -34,13 +73,16 @@ bios_side: bios_side.o stack_alloc.o ../depends/libtomcrypt.a ../depends/libtfm.
 	$(CC) $(CFLAGS) bios_side.o stack_alloc.o ../depends/libtomcrypt.a ../depends/libtfm.a -o $@
 
 bios_verify.o: bios_verify.c
-	$(CC) -c $(CFLAGS) -m32 -DARGTYPE=1 $< -o $@
+	$(CC) -c $(CFLAGS) -DARGTYPE=1 $< -o $@
 
 bios_hash.o: bios_hash.c
-	$(CC) -c $(CFLAGS) -m32 -DARGTYPE=1 $< -o $@
+	$(CC) -c $(CFLAGS) -DARGTYPE=1 $< -o $@
 
 bios_side.o: bios_side.c
-	$(CC) -c $(CFLAGS) -m32 -DARGTYPE=1 $< -o $@
+	$(CC) -c $(CFLAGS) -DARGTYPE=1 $< -o $@
+
+arm_libs.o: arm_libs.c
+	$(CC) -c $(CFLAGS) -DARGTYPE=1 $< -o $@
 
 # We build these individual command lines tool to have smaller binaries
 # by linking to the non-_cli versions of the libraries, thus reducing their
@@ -101,7 +143,7 @@ zhashfs.o: zhashfs.c
 	    ln -s /usr/lib/libtomcrypt.a ../depends/libtomcrypt.a; \
 	else \
 	    cd ../depends/libtomcrypt ;\
-	    IGNORE_SPEED=1 CFLAGS="${LIBCFLAGS} -DLTC_NO_EST -I../tomsfastmath/ -DLTC_SMALL_CODE -DARGTYPE=3 -DTFM_DESC" make ; \
+	    IGNORE_SPEED=1 CFLAGS="${LIBCFLAGS} -DLTC_NO_TEST -I../tomsfastmath/ -DLTC_SMALL_CODE -DARGTYPE=3 -DTFM_DESC" CC=$(CC) make ; \
 	    cp libtomcrypt.a .. ; make clean;\
 	fi
 
@@ -112,12 +154,12 @@ zhashfs.o: zhashfs.c
            ln -s /usr/lib/libtfm.a ../depends/libtfm.a; \
         else \
            cd ../depends/tomsfastmath ; \
-           IGNORE_SPEED=1 CFLAGS="${LIBCFLAGS} -DTFM_ALREADY_SET -DTFM_NO_ASM" make ;\
+           IGNORE_SPEED=1 CFLAGS="${LIBCFLAGS} -DTFM_ALREADY_SET -DTFM_NO_ASM" CC=$(CC) make ;\
            cp libtfm.a .. ; make clean ; \
        fi
 
 clean:
-	rm -f *.o *.a *.img bios_side sign verify makekey bios_hash bios_verify key01 zdextract zhashfs
+	rm -f *.o *.a *.elf *.img bios_side sign verify makekey bios_hash bios_verify hashfs key01 sig01 zdextract zhashfs ../depends/*.a
 
 DESTDIR=/
 LIBEXEC=/usr/libexec/bios-crypto
@@ -156,7 +198,3 @@ install:
 	   install "$$p" "${DESTDIR}${LIBEXEC}/$$p" ; \
 	   ln -fs "../libexec/bios-crypto/$$p" "${DESTDIR}${BINDIR}/bc-$$p"; \
 	done
-
-
-
-

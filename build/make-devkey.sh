@@ -37,4 +37,4 @@ else
   outfile=/dev/stdout
 fi
 
-echo dev01: $sn A 00000000T000000Z `echo -n $sn:$uu:A:00000000T000000Z | $LIBEXEC/sig01 sha256 $signingkey` >$outfile
+echo dev01: $sn A 00000000T000000Z `echo -n $sn:$uu:A:00000000T000000Z | $LIBEXEC/sig01 sha256 $signingkey` >>$outfile
